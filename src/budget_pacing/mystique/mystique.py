@@ -4,24 +4,35 @@ from target_slope import TargetSpendSlopeType
 import numpy as np
 
 num_iterations_per_day = 1440
+num_iterations_per_hour = 60
 previous_pacing_signal_for_initialization = 0.0001
 max_ps = 1
 error_corresponding_to_max_correction = 0.25
 gradient_error_corresponding_to_max_correction = 1.5
 max_ps_correction = 0.025
 minimal_Non_zero_ps_correction = 0.01
+min_daily_budget_for_high_initialization = 10000
 
 
 class MystiqueTrackedCampaigns:
     def __init__(self, daily_budget):
         self.daily_budget = daily_budget
-        self.previous_ps = previous_pacing_signal_for_initialization
         self.ps_history = np.array([(0, self.previous_ps)]) # each entry is a timestamp and the ps calculated for this iteration
         self.spend = np.array([(0, 0)])   # each entry is a timestamp and the spend reported from the previous iteration
         self.current_target_slope = np.array([])
         self.target_slope_history = np.array([])
         self.current_target_spend_curve = np.array([])
         self.target_spend_history = np.array([])
+        self.previous_ps = 0    # updated again in new_day_init
+        self.last_positive_ps = 0   # updated again in new_day_init
+        self.new_day_init(daily_budget)
+
+    def new_day_init(self, daily_budget):
+        if daily_budget < min_daily_budget_for_high_initialization:
+            self.previous_ps = previous_pacing_signal_for_initialization
+        else:
+            self.previous_ps = max_ps
+        self.last_positive_ps = self.previous_ps
 
     def update_spend(self, timestamp, spend):
         self.spend.append((timestamp, spend))
