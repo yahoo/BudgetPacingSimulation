@@ -1,5 +1,11 @@
 import abc
 import numpy as np
+from enum import Enum
+
+
+class TargetSpendSlopeType(Enum):
+    LINEAR = 1
+    NON_LINEAR = 2
 
 
 class TargetSpendSlopeInterface(metaclass=abc.ABCMeta):
@@ -43,4 +49,9 @@ class LinearTargetSpendSlope(TargetSpendSlopeInterface):
             spend_sum += target_slope_array[i] / 24
             target_spend_array[i] = spend_sum
         return target_spend_array
+
+
+class NonLinearTargetSpendSlope(LinearTargetSpendSlope):
+    def update_slope(self, timestamp, mystique_tracked_campaign):
+        pass
 
