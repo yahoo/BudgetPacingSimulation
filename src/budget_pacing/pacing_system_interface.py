@@ -1,5 +1,6 @@
 import abc
 
+
 class PacingSystemInterface(metaclass=abc.ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass):
