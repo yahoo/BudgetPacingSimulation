@@ -3,15 +3,25 @@ import target_slope
 from target_slope import TargetSpendSlopeType
 import numpy as np
 
+num_iterations_per_day = 1440
+previous_pacing_signal_for_initialization = 0.0001
+max_ps = 1
+error_corresponding_to_max_correction = 0.25
+gradient_error_corresponding_to_max_correction = 1.5
+max_ps_correction = 0.025
+minimal_Non_zero_ps_correction = 0.01
+
 
 class MystiqueTrackedCampaigns:
     def __init__(self, daily_budget):
         self.daily_budget = daily_budget
-        self.spend = [(0, 0)]   # each entry is the current timestamp and the spend reported from the previous iteration
-        self.current_target_slope = []
-        self.target_slope_history = []
-        self.current_target_spend_curve = []
-        self.target_spend_history = []
+        self.previous_ps = previous_pacing_signal_for_initialization
+        self.ps_history = np.array([(0, self.previous_ps)]) # each entry is a timestamp and the ps calculated for this iteration
+        self.spend = np.array([(0, 0)])   # each entry is a timestamp and the spend reported from the previous iteration
+        self.current_target_slope = np.array([])
+        self.target_slope_history = np.array([])
+        self.current_target_spend_curve = np.array([])
+        self.target_spend_history = np.array([])
 
     def update_spend(self, timestamp, spend):
         self.spend.append((timestamp, spend))
