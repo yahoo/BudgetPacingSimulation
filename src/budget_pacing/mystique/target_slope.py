@@ -52,6 +52,11 @@ class LinearTargetSpendSlope(TargetSpendSlopeInterface):
 
 
 class NonLinearTargetSpendSlope(LinearTargetSpendSlope):
+    min_slope = 0.1
+    max_slope = 12
+    max_update_factor = 2
+    smoothing_factor = 0.5
+    epsilon = 0.0002
     def update_slope(self, timestamp, mystique_tracked_campaign):
         pass
 
