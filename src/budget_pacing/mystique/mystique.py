@@ -85,13 +85,15 @@ class MystiqueImpl(PacingSystemInterface):
         if campaign_id not in self.campaigns.keys():
             self.campaigns[campaign_id] = MystiqueTrackedCampaigns(daily_budget)
 
-    def update_campaign_spend(self, timestamp, campaign_id, spend_since_last_run):
+    def update_campaign_spend_and_conclude_iteration(self, timestamp, campaign_id, spend_since_last_run):
         if campaign_id in self.campaigns.keys():
             campaign = self.campaigns[campaign_id]
             campaign.update_spend(timestamp, spend_since_last_run)
 
             new_ps = self.calculate_new_pacing_signal(timestamp, campaign)
             self.update_pacing_signal(timestamp, campaign_id, new_ps)
+
+            campaign.conclude_iteration()
 
     def update_pacing_signal(self, timestamp, campaign_id, pacing_signal):
         if campaign_id in self.campaigns.keys():
