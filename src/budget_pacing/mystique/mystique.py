@@ -130,9 +130,10 @@ class MystiquePacingSystem(PacingSystemInterface):
     @staticmethod
     def get_spend_derivative_in_last_time_interval(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
         # if percentOfBudgetDepletedInLastTimeInterval is zero then we define the derivative to be zero too
-        if mystique_tracked_campaign.today_spend[-1][1] == 0:
+        last_spend = mystique_tracked_campaign.today_spend[-1]
+        if last_spend == 0:
             return 0
-        percent_budget_depleted_in_last_time_interval = mystique_tracked_campaign.today_spend[-1][1] / mystique_tracked_campaign.daily_budget
+        percent_budget_depleted_in_last_time_interval = last_spend / mystique_tracked_campaign.daily_budget
         return percent_budget_depleted_in_last_time_interval / mystique_constants.percent_of_day_in_one_iteration
 
     @staticmethod
