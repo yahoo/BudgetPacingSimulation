@@ -6,12 +6,12 @@ import mystique_constants
 from mystique import MystiqueTrackedCampaign
 
 
-class TargetSpendSlopeType(Enum):
+class TargetSpendStrategyType(Enum):
     LINEAR = 1
     NON_LINEAR = 2
 
 
-class TargetSpendSlopeInterface(metaclass=abc.ABCMeta):
+class TargetSpendStrategyInterface(metaclass=abc.ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass):
         return (hasattr(subclass, 'initialize_slope') and
@@ -37,7 +37,7 @@ class TargetSpendSlopeInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
 
-class LinearTargetSpendSlope(TargetSpendSlopeInterface):
+class LinearTargetSpendStrategy(TargetSpendStrategyInterface):
     def initialize_slope(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
         target_slope_array = np.ones(mystique_constants.num_hours_per_day)
         target_spend_array = self.get_target_spend_array(target_slope_array)
@@ -68,7 +68,7 @@ class LinearTargetSpendSlope(TargetSpendSlopeInterface):
         return target_spend_array
 
 
-class NonLinearTargetSpendSlope(LinearTargetSpendSlope):
+class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
     min_slope = 0.1
     max_slope = 12
     max_update_factor = 2

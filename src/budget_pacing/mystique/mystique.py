@@ -3,7 +3,7 @@ import numpy as np
 from src.budget_pacing.pacing_system_interface import PacingSystemInterface
 from src.campaign import Campaign
 import target_slope
-from target_slope import TargetSpendSlopeType
+from target_slope import TargetSpendStrategyType
 import mystique_constants
 
 
@@ -68,12 +68,12 @@ class MystiqueTrackedCampaign:
 
 
 class MystiqueImpl(PacingSystemInterface):
-    def __init__(self, target_slope_type: TargetSpendSlopeType):
+    def __init__(self, target_slope_type: TargetSpendStrategyType):
         self.mystique_tracked_campaigns = {}    # a dict containing campaign id as key and MystiqueTrackedCampaigns instance as val
-        if target_slope_type == TargetSpendSlopeType.LINEAR:
-            self.target_spend_slope_calculator = target_slope.LinearTargetSpendSlope()
-        elif target_slope_type == TargetSpendSlopeType.NON_LINEAR:
-            self.target_spend_slope_calculator = target_slope.NonLinearTargetSpendSlope()
+        if target_slope_type == TargetSpendStrategyType.LINEAR:
+            self.target_spend_slope_calculator = target_slope.LinearTargetSpendStrategy()
+        elif target_slope_type == TargetSpendStrategyType.NON_LINEAR:
+            self.target_spend_slope_calculator = target_slope.NonLinearTargetSpendStrategy()
 
     def add_campaign(self, campaign: Campaign):
         campaign_id = campaign.id
