@@ -2,8 +2,7 @@ import abc
 import numpy as np
 from enum import Enum
 
-from mystique import num_iterations_per_day
-from mystique import num_iterations_per_hour
+import mystique_constants
 from mystique import MystiqueTrackedCampaigns
 
 
@@ -52,9 +51,9 @@ class LinearTargetSpendSlope(TargetSpendSlopeInterface):
         mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
 
     def get_target_slope_and_spend(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaigns):
-        minutes_since_day_started = timestamp % num_iterations_per_day
-        hour_in_day = min(int(minutes_since_day_started / num_iterations_per_hour), 23)
-        percent_of_day_passed = minutes_since_day_started / num_iterations_per_day
+        minutes_since_day_started = timestamp % mystique_constants.num_iterations_per_day
+        hour_in_day = min(int(minutes_since_day_started / mystique_constants.num_iterations_per_hour), 23)
+        percent_of_day_passed = minutes_since_day_started / mystique_constants.num_iterations_per_day
         target_slope = 1
         target_spend = percent_of_day_passed * target_slope
         return target_slope, target_spend

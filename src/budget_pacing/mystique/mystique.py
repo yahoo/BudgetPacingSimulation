@@ -3,32 +3,17 @@ import numpy as np
 from src.budget_pacing.pacing_system_interface import PacingSystemInterface
 import target_slope
 from target_slope import TargetSpendSlopeType
-import src.utils as utils
+import mystique_constants
 
-default_unknown_value = -1
-default_ps_value = 0
-percent_of_day_in_one_iteration = 1 / 1440
-num_iterations_per_day = 1440
-num_iterations_per_hour = 60
-previous_pacing_signal_for_initialization = 0.0001
-max_ps = 1
-error_corresponding_to_max_correction = 0.25
-max_ps_correction = 0.025
-gradient_error_corresponding_to_max_correction = 1.5
-max_ps_correction = 0.025
-minimal_non_zero_ps_correction = 0.01
-min_daily_budget_for_high_initialization = 10000
-max_interval = num_iterations_per_day + 1
-max_ps_correction_weight = 0.9
-ps_correction_weight_factor = 0.2
+
 
 
 class MystiqueTrackedCampaigns:
     def __init__(self, daily_budget: float):
         self.daily_budget = daily_budget
-        self.ps = default_ps_value     # to be updated in update_pacing_signal
-        self.previous_ps = default_ps_value  # updated again in new_day_init
-        self.last_positive_ps = default_ps_value  # updated again in new_day_init
+        self.ps = mystique_constants.default_ps_value     # to be updated in update_pacing_signal
+        self.previous_ps = mystique_constants.default_ps_value  # updated again in new_day_init
+        self.last_positive_ps = mystique_constants.default_ps_value  # updated again in new_day_init
         self.ps_history = [] # list of lists for each day, each entry in arr is the calculated ps and the location is number of iteration
         self.today_ps = []    # each entry is the calculated PS, the location in the arr is the number of iteration
         self.spend_history = []   # list of lists for each day, each entry in arr is the spend and the location is number of iteration
@@ -40,10 +25,10 @@ class MystiqueTrackedCampaigns:
         self.new_day_init()
 
     def new_day_init(self):
-        if self.daily_budget < min_daily_budget_for_high_initialization:
-            self.previous_ps = previous_pacing_signal_for_initialization
+        if self.daily_budget < mystique_constants.min_daily_budget_for_high_initialization:
+            self.previous_ps = mystique_constants.previous_pacing_signal_for_initialization
         else:
-            self.previous_ps = max_ps
+            self.previous_ps = mystique_constants.max_ps
         self.last_positive_ps = self.previous_ps
 
         # updating the PS history arr and initializing today's PS arr
@@ -112,7 +97,7 @@ class MystiqueImpl(PacingSystemInterface):
     def get_pacing_signal(self, campaign_id: str):
         if campaign_id in self.campaigns.keys():
             return self.campaigns[campaign_id].ps
-        return default_ps_value
+        return mystique_constants.default_ps_value
 
     def calculate_new_pacing_signal(self, timestamp: int, campaign: MystiqueTrackedCampaigns):
         percent_budget_depleted_today = self.get_percent_budget_depleted_today(campaign)
@@ -142,7 +127,7 @@ class MystiqueImpl(PacingSystemInterface):
 
     @staticmethod
     def get_spend_error_correction(self, error_intensity: float):
-        return min(max_ps_correction, max_ps_correction * error_intensity / error_corresponding_to_max_correction)
+        return mystique_constants.max_ps_correction * min(1, error_intensity / mystique_constants.error_corresponding_to_max_correction)
 
     @staticmethod
     def get_spend_derivative_in_last_time_interval(self, campaign: MystiqueTrackedCampaigns):
@@ -150,7 +135,7 @@ class MystiqueImpl(PacingSystemInterface):
         if campaign.today_spend[-1][1] == 0:
             return 0
         percent_budget_depleted_in_last_time_interval = campaign.today_spend[-1][1] / campaign.daily_budget
-        return percent_budget_depleted_in_last_time_interval / percent_of_day_in_one_iteration
+        return percent_budget_depleted_in_last_time_interval / mystique_constants.percent_of_day_in_one_iteration
 
     @staticmethod
     def get_gradient_error(self, relative_spend_derivative_in_last_time_interval: float, current_target_slope: float):
@@ -162,20 +147,20 @@ class MystiqueImpl(PacingSystemInterface):
 
     @staticmethod
     def get_gradient_error_correction(self, gradient_error_intensity: float):
-        return max(minimal_non_zero_ps_correction, max_ps_correction * gradient_error_intensity / gradient_error_corresponding_to_max_correction)
+        return max(mystique_constants.minimal_non_zero_ps_correction, mystique_constants.max_ps_correction * gradient_error_intensity / mystique_constants.gradient_error_corresponding_to_max_correction)
 
     @staticmethod
     def get_estimated_intervals_until_target_is_hit(self, spend_error: float, gradient_error: float):
         if gradient_error == 0:
-            return max_interval
-        return -1 * num_iterations_per_day * spend_error / gradient_error
+            return mystique_constants.max_interval
+        return -1 * mystique_constants.num_iterations_per_day * spend_error / gradient_error
 
     @staticmethod
     def get_pacing_signal_correction_weights(self, estimated_intervals_until_target_is_hit: float):
         """returns the spend error and the gradient error weights"""
         if estimated_intervals_until_target_is_hit < 0:
             return 0.5, 0.5
-        w1 = min(max_ps_correction_weight, ps_correction_weight_factor * estimated_intervals_until_target_is_hit)
+        w1 = min(mystique_constants.max_ps_correction_weight, mystique_constants.ps_correction_weight_factor * estimated_intervals_until_target_is_hit)
         return w1, 1.0-w1
 
     @staticmethod
