@@ -67,7 +67,7 @@ class MystiqueTrackedCampaign:
         return sum(self.today_spend)
 
 
-class MystiqueImpl(PacingSystemInterface):
+class MystiquePacingSystem(PacingSystemInterface):
     def __init__(self, target_slope_type: TargetSpendStrategyType):
         self.mystique_tracked_campaigns = {}    # a dict containing campaign id as key and MystiqueTrackedCampaigns instance as val
         if target_slope_type == TargetSpendStrategyType.LINEAR:
