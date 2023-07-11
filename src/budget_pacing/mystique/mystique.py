@@ -116,6 +116,12 @@ class MystiquePacingSystem(PacingSystemInterface):
         mystique_tracked_campaign.update_pacing_signal(new_ps)
 
     def calculate_new_pacing_signal(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
+        # edge case: 3 minutes before budget reset
+        if mystique_constants.num_iterations_for_avg_daily_ps_below_threshold_reset >= timestamp % mystique_constants.num_iterations_per_day:
+            avg_daily_ps_below_threshold = mystique_tracked_campaign.get_avg_daily_ps_below_threshold()
+            if avg_daily_ps_below_threshold > 0:
+                return min(mystique_constants.max_ps, avg_daily_ps_below_threshold)
+
         percent_budget_depleted_today = self.get_percent_budget_depleted_today(mystique_tracked_campaign)
         current_target_slope, current_target_spend = self.target_spend_slope_calculator.get_target_slope_and_spend(timestamp, mystique_tracked_campaign)
         spend_error = self.get_spend_error(percent_budget_depleted_today, current_target_spend)
