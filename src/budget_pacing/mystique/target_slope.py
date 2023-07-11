@@ -3,7 +3,7 @@ import numpy as np
 from enum import Enum
 
 import mystique_constants
-from mystique import MystiqueTrackedCampaigns
+from mystique import MystiqueTrackedCampaign
 
 
 class TargetSpendSlopeType(Enum):
@@ -38,19 +38,19 @@ class TargetSpendSlopeInterface(metaclass=abc.ABCMeta):
 
 
 class LinearTargetSpendSlope(TargetSpendSlopeInterface):
-    def initialize_slope(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaigns):
+    def initialize_slope(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
         target_slope_array = np.ones(mystique_constants.num_hours_per_day)
         target_spend_array = self.get_target_spend_array(target_slope_array)
         mystique_tracked_campaign.update_target_slope_curve(target_slope_array)
         mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
 
-    def update_slope(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaigns):
+    def update_slope(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
         target_slope_array = mystique_tracked_campaign.current_target_slope
         target_spend_array = mystique_tracked_campaign.current_target_spend_curve
         mystique_tracked_campaign.update_target_slope_curve(target_slope_array)
         mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
 
-    def get_target_slope_and_spend(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaigns):
+    def get_target_slope_and_spend(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
         minutes_since_day_started = timestamp % mystique_constants.num_iterations_per_day
         hour_in_day = min(int(minutes_since_day_started / mystique_constants.num_iterations_per_hour), mystique_constants.num_hours_per_day-1)
         percent_of_day_passed = minutes_since_day_started / mystique_constants.num_iterations_per_day
@@ -75,9 +75,9 @@ class NonLinearTargetSpendSlope(LinearTargetSpendSlope):
     smoothing_factor = 0.5
     epsilon = 0.0002
 
-    def update_slope(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaigns):
+    def update_slope(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
         pass
 
-    def get_target_slope_and_spend(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaigns):
+    def get_target_slope_and_spend(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
         pass
 
