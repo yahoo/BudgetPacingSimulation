@@ -1,6 +1,7 @@
 import numpy as np
 
 from src.budget_pacing.pacing_system_interface import PacingSystemInterface
+from src.campaign import Campaign
 import target_slope
 from target_slope import TargetSpendSlopeType
 import mystique_constants
@@ -68,52 +69,52 @@ class MystiqueTrackedCampaign:
 
 class MystiqueImpl(PacingSystemInterface):
     def __init__(self, target_slope_type: TargetSpendSlopeType):
-        self.campaigns = {}    # a dict containing campaign id as key and MystiqueTrackedCampaigns instance as val
+        self.mystique_tracked_campaigns = {}    # a dict containing campaign id as key and MystiqueTrackedCampaigns instance as val
         if target_slope_type == TargetSpendSlopeType.LINEAR:
             self.target_spend_slope_calculator = target_slope.LinearTargetSpendSlope()
         elif target_slope_type == TargetSpendSlopeType.NON_LINEAR:
             self.target_spend_slope_calculator = target_slope.NonLinearTargetSpendSlope()
 
-    def add_campaign(self, campaign: MystiqueTrackedCampaign):
+    def add_campaign(self, campaign: Campaign):
         campaign_id = campaign.id
         daily_budget = campaign.daily_budget
-        if campaign_id not in self.campaigns.keys():
-            self.campaigns[campaign_id] = MystiqueTrackedCampaign(daily_budget)
+        if campaign_id not in self.mystique_tracked_campaigns.keys():
+            self.mystique_tracked_campaigns[campaign_id] = MystiqueTrackedCampaign(daily_budget)
 
     def conclude_iteration(self, timestamp: int, campaign_id: str, spend_since_last_iteration: float):
-        if campaign_id in self.campaigns.keys():
-            campaign = self.campaigns[campaign_id]
-            campaign.update_spend(spend_since_last_iteration)
+        if campaign_id in self.mystique_tracked_campaigns.keys():
+            mystique_tracked_campaign = self.mystique_tracked_campaigns[campaign_id]
+            mystique_tracked_campaign.update_spend(spend_since_last_iteration)
 
-            new_ps = self.calculate_new_pacing_signal(timestamp, campaign)
+            new_ps = self.calculate_new_pacing_signal(timestamp, mystique_tracked_campaign)
             self.update_pacing_signal(timestamp, campaign_id, new_ps)
 
     def update_pacing_signal(self, timestamp: int, campaign_id: str, pacing_signal: float):
-        if campaign_id in self.campaigns.keys():
-            self.campaigns[campaign_id].update_pacing_signal(pacing_signal)
+        if campaign_id in self.mystique_tracked_campaigns.keys():
+            self.mystique_tracked_campaigns[campaign_id].update_pacing_signal(pacing_signal)
 
     def get_pacing_signal(self, campaign_id: str):
-        if campaign_id in self.campaigns.keys():
-            return self.campaigns[campaign_id].ps
+        if campaign_id in self.mystique_tracked_campaigns.keys():
+            return self.mystique_tracked_campaigns[campaign_id].ps
         return mystique_constants.default_ps_value
 
-    def calculate_new_pacing_signal(self, timestamp: int, campaign: MystiqueTrackedCampaign):
-        percent_budget_depleted_today = self.get_percent_budget_depleted_today(campaign)
-        current_target_slope, current_target_spend = self.target_spend_slope_calculator.get_target_slope_and_spend(timestamp, campaign)
+    def calculate_new_pacing_signal(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
+        percent_budget_depleted_today = self.get_percent_budget_depleted_today(mystique_tracked_campaign)
+        current_target_slope, current_target_spend = self.target_spend_slope_calculator.get_target_slope_and_spend(timestamp, mystique_tracked_campaign)
         spend_error = self.get_spend_error(percent_budget_depleted_today, current_target_spend)
 
-        spend_derivative_in_last_time_interval = self.get_spend_derivative_in_last_time_interval(campaign)
+        spend_derivative_in_last_time_interval = self.get_spend_derivative_in_last_time_interval(mystique_tracked_campaign)
         gradient_error = self.get_gradient_error(spend_derivative_in_last_time_interval, current_target_slope)
 
         estimated_intervals_until_target_is_hit = self.get_estimated_intervals_until_target_is_hit(spend_error, gradient_error)
         w1, w2 = self.get_pacing_signal_correction_weights(estimated_intervals_until_target_is_hit)
-        previous_ps = campaign.last_positive_ps
+        previous_ps = mystique_tracked_campaign.last_positive_ps
         return self.get_new_pacing_signal(previous_ps, spend_error, gradient_error, w1, w2)
 
 
     @staticmethod
-    def get_percent_budget_depleted_today(self, campaign: MystiqueTrackedCampaign):
-        return campaign.get_today_spend() / campaign.daily_budget
+    def get_percent_budget_depleted_today(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
+        return mystique_tracked_campaign.get_today_spend() / mystique_tracked_campaign.daily_budget
 
     @staticmethod
     def get_spend_error(self, percent_budget_depleted_today: float, current_target_spend: float):
@@ -128,11 +129,11 @@ class MystiqueImpl(PacingSystemInterface):
         return mystique_constants.max_ps_correction * min(1, error_intensity / mystique_constants.error_corresponding_to_max_correction)
 
     @staticmethod
-    def get_spend_derivative_in_last_time_interval(self, campaign: MystiqueTrackedCampaign):
+    def get_spend_derivative_in_last_time_interval(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
         # if percentOfBudgetDepletedInLastTimeInterval is zero then we define the derivative to be zero too
-        if campaign.today_spend[-1][1] == 0:
+        if mystique_tracked_campaign.today_spend[-1][1] == 0:
             return 0
-        percent_budget_depleted_in_last_time_interval = campaign.today_spend[-1][1] / campaign.daily_budget
+        percent_budget_depleted_in_last_time_interval = mystique_tracked_campaign.today_spend[-1][1] / mystique_tracked_campaign.daily_budget
         return percent_budget_depleted_in_last_time_interval / mystique_constants.percent_of_day_in_one_iteration
 
     @staticmethod
