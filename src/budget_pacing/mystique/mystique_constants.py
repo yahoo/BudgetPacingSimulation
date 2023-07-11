@@ -1,0 +1,17 @@
+default_unknown_value = -1
+default_ps_value = 0
+num_hours_per_day = 24
+percent_of_day_in_one_iteration = 1 / 1440
+num_iterations_per_day = 1440
+num_iterations_per_hour = 60
+previous_pacing_signal_for_initialization = 0.0001
+max_ps = 1
+error_corresponding_to_max_correction = 0.25
+max_ps_correction = 0.025
+gradient_error_corresponding_to_max_correction = 1.5
+max_ps_correction = 0.025
+minimal_non_zero_ps_correction = 0.01
+min_daily_budget_for_high_initialization = 10000
+max_interval = num_iterations_per_day + 1
+max_ps_correction_weight = 0.9
+ps_correction_weight_factor = 0.2

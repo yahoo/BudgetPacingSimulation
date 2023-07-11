@@ -1,12 +1,13 @@
 import abc
 
+
 class PacingSystemInterface(metaclass=abc.ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass):
         return (hasattr(subclass, 'add_campaign') and
                 callable(subclass.add_campaign) and
-                hasattr(subclass, 'update_campaign_spend') and
-                callable(subclass.update_campaign_spend) and
+                hasattr(subclass, 'conclude_iteration') and
+                callable(subclass.start_iteration) and
                 hasattr(subclass, 'get_pacing_signal') and
                 callable(subclass.get_pacing_signal))
 
@@ -16,7 +17,7 @@ class PacingSystemInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update_campaign_spend(self, timestamp, campaign_id, spend_since_last_run):
+    def start_iteration(self, timestamp, campaign_id, spend_since_last_iteration):
         """updates the current spend of the campaign"""
         raise NotImplementedError
 
