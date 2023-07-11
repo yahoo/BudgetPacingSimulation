@@ -81,22 +81,22 @@ class MystiquePacingSystem(PacingSystemInterface):
         if campaign_id not in self.mystique_tracked_campaigns.keys():
             self.mystique_tracked_campaigns[campaign_id] = MystiqueTrackedCampaign(daily_budget)
 
-    def conclude_iteration(self, timestamp: int, campaign_id: str, spend_since_last_iteration: float):
+    def start_iteration(self, timestamp: int, campaign_id: str, spend_since_last_iteration: float):
         if campaign_id in self.mystique_tracked_campaigns.keys():
             mystique_tracked_campaign = self.mystique_tracked_campaigns[campaign_id]
             mystique_tracked_campaign.update_spend(spend_since_last_iteration)
 
             new_ps = self.calculate_new_pacing_signal(timestamp, mystique_tracked_campaign)
-            self.update_pacing_signal(timestamp, campaign_id, new_ps)
-
-    def update_pacing_signal(self, timestamp: int, campaign_id: str, pacing_signal: float):
-        if campaign_id in self.mystique_tracked_campaigns.keys():
-            self.mystique_tracked_campaigns[campaign_id].update_pacing_signal(pacing_signal)
+            self.update_pacing_signal(timestamp, mystique_tracked_campaign)
 
     def get_pacing_signal(self, campaign_id: str):
         if campaign_id in self.mystique_tracked_campaigns.keys():
             return self.mystique_tracked_campaigns[campaign_id].ps
         return mystique_constants.default_ps_value
+
+    def update_pacing_signal(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
+        new_ps = self.calculate_new_pacing_signal(timestamp, mystique_tracked_campaign)
+        mystique_tracked_campaign.update_pacing_signal(new_ps)
 
     def calculate_new_pacing_signal(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
         percent_budget_depleted_today = self.get_percent_budget_depleted_today(mystique_tracked_campaign)
@@ -110,7 +110,6 @@ class MystiquePacingSystem(PacingSystemInterface):
         w1, w2 = self.get_pacing_signal_correction_weights(estimated_intervals_until_target_is_hit)
         previous_ps = mystique_tracked_campaign.last_positive_ps
         return self.get_new_pacing_signal(previous_ps, spend_error, gradient_error, w1, w2)
-
 
     @staticmethod
     def get_percent_budget_depleted_today(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
