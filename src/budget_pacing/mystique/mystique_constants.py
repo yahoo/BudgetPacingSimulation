@@ -15,3 +15,4 @@ min_daily_budget_for_high_initialization = 10000
 max_interval = num_iterations_per_day + 1
 max_ps_correction_weight = 0.9
 ps_correction_weight_factor = 0.2
+budget_spend_threshold = 0.95

@@ -21,6 +21,8 @@ class MystiqueTrackedCampaign:
         self.target_slope_history = []
         self.current_target_spend_curve = []
         self.target_spend_history = []
+        self.sum_ps_below_threshold = 0
+        self.count_ps_below_threshold = 0
         self.new_day_init()
 
     def new_day_init(self):
@@ -40,15 +42,25 @@ class MystiqueTrackedCampaign:
             self.spend_history.append(self.today_spend)
         self.today_spend = []
 
+        # initializing the average PS value below threshold metrics
+        self.sum_ps_below_threshold = 0
+        self.count_ps_below_threshold = 0
+
+    def update_spend(self, spend: float):
+        self.today_spend.append(spend)
+
     def update_pacing_signal(self, ps: float):
+        """Because the update of the average daily PS below threshold metrics, must always be called after update_spend"""
         self.previous_ps = self.ps
         if self.ps > 0:
             self.last_positive_ps = self.ps
         self.ps = ps
         self.today_ps.append(ps)
 
-    def update_spend(self, spend: float):
-        self.today_spend.append(spend)
+        # updating the average daily PS below threshold metrics
+        if self.get_today_spend() / self.daily_budget < mystique_constants.budget_spend_threshold:
+            self.sum_ps_below_threshold += self.ps
+            self.count_ps_below_threshold += 1
 
     def update_target_slope_curve(self, target_slope_curve: list[float]):
         if len(self.current_target_slope) > 0:
@@ -65,6 +77,12 @@ class MystiqueTrackedCampaign:
 
     def get_today_spend(self):
         return sum(self.today_spend)
+
+    def get_avg_daily_ps_below_threshold(self):
+        """average PS value for all iterations where spend-to-budget ratio < mystique_constants.budget_spend_threshold"""
+        if self.count_ps_below_threshold == 0:
+            return 0
+        return self.sum_ps_below_threshold / self.count_ps_below_threshold
 
 
 class MystiquePacingSystem(PacingSystemInterface):
@@ -86,7 +104,6 @@ class MystiquePacingSystem(PacingSystemInterface):
             mystique_tracked_campaign = self.mystique_tracked_campaigns[campaign_id]
             mystique_tracked_campaign.update_spend(spend_since_last_iteration)
 
-            new_ps = self.calculate_new_pacing_signal(timestamp, mystique_tracked_campaign)
             self.update_pacing_signal(timestamp, mystique_tracked_campaign)
 
     def get_pacing_signal(self, campaign_id: str):
