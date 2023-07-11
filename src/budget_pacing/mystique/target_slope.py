@@ -39,7 +39,7 @@ class TargetSpendSlopeInterface(metaclass=abc.ABCMeta):
 
 class LinearTargetSpendSlope(TargetSpendSlopeInterface):
     def initialize_slope(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaigns):
-        target_slope_array = np.ones(24)
+        target_slope_array = np.ones(mystique_constants.num_hours_per_day)
         target_spend_array = self.get_target_spend_array(target_slope_array)
         mystique_tracked_campaign.update_target_slope_curve(target_slope_array)
         mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
@@ -52,7 +52,7 @@ class LinearTargetSpendSlope(TargetSpendSlopeInterface):
 
     def get_target_slope_and_spend(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaigns):
         minutes_since_day_started = timestamp % mystique_constants.num_iterations_per_day
-        hour_in_day = min(int(minutes_since_day_started / mystique_constants.num_iterations_per_hour), 23)
+        hour_in_day = min(int(minutes_since_day_started / mystique_constants.num_iterations_per_hour), mystique_constants.num_hours_per_day-1)
         percent_of_day_passed = minutes_since_day_started / mystique_constants.num_iterations_per_day
         target_slope = 1
         target_spend = percent_of_day_passed * target_slope
@@ -60,10 +60,10 @@ class LinearTargetSpendSlope(TargetSpendSlopeInterface):
 
     @staticmethod
     def get_target_spend_array(target_slope_array: list[float]):
-        target_spend_array = np.zeros(24)
+        target_spend_array = np.zeros(mystique_constants.num_hours_per_day)
         spend_sum = 0
-        for i in range(24):
-            spend_sum += target_slope_array[i] / 24
+        for i in range(len(target_spend_array)):
+            spend_sum += target_slope_array[i] / mystique_constants.num_hours_per_day
             target_spend_array[i] = spend_sum
         return target_spend_array
 
