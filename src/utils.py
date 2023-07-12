@@ -22,3 +22,9 @@ def get_arr_sum_of_last_tuple_item_from_modulo_location(arr, modulo):
     return get_arr_sum_of_last_tuple_item(sliced_arr)
 
 
+def get_average_per_size(arr, size):
+    """returns array of averages of length arr/size(+1) of averages of every size elements"""
+    chunks = [arr[i:(i + size)] for i in range(0, len(arr), size)]
+    return [sum(chunk) / len(chunk) for chunk in chunks]
+
+
