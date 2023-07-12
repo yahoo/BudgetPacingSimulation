@@ -1,8 +1,8 @@
 import abc
 from enum import Enum
 
-import mystique_constants
-from mystique import MystiqueTrackedCampaign
+import src.budget_pacing.mystique.mystique_constants as mystique_constants
+from src.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
 
 
 class TargetSpendStrategyType(Enum):

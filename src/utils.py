@@ -22,3 +22,5 @@ def get_arr_sum_of_last_tuple_item_from_modulo_location(arr, modulo):
     return get_arr_sum_of_last_tuple_item(sliced_arr)
 
 
+x = [(i+1)/24 for i in range(24)]
+print(x)
