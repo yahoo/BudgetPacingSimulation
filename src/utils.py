@@ -24,28 +24,7 @@ def get_arr_sum_of_last_tuple_item_from_modulo_location(arr, modulo):
 
 def get_average_per_size(arr, size):
     """returns array of averages of length arr/size(+1) of averages of every size elements"""
-    avg_arr = []
-    sum = 0
-    num = 0
-    for i in range(len(arr)):
-        modulo = num % size
-        if modulo == 0:
-            sum = arr[i]
-            num = 1
-        else:
-            sum += arr[i]
-            num += 1
-
-        if modulo == size-1:
-            avg = 0
-            if num > 0:
-                avg = sum / num
-            avg_arr.append(avg)
-    if len(arr) % size > 0:
-        avg = 0
-        if num > 0:
-            avg = sum / num
-        avg_arr.append(avg)
-    return avg_arr
+    chunks = [arr[i:(i + size)] for i in range(0, len(arr), size)]
+    return [sum(chunk) / len(chunk) for chunk in chunks]
 
 

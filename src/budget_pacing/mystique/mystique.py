@@ -51,7 +51,7 @@ class MystiqueTrackedCampaign:
         self.today_spend.append(spend)
 
     def update_pacing_signal(self, ps: float):
-        """Because the update of the average daily PS below threshold metrics, must always be called after update_spend"""
+        """Because of the update of the average daily PS below threshold metrics, this must always be called after update_spend"""
         self.previous_ps = self.ps
         if self.ps > 0:
             self.last_positive_ps = self.ps
