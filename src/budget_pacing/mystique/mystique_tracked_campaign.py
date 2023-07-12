@@ -5,9 +5,9 @@ import src.utils as utils
 class MystiqueTrackedCampaign:
     def __init__(self, daily_budget: float):
         self.daily_budget = daily_budget
-        self.ps = mystique_constants.default_ps_value     # to be updated in update_pacing_signal
-        self.previous_ps = mystique_constants.default_ps_value  # updated again in new_day_init
-        self.last_positive_ps = mystique_constants.default_ps_value  # updated again in new_day_init
+        self.ps = mystique_constants.pacing_signal_for_initialization
+        self.previous_ps = mystique_constants.pacing_signal_for_initialization
+        self.last_positive_ps = mystique_constants.pacing_signal_for_initialization
         self.ps_history = [] # list of lists for each day, each entry in arr is the calculated ps and the location is number of iteration
         self.today_ps = []    # each entry is the calculated PS, the location in the arr is the number of iteration
         self.spend_history = []   # list of lists for each day, each entry in arr is the spend and the location is number of iteration
@@ -18,14 +18,21 @@ class MystiqueTrackedCampaign:
         self.target_spend_history = []
         self.sum_ps_below_threshold = 0
         self.count_ps_below_threshold = 0
-        self.new_day_init()
+        self.new_day_init(is_new_campaign=True)
 
-    def new_day_init(self):
-        if self.daily_budget < mystique_constants.min_daily_budget_for_high_initialization:
-            self.previous_ps = mystique_constants.previous_pacing_signal_for_initialization
-        else:
-            self.previous_ps = mystique_constants.max_ps
-        self.last_positive_ps = self.previous_ps
+    def new_day_init(self, is_new_campaign=False):
+        # updating the PS values
+        if is_new_campaign:
+            if self.daily_budget > mystique_constants.min_daily_budget_for_high_initialization:
+                self.ps = mystique_constants.max_ps
+                self.previous_ps = mystique_constants.max_ps
+                self.last_positive_ps = mystique_constants.max_ps
+        self.previous_ps = self.last_positive_ps
+        avg_ps_below_threshold = self.get_avg_daily_ps_below_threshold()
+        if avg_ps_below_threshold != mystique_constants.ps_invalid_value:
+            self.previous_ps = avg_ps_below_threshold
+            self.last_positive_ps = avg_ps_below_threshold
+        self.previous_ps = min(self.previous_ps, mystique_constants.max_ps)
 
         # updating the PS history arr and initializing today's PS arr
         if len(self.today_ps) > 0:
@@ -76,7 +83,7 @@ class MystiqueTrackedCampaign:
     def get_avg_daily_ps_below_threshold(self):
         """average PS value for all iterations where spend-to-budget ratio < mystique_constants.budget_spend_threshold"""
         if self.count_ps_below_threshold == 0:
-            return 0
+            return mystique_constants.ps_invalid_value
         return self.sum_ps_below_threshold / self.count_ps_below_threshold
 
     def get_avg_daily_ps(self):

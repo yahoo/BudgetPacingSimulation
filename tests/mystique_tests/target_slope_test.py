@@ -31,7 +31,6 @@ class TestLinearTargetSlope(unittest.TestCase):
         self.assertTrue(len(target_spend_history) == 0, "target spend history improperly initialized")
 
     def test_update_slope(self):
-        self.timestamp += 1
         self.target_slope_strategy.update_slope(self.timestamp, self.mystique_tracked_campaign)
         calculated_slope_array = self.mystique_tracked_campaign.current_target_slope
         calculated_spend_array = self.mystique_tracked_campaign.current_target_spend_curve
@@ -46,6 +45,11 @@ class TestLinearTargetSlope(unittest.TestCase):
             self.assertAlmostEqual(calculated_spend_array[i], self.required_spend_array[i], msg="incorrect value of target spend curve array")
         self.assertTrue(len(target_slope_history) == 1, "target slope history improperly initialized")
         self.assertTrue(len(target_spend_history) == 1, "target spend history improperly initialized")
+
+    def test_get_target_slope_and_spend(self):
+        target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.timestamp, self.mystique_tracked_campaign)
+        print(target_slope)
+        print(target_spend)
 
 
 # run the test

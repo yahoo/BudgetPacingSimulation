@@ -42,7 +42,7 @@ class MystiquePacingSystem(PacingSystemInterface):
         # Edge case: 3 minutes before budget reset
         if mystique_constants.num_iterations_for_avg_daily_ps_below_threshold_reset >= timestamp % mystique_constants.num_iterations_per_day:
             avg_daily_ps_below_threshold = mystique_tracked_campaign.get_avg_daily_ps_below_threshold()
-            if avg_daily_ps_below_threshold > 0:
+            if avg_daily_ps_below_threshold != mystique_constants.ps_invalid_value:
                 return min(mystique_constants.max_ps, avg_daily_ps_below_threshold)
 
         # Edge case: if a campaign depleted the budget we freeze the PS
