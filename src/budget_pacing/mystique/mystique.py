@@ -10,6 +10,18 @@ import src.budget_pacing.mystique.mystique_constants as mystique_constants
 
 
 
+    def get_avg_daily_ps_below_threshold(self):
+        """average PS value for all iterations where spend-to-budget ratio < mystique_constants.budget_spend_threshold"""
+        if self.count_ps_below_threshold == 0:
+            return 0
+        return self.sum_ps_below_threshold / self.count_ps_below_threshold
+
+    def get_avg_daily_ps(self):
+        return self.get_avg_daily_ps_below_threshold()
+
+    def get_avg_hourly_ps(self):
+        return utils.get_average_per_size(self.today_ps, mystique_constants.num_hours_per_day)
+
 
 class MystiquePacingSystem(PacingSystemInterface):
     def __init__(self, target_slope_type: TargetSpendStrategyType):
@@ -30,7 +42,6 @@ class MystiquePacingSystem(PacingSystemInterface):
             mystique_tracked_campaign = self.mystique_tracked_campaigns[campaign_id]
             mystique_tracked_campaign.update_spend(spend_since_last_iteration)
 
-            new_ps = self.calculate_new_pacing_signal(timestamp, mystique_tracked_campaign)
             self.update_pacing_signal(timestamp, mystique_tracked_campaign)
 
     def get_pacing_signal(self, campaign_id: str):
@@ -43,14 +54,28 @@ class MystiquePacingSystem(PacingSystemInterface):
         mystique_tracked_campaign.update_pacing_signal(new_ps)
 
     def calculate_new_pacing_signal(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
+        # Edge case: 3 minutes before budget reset
+        if mystique_constants.num_iterations_for_avg_daily_ps_below_threshold_reset >= timestamp % mystique_constants.num_iterations_per_day:
+            avg_daily_ps_below_threshold = mystique_tracked_campaign.get_avg_daily_ps_below_threshold()
+            if avg_daily_ps_below_threshold > 0:
+                return min(mystique_constants.max_ps, avg_daily_ps_below_threshold)
+
+        # Edge case: if a campaign depleted the budget we freeze the PS
+        if mystique_tracked_campaign.get_today_spend() >= mystique_tracked_campaign.daily_budget:
+            return mystique_tracked_campaign.previous_ps
+
         percent_budget_depleted_today = self.get_percent_budget_depleted_today(mystique_tracked_campaign)
         current_target_slope, current_target_spend = self.target_spend_slope_calculator.get_target_slope_and_spend(timestamp, mystique_tracked_campaign)
         spend_error = self.get_spend_error(percent_budget_depleted_today, current_target_spend)
 
         spend_derivative_in_last_time_interval = self.get_spend_derivative_in_last_time_interval(mystique_tracked_campaign)
         gradient_error = self.get_gradient_error(spend_derivative_in_last_time_interval, current_target_slope)
-
         estimated_intervals_until_target_is_hit = self.get_estimated_intervals_until_target_is_hit(spend_error, gradient_error)
+
+        # Edge case: runaway train
+        if gradient_error > 12 and estimated_intervals_until_target_is_hit < 3600 and percent_budget_depleted_today > min(current_target_spend, 1):
+            return 0
+
         w1, w2 = self.get_pacing_signal_correction_weights(estimated_intervals_until_target_is_hit)
         previous_ps = mystique_tracked_campaign.last_positive_ps
         return self.get_new_pacing_signal(previous_ps, spend_error, gradient_error, w1, w2)
