@@ -8,21 +8,6 @@ from src.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTracked
 import src.budget_pacing.mystique.mystique_constants as mystique_constants
 
 
-
-
-    def get_avg_daily_ps_below_threshold(self):
-        """average PS value for all iterations where spend-to-budget ratio < mystique_constants.budget_spend_threshold"""
-        if self.count_ps_below_threshold == 0:
-            return 0
-        return self.sum_ps_below_threshold / self.count_ps_below_threshold
-
-    def get_avg_daily_ps(self):
-        return self.get_avg_daily_ps_below_threshold()
-
-    def get_avg_hourly_ps(self):
-        return utils.get_average_per_size(self.today_ps, mystique_constants.num_hours_per_day)
-
-
 class MystiquePacingSystem(PacingSystemInterface):
     def __init__(self, target_slope_type: TargetSpendStrategyType):
         self.mystique_tracked_campaigns = {}    # a dict containing campaign id as key and MystiqueTrackedCampaigns instance as val
