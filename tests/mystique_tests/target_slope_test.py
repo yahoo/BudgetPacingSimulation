@@ -47,9 +47,35 @@ class TestLinearTargetSlope(unittest.TestCase):
         self.assertTrue(len(target_spend_history) == 1, "target spend history improperly initialized")
 
     def test_get_target_slope_and_spend(self):
+        self.timestamp = 0
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.timestamp, self.mystique_tracked_campaign)
-        print(target_slope)
-        print(target_spend)
+        self.assertEqual(target_slope, 1, "incorrect target slope")
+        self.assertEqual(target_spend, 0, "incorrect initial target spend")
+
+        self.timestamp = 1
+        target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.timestamp, self.mystique_tracked_campaign)
+        self.assertEqual(target_slope, 1, "incorrect target slope")
+        self.assertAlmostEqual(target_spend, 1/mystique_constants.num_iterations_per_day, msg="incorrect initial target spend")
+
+        self.timestamp = 35
+        target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.timestamp, self.mystique_tracked_campaign)
+        self.assertEqual(target_slope, 1, "incorrect target slope")
+        self.assertAlmostEqual(target_spend, self.timestamp / mystique_constants.num_iterations_per_day,
+                               msg="incorrect initial target spend")
+
+        self.timestamp = mystique_constants.num_iterations_per_day
+        target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.timestamp, self.mystique_tracked_campaign)
+        self.assertEqual(target_slope, 1, "incorrect target slope")
+        self.assertEqual(target_spend, 0, "incorrect initial target spend")
+
+    def get_target_spend_array(self):
+        target_spend_arr = self.target_slope_strategy.get_target_spend_array(self.mystique_tracked_campaign.current_target_slope)
+        i = 0
+        self.assertEqual(target_spend_arr[i], 0, "incorrect target spend value")
+        i = int(len(target_spend_arr) / 2)
+        self.assertAlmostEqual(target_spend_arr[i], 0.5, msg="incorrect target spend value")
+        i = len(target_spend_arr) - 1
+        self.assertAlmostEqual(target_spend_arr[i], 1, msg="incorrect target spend value")
 
 
 # run the test
