@@ -37,5 +37,18 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertEqual(mystique_tracked_campaign.previous_ps, mystique_constants.max_ps, "previous pacing signal initialization not correct")
         self.assertEqual(mystique_tracked_campaign.last_positive_ps, mystique_constants.max_ps, "last positive pacing signal initialization not correct")
 
+    def test_start_iteration(self):
+        campaign_id = 0
+        timestamp = 1
+        mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
+        target_spend_slope_calculator = self.mystique_linear.target_spend_slope_calculator
+        target_slope, target_spend = target_spend_slope_calculator.get_target_slope_and_spend(timestamp, mystique_tracked_campaign)
+        print("target spend:", target_spend * mystique_tracked_campaign.daily_budget)
+        print("daily_budget:", mystique_tracked_campaign.daily_budget)
+        actual_spend = 0.004
+        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+
+        print(self.mystique_linear.mystique_tracked_campaigns[campaign_id].ps)
+
 
 
