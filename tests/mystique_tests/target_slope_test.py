@@ -2,13 +2,13 @@ import unittest
 
 from src.budget_pacing.mystique.target_slope import LinearTargetSpendStrategy
 import src.budget_pacing.mystique.mystique_constants as mystique_constants
-import mystique_tracked_campaign_initialization
+import mystique_campaign_initialization
 
 
 class TestLinearTargetSlope(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.mystique_tracked_campaign = mystique_tracked_campaign_initialization.instance_for_target_slope_test()
+        self.mystique_tracked_campaign = mystique_campaign_initialization.instance_for_target_slope_test()
         self.target_slope_strategy = LinearTargetSpendStrategy()
         self.timestamp = 0
         self.required_slope_array = [1] * mystique_constants.num_hours_per_day
