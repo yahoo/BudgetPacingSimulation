@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 from src.budget_pacing.pacing_system_interface import PacingSystemInterface
 from src.campaign import Campaign
@@ -46,22 +47,24 @@ class MystiquePacingSystem(PacingSystemInterface):
                 return min(mystique_constants.max_ps, avg_daily_ps_below_threshold)
 
         # Edge case: if a campaign depleted the budget we freeze the PS
-        if mystique_tracked_campaign.get_today_spend() >= mystique_tracked_campaign.daily_budget:
+        today_spend = mystique_tracked_campaign.get_today_spend()
+        daily_budget = mystique_tracked_campaign.daily_budget
+        if math.isclose(today_spend, daily_budget) or today_spend > daily_budget:
             return mystique_tracked_campaign.previous_ps
 
         percent_budget_depleted_today = MystiquePacingSystem.get_percent_budget_depleted_today(mystique_tracked_campaign)
         current_target_slope, current_target_spend = self.target_spend_slope_calculator.get_target_slope_and_spend(timestamp, mystique_tracked_campaign)
-        spend_error = self.get_spend_error(percent_budget_depleted_today, current_target_spend)
+        spend_error = MystiquePacingSystem.get_spend_error(percent_budget_depleted_today, current_target_spend)
 
-        spend_derivative_in_last_time_interval = self.get_spend_derivative_in_last_time_interval(mystique_tracked_campaign)
-        gradient_error = self.get_gradient_error(spend_derivative_in_last_time_interval, current_target_slope)
-        estimated_intervals_until_target_is_hit = self.get_estimated_intervals_until_target_is_hit(spend_error, gradient_error)
+        spend_derivative_in_latest_time_interval = MystiquePacingSystem.get_spend_derivative_in_latest_time_interval(mystique_tracked_campaign)
+        gradient_error = MystiquePacingSystem.get_gradient_error(spend_derivative_in_latest_time_interval, current_target_slope)
+        estimated_intervals_until_target_is_hit = MystiquePacingSystem.get_estimated_intervals_until_target_is_hit(spend_error, gradient_error)
 
         # Edge case: runaway train
         if gradient_error > 12 and estimated_intervals_until_target_is_hit < 3600 and percent_budget_depleted_today > min(current_target_spend, 1):
             return 0
 
-        w1, w2 = self.get_pacing_signal_correction_weights(estimated_intervals_until_target_is_hit)
+        w1, w2 = MystiquePacingSystem.get_pacing_signal_correction_weights(estimated_intervals_until_target_is_hit)
         previous_ps = mystique_tracked_campaign.last_positive_ps
         return self.get_new_pacing_signal(previous_ps, spend_error, gradient_error, w1, w2)
 
@@ -82,10 +85,10 @@ class MystiquePacingSystem(PacingSystemInterface):
         return mystique_constants.max_ps_correction * min(1, error_intensity / mystique_constants.error_corresponding_to_max_correction)
 
     @staticmethod
-    def get_spend_derivative_in_last_time_interval(mystique_tracked_campaign: MystiqueTrackedCampaign):
+    def get_spend_derivative_in_latest_time_interval(mystique_tracked_campaign: MystiqueTrackedCampaign):
         # if percentOfBudgetDepletedInLastTimeInterval is zero then we define the derivative to be zero too
         last_spend = mystique_tracked_campaign.today_spend[-1]
-        if last_spend == 0:
+        if math.isclose(last_spend, 0):
             return 0
         percent_budget_depleted_in_last_time_interval = last_spend / mystique_tracked_campaign.daily_budget
         return percent_budget_depleted_in_last_time_interval / mystique_constants.percent_of_day_in_one_iteration
@@ -104,7 +107,7 @@ class MystiquePacingSystem(PacingSystemInterface):
 
     @staticmethod
     def get_estimated_intervals_until_target_is_hit(spend_error: float, gradient_error: float):
-        if gradient_error == 0:
+        if math.isclose(gradient_error, 0):
             return mystique_constants.max_interval
         return -1 * mystique_constants.num_iterations_per_day * spend_error / gradient_error
 
