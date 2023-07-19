@@ -46,10 +46,8 @@ class TestMystiquePacingSystem(unittest.TestCase):
         mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
         target_spend_slope_calculator = self.mystique_linear.target_spend_slope_calculator
         target_slope, target_spend = target_spend_slope_calculator.get_target_slope_and_spend(timestamp,mystique_tracked_campaign)
-
         actual_spend = 0.004
         self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
-        mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
 
         # test campaign spend
         campaign_sepnd = sum(mystique_tracked_campaign.today_spend)
