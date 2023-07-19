@@ -12,6 +12,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.mystique_linear = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
+        timestamp = 0
 
     def testAddCampaign(self):
         campaign = mystique_campaign_initialization.instance_for_mystique_test_init()
@@ -40,13 +41,13 @@ class TestMystiquePacingSystem(unittest.TestCase):
 
     def test_start_iteration(self):
         campaign_id = 0
-        timestamp = 1
+        self.timestamp += 1
         mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
         target_spend_slope_calculator = self.mystique_linear.target_spend_slope_calculator
-        target_slope, target_spend = target_spend_slope_calculator.get_target_slope_and_spend(timestamp,mystique_tracked_campaign)
+        target_slope, target_spend = target_spend_slope_calculator.get_target_slope_and_spend(self.timestamp,mystique_tracked_campaign)
 
         actual_spend = 0.004
-        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+        self.mystique_linear.start_iteration(self.timestamp, campaign_id, actual_spend)
         mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
 
         # test campaign spend
@@ -68,12 +69,10 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertEqual(gradient_error, spend_derivative_in_latest_time_interval - target_slope)
 
         # test intervals until budget is hit
-        # TODO : add test for case gradient_error == 0
         estimated_intervals_until_target_is_hit = MystiquePacingSystem.get_estimated_intervals_until_target_is_hit(spend_error, gradient_error)
         self.assertEqual(estimated_intervals_until_target_is_hit, -1 * mystique_constants.num_iterations_per_day * spend_error / gradient_error, "Estimated intervals until budget is hit calculation not correct")
 
         # test weights calculation
-        # TODO : test case of estimated_intervals_until_target_is_hit > 0
         w1, w2 = MystiquePacingSystem.get_pacing_signal_correction_weights(estimated_intervals_until_target_is_hit)
         self.assertEqual(w1, 0.5, "w1 calculation not correct")
         self.assertEqual(w2, 1 - w1, "w2 calculation not correct")
@@ -91,16 +90,28 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertEqual(ps, calculated_ps, "Pacing signal calculation not correct")
 
         # test for case gradient_error == 0
-        timestamp += 1
-        next_target_slope, next_target_spend = target_spend_slope_calculator.get_target_slope_and_spend(timestamp,mystique_tracked_campaign)
-        actual_spend = next_target_spend - target_spend     # simulating gradient_error == 0
-        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+        self.timestamp += 1
+        next_target_slope, next_target_spend = target_spend_slope_calculator.get_target_slope_and_spend(self.timestamp,mystique_tracked_campaign)
+        actual_spend = (next_target_spend - target_spend) * mystique_tracked_campaign.daily_budget     # simulating gradient_error == 0
+        self.mystique_linear.start_iteration(self.timestamp, campaign_id, actual_spend)
         spend_error = MystiquePacingSystem.get_spend_error(percent_budget_depleted_today, target_spend)
-        # TODO : spend_derivative_in_latest_time_interval is 10% smaller than what it should be. Somewhere the calculation is wrong
         spend_derivative_in_latest_time_interval = MystiquePacingSystem.get_spend_derivative_in_latest_time_interval(mystique_tracked_campaign)
         gradient_error = MystiquePacingSystem.get_gradient_error(spend_derivative_in_latest_time_interval, target_slope)
         estimated_intervals_until_target_is_hit = MystiquePacingSystem.get_estimated_intervals_until_target_is_hit(spend_error, gradient_error)
         self.assertEqual(estimated_intervals_until_target_is_hit, mystique_constants.max_interval, "Estimated intervals until budget is hit calculation not correct")
+
+        # test for case estimated_intervals_until_target_is_hit > 0
+        w1, w2 = MystiquePacingSystem.get_pacing_signal_correction_weights(estimated_intervals_until_target_is_hit)
+        w1_to_compare = min(mystique_constants.max_ps_correction_weight,
+                            mystique_constants.ps_correction_weight_factor * estimated_intervals_until_target_is_hit)
+        self.assertEqual(w1, w1_to_compare, "w1 calculation not correct")
+        self.assertEqual(w2, 1 - w1, "w2 calculation not correct")
+
+
+
+
+
+
 
 
 
