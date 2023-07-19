@@ -18,3 +18,4 @@ max_ps_correction_weight = 0.9
 ps_correction_weight_factor = 0.2
 budget_spend_threshold = 0.95
 ps_invalid_value = -1
+minutes_for_end_day_edge_case = 3

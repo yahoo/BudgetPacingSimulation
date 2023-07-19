@@ -12,7 +12,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.mystique_linear = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
-        timestamp = 0
+        self.timestamp = 0
 
     def testAddCampaign(self):
         campaign = mystique_campaign_initialization.instance_for_mystique_test_init()
@@ -106,6 +106,16 @@ class TestMystiquePacingSystem(unittest.TestCase):
                             mystique_constants.ps_correction_weight_factor * estimated_intervals_until_target_is_hit)
         self.assertEqual(w1, w1_to_compare, "w1 calculation not correct")
         self.assertEqual(w2, 1 - w1, "w2 calculation not correct")
+
+        # testing the edge cases:
+
+        # test for runaway train
+        self.timestamp += 1
+        actual_spend = 7
+        self.mystique_linear.start_iteration(self.timestamp, campaign_id, actual_spend)
+        ps = self.mystique_linear.get_pacing_signal(campaign_id)
+        self.assertEqual(ps, 0, "Pacing signal calculation in runaway train not correct")
+
 
 
 
