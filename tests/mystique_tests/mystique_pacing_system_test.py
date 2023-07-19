@@ -41,7 +41,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertEqual(mystique_tracked_campaign.previous_ps, mystique_constants.max_ps, "previous pacing signal initialization not correct")
         self.assertEqual(mystique_tracked_campaign.last_positive_ps, mystique_constants.max_ps, "last positive pacing signal initialization not correct")
 
-    def test_start_iteration(self):
+    def test_ps_calculation(self):
         timestamp = 0
         campaign_id = 0
         timestamp += 1
