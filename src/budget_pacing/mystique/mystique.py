@@ -41,7 +41,7 @@ class MystiquePacingSystem(PacingSystemInterface):
 
     def calculate_new_pacing_signal(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
         # Edge case: minutes_for_end_day_edge_case minutes before budget reset
-        if timestamp % mystique_constants.num_iterations_per_day >= mystique_constants.num_iterations_per_day - mystique_constants.minutes_for_end_day_edge_case:
+        if timestamp % mystique_constants.num_iterations_per_day > mystique_constants.num_iterations_per_day - mystique_constants.minutes_for_end_day_edge_case:
             avg_daily_ps_below_threshold = mystique_tracked_campaign.get_avg_daily_ps_below_threshold()
             if avg_daily_ps_below_threshold != mystique_constants.ps_invalid_value:
                 return min(mystique_constants.max_ps, avg_daily_ps_below_threshold)
@@ -50,7 +50,7 @@ class MystiquePacingSystem(PacingSystemInterface):
         today_spend = mystique_tracked_campaign.get_today_spend()
         daily_budget = mystique_tracked_campaign.daily_budget
         if math.isclose(today_spend, daily_budget) or today_spend > daily_budget:
-            return mystique_tracked_campaign.previous_ps
+            return mystique_tracked_campaign.ps
 
         percent_budget_depleted_today = MystiquePacingSystem.get_percent_budget_depleted_today(mystique_tracked_campaign)
         current_target_slope, current_target_spend = self.target_spend_slope_calculator.get_target_slope_and_spend(timestamp, mystique_tracked_campaign)
@@ -128,7 +128,11 @@ class MystiquePacingSystem(PacingSystemInterface):
         gradient_error_correction = MystiquePacingSystem.get_gradient_error_correction(gradient_error_intensity)
         gradient_error_sign = np.sign(gradient_error)
 
-        return previous_ps - (w1 * spend_error_correction * spend_error_sign) - (w2 * gradient_error_correction * gradient_error_sign)
+        calculated_ps = previous_ps - (w1 * spend_error_correction * spend_error_sign) - (w2 * gradient_error_correction * gradient_error_sign)
+        calculated_ps = max(mystique_constants.minimal_ps_value, calculated_ps)
+        if calculated_ps > mystique_constants.max_ps:
+            return mystique_constants.max_ps
+        return calculated_ps
 
 
 

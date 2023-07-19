@@ -1,5 +1,6 @@
 default_unknown_value = -1
 default_ps_value = 0
+minimal_ps_value = 0.0001
 num_hours_per_day = 24
 num_iterations_per_day = 1440
 percent_of_day_in_one_iteration = 1 / num_iterations_per_day
