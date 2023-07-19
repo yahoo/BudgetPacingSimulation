@@ -150,18 +150,3 @@ class TestMystiquePacingSystem(unittest.TestCase):
         avg_ps = mystique_tracked_campaign.get_avg_daily_ps()
         self.assertNotEqual(previous_ps, current_ps, "end of day price signal calculation not correct")
         self.assertEqual(avg_ps, current_ps, "end of day price signal calculation not correct")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
