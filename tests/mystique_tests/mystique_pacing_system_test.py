@@ -150,3 +150,33 @@ class TestMystiquePacingSystem(unittest.TestCase):
         avg_ps = mystique_tracked_campaign.get_avg_daily_ps()
         self.assertNotEqual(previous_ps, current_ps, "end of day price signal calculation not correct")
         self.assertEqual(avg_ps, current_ps, "end of day price signal calculation not correct")
+
+    def test_new_day(self):
+        campaign_id = 3
+        timestamp = 0
+        campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
+        self.mystique_linear.add_campaign(campaign)
+        mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
+        actual_spend = 0.006
+
+        # going through a whole day worth of iterations
+        iterations = mystique_constants.num_iterations_per_day - 1
+        for i in range(iterations):
+            timestamp += 1
+            self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+
+        self.assertTrue(len(mystique_tracked_campaign.today_ps) > 0, "today's pacing signal values were not updated")
+        self.assertTrue(len(mystique_tracked_campaign.today_spend) > 0, "today's spend values were not updated")
+        self.assertTrue(len(mystique_tracked_campaign.ps_history) ==0, "pacing signal history not empty when it should be")
+        self.assertTrue(len(mystique_tracked_campaign.spend_history) == 0, "spend history not empty when it should be")
+
+        # new day iteration
+        timestamp += 1
+        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+        self.assertTrue(len(mystique_tracked_campaign.today_ps) == 1, "new pacing signal values were not updated")
+        self.assertTrue(len(mystique_tracked_campaign.today_spend) == 1, "new spend values were not updated")
+        self.assertTrue(len(mystique_tracked_campaign.ps_history) > 0,
+                        "pacing signal history not updated when it should be")
+        self.assertTrue(len(mystique_tracked_campaign.spend_history) > 0, "spend history not updated when it should be")
+        # TODO : check for new day ps value
+

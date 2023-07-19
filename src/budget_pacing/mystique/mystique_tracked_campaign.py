@@ -48,7 +48,9 @@ class MystiqueTrackedCampaign:
         self.sum_ps_below_threshold = 0
         self.count_ps_below_threshold = 0
 
-    def update_spend(self, spend: float):
+    def update_spend(self, timestamp: int, spend: float):
+        if timestamp % mystique_constants.num_iterations_per_day == 0:
+            self.new_day_init(False)
         self.today_spend.append(spend)
 
     def update_pacing_signal(self, ps: float):
