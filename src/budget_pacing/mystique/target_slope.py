@@ -21,7 +21,7 @@ class TargetSpendStrategyInterface(metaclass=abc.ABCMeta):
                 callable(subclass.get_target_slope_and_spend))
 
     @abc.abstractmethod
-    def initialize_slope(self, timestamp, mystique_tracked_campaign):
+    def initialize_slope(self, mystique_tracked_campaign):
         """initializing slope of target spend"""
         raise NotImplementedError
 
@@ -37,7 +37,7 @@ class TargetSpendStrategyInterface(metaclass=abc.ABCMeta):
 
 
 class LinearTargetSpendStrategy(TargetSpendStrategyInterface):
-    def initialize_slope(self, timestamp: int, mystique_tracked_campaign: MystiqueTrackedCampaign):
+    def initialize_slope(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
         target_slope_array = [1] * mystique_constants.num_hours_per_day
         target_spend_array = self.get_target_spend_array(target_slope_array)
         mystique_tracked_campaign.update_target_slope_curve(target_slope_array)

@@ -22,6 +22,7 @@ class MystiquePacingSystem(PacingSystemInterface):
         daily_budget = campaign.daily_budget
         if campaign_id not in self.mystique_tracked_campaigns.keys():
             self.mystique_tracked_campaigns[campaign_id] = MystiqueTrackedCampaign(daily_budget)
+            self.target_spend_slope_calculator.initialize_slope(self.mystique_tracked_campaigns[campaign_id])
 
     def start_iteration(self, timestamp: int, campaign_id: int, spend_since_last_iteration: float):
         if campaign_id in self.mystique_tracked_campaigns.keys():
