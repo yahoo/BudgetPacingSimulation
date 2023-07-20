@@ -1,5 +1,6 @@
 default_unknown_value = -1
 default_ps_value = 0
+minimal_ps_value = 0.0001
 num_hours_per_day = 24
 num_iterations_per_day = 1440
 percent_of_day_in_one_iteration = 1 / num_iterations_per_day
@@ -13,8 +14,9 @@ gradient_error_corresponding_to_max_correction = 1.5
 max_ps_correction = 0.025
 minimal_non_zero_ps_correction = 0.01
 min_daily_budget_for_high_initialization = 10000
-max_interval = num_iterations_per_day + 1
+max_interval = num_iterations_per_day + 1.0
 max_ps_correction_weight = 0.9
 ps_correction_weight_factor = 0.2
 budget_spend_threshold = 0.95
 ps_invalid_value = -1
+minutes_for_end_day_edge_case = 3
