@@ -1,5 +1,5 @@
 class Campaign:
-    def __init__(self, campaign_id: int, total_budget: float, run_period: float, max_bid: float, targeting_group):
+    def __init__(self, campaign_id: str, total_budget: float, run_period: float, max_bid: float, targeting_group):
         self.campaign_id = campaign_id
         self.total_budget = total_budget
         self.run_period = run_period

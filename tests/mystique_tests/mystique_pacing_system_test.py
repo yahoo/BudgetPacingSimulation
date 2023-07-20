@@ -14,7 +14,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.mystique_linear = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
 
     def testAddCampaign(self):
-        campaign_id = 0
+        campaign_id = "0"
         campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
         self.mystique_linear.add_campaign(campaign)
 
@@ -28,7 +28,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertTrue(len(mystique_tracked_campaign.current_target_slope) > 0, "current_target_slope not initialized")
         self.assertTrue(len(mystique_tracked_campaign.current_target_spend_curve) > 0, "current_target_spend_curve not initialized")
 
-        campaign_id = 1
+        campaign_id = "1"
         campaign = mystique_campaign_initialization.instance_for_budget_above_threshold(campaign_id)
         self.mystique_linear.add_campaign(campaign)
 
@@ -43,7 +43,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
 
     def test_ps_calculation(self):
         timestamp = 0
-        campaign_id = 0
+        campaign_id = "0"
         timestamp += 1
         mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
         target_spend_slope_calculator = self.mystique_linear.target_spend_slope_calculator
@@ -134,7 +134,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
 
         # test end of day
         timestamp = 0
-        campaign_id = 2
+        campaign_id = "2"
         campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
         self.mystique_linear.add_campaign(campaign)
         mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
@@ -152,7 +152,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertEqual(avg_ps, current_ps, "end of day price signal calculation not correct")
 
     def test_new_day(self):
-        campaign_id = 3
+        campaign_id = "3"
         timestamp = 0
         campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
         self.mystique_linear.add_campaign(campaign)
