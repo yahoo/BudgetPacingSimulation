@@ -14,7 +14,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.mystique_linear = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
 
     def testAddCampaign(self):
-        campaign_id = 0
+        campaign_id = "0"
         campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
         self.mystique_linear.add_campaign(campaign)
 
@@ -28,7 +28,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertTrue(len(mystique_tracked_campaign.current_target_slope) > 0, "current_target_slope not initialized")
         self.assertTrue(len(mystique_tracked_campaign.current_target_spend_curve) > 0, "current_target_spend_curve not initialized")
 
-        campaign_id = 1
+        campaign_id = "1"
         campaign = mystique_campaign_initialization.instance_for_budget_above_threshold(campaign_id)
         self.mystique_linear.add_campaign(campaign)
 
@@ -43,7 +43,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
 
     def test_ps_calculation(self):
         timestamp = 0
-        campaign_id = 0
+        campaign_id = "0"
         timestamp += 1
         mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
         target_spend_slope_calculator = self.mystique_linear.target_spend_slope_calculator
@@ -134,7 +134,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
 
         # test end of day
         timestamp = 0
-        campaign_id = 2
+        campaign_id = "2"
         campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
         self.mystique_linear.add_campaign(campaign)
         mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
@@ -150,3 +150,35 @@ class TestMystiquePacingSystem(unittest.TestCase):
         avg_ps = mystique_tracked_campaign.get_avg_daily_ps()
         self.assertNotEqual(previous_ps, current_ps, "end of day price signal calculation not correct")
         self.assertEqual(avg_ps, current_ps, "end of day price signal calculation not correct")
+
+    def test_new_day(self):
+        campaign_id = "3"
+        timestamp = 0
+        campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
+        self.mystique_linear.add_campaign(campaign)
+        mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
+        actual_spend = 0.006
+
+        # going through a whole day worth of iterations
+        iterations = mystique_constants.num_iterations_per_day - 1
+        for i in range(iterations):
+            timestamp += 1
+            self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+
+        self.assertTrue(len(mystique_tracked_campaign.today_ps) > 0, "today's pacing signal values were not updated")
+        self.assertTrue(len(mystique_tracked_campaign.today_spend) > 0, "today's spend values were not updated")
+        self.assertTrue(len(mystique_tracked_campaign.ps_history) ==0, "pacing signal history not empty when it should be")
+        self.assertTrue(len(mystique_tracked_campaign.spend_history) == 0, "spend history not empty when it should be")
+
+        # new day iteration
+        prev_day_avg_ps = mystique_tracked_campaign.get_avg_daily_ps_below_threshold()
+        timestamp += 1
+        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+        self.assertTrue(len(mystique_tracked_campaign.today_ps) == 1, "new pacing signal values were not updated")
+        self.assertTrue(len(mystique_tracked_campaign.today_spend) == 1, "new spend values were not updated")
+        self.assertTrue(len(mystique_tracked_campaign.ps_history) > 0, "pacing signal history not updated when it should be")
+        self.assertTrue(len(mystique_tracked_campaign.spend_history) > 0, "spend history not updated when it should be")
+        self.assertEqual(prev_day_avg_ps, mystique_tracked_campaign.previous_ps, "previous pacing signal on new day not correct")
+        self.assertEqual(prev_day_avg_ps, mystique_tracked_campaign.last_positive_ps, "last positive pacing signal on new day not correct")
+
+
