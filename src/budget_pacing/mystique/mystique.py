@@ -100,7 +100,7 @@ class MystiquePacingSystem(PacingSystemInterface):
 
     @staticmethod
     def get_gradient_error_intensity(gradient_error: float):
-        return min(1, abs(gradient_error))
+        return min(1.0, abs(gradient_error))
 
     @staticmethod
     def get_gradient_error_correction(gradient_error_intensity: float):

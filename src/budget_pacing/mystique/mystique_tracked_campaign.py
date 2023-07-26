@@ -9,7 +9,7 @@ class MystiqueTrackedCampaign:
         self.ps = mystique_constants.pacing_signal_for_initialization
         self.previous_ps = mystique_constants.pacing_signal_for_initialization
         self.last_positive_ps = mystique_constants.pacing_signal_for_initialization
-        self.ps_history = [] # list of lists for each day, each entry in arr is the calculated ps and the location is number of iteration
+        self.ps_history = []  # list of lists for each day, each entry in arr is the calculated ps and the location is number of iteration
         self.today_ps = []    # each entry is the calculated PS, the location in the arr is the number of iteration
         self.spend_history = []   # list of lists for each day, each entry in arr is the spend and the location is number of iteration
         self.today_spend = []   # each entry is the spend reported from the previous iteration, the location in the arr is the number of iteration

@@ -58,15 +58,17 @@ class TestLinearTargetSlope(unittest.TestCase):
         self.assertEqual(target_slope, 1, "incorrect target slope")
         self.assertAlmostEqual(target_spend, 1/mystique_constants.num_iterations_per_day, msg="incorrect initial target spend")
 
-        Clock.interval = 35
+        Clock._interval = 35
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
         self.assertEqual(target_slope, 1, "incorrect target slope")
         self.assertAlmostEqual(target_spend, Clock.time() / mystique_constants.num_iterations_per_day,
                                msg="incorrect initial target spend")
 
-        # This scenario is unrealistic because we will be using Clock.advance()
-        # and the interval index will never reach `mystique_constants.num_iterations_per_day`
-        Clock.interval = mystique_constants.num_iterations_per_day
+        # Test new day
+        self.assertEqual(Clock.day(), 0)
+        Clock._interval = mystique_constants.num_iterations_per_day - 1
+        Clock.advance()
+        self.assertEqual(Clock.day(), 1, "day counter should increase")
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
         self.assertEqual(target_slope, 1, "incorrect target slope")
         self.assertEqual(target_spend, 0, "incorrect initial target spend")
