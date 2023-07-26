@@ -1,5 +1,6 @@
 import src.budget_pacing.mystique.mystique_constants as mystique_constants
 import src.utils as utils
+from src.budget_pacing.mystique.clock import Clock
 
 
 class MystiqueTrackedCampaign:
@@ -48,8 +49,8 @@ class MystiqueTrackedCampaign:
         self.sum_ps_below_threshold = 0
         self.count_ps_below_threshold = 0
 
-    def update_spend(self, timestamp: int, spend: float):
-        if timestamp % mystique_constants.num_iterations_per_day == 0:
+    def update_spend(self, spend: float):
+        if Clock.time() % mystique_constants.num_iterations_per_day == 0:
             self.new_day_init(False)
         self.today_spend.append(spend)
 
