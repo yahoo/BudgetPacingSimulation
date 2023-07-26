@@ -13,11 +13,11 @@ class PacingSystemInterface(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def add_campaign(self, campaign):
-        """Add a tracked campaign to the budgt pacing system"""
+        """Add a tracked campaign to the budget pacing system"""
         raise NotImplementedError
 
     @abc.abstractmethod
-    def start_iteration(self, timestamp, campaign_id, spend_since_last_iteration):
+    def start_iteration(self, campaign_id, spend_since_last_iteration):
         """updates the current spend of the campaign"""
         raise NotImplementedError
 

@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 
+from src.budget_pacing.mystique.clock import Clock
 from src.budget_pacing.mystique.target_slope import TargetSpendStrategyType
 from src.budget_pacing.mystique.mystique import MystiquePacingSystem
 from src.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
@@ -10,8 +11,9 @@ import src.budget_pacing.mystique.mystique_constants as mystique_constants
 
 class TestMystiquePacingSystem(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
-        self.mystique_linear = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
+    def setUpClass(cls):
+        cls.mystique_linear = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
+        Clock.reset()
 
     def testAddCampaign(self):
         campaign_id = "0"
@@ -42,14 +44,14 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertEqual(mystique_tracked_campaign.last_positive_ps, mystique_constants.max_ps, "last positive pacing signal initialization not correct")
 
     def test_ps_calculation(self):
-        timestamp = 0
+        Clock.reset()
         campaign_id = "0"
-        timestamp += 1
+        Clock.advance()
         mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
         target_spend_slope_calculator = self.mystique_linear.target_spend_slope_calculator
-        target_slope, target_spend = target_spend_slope_calculator.get_target_slope_and_spend(timestamp,mystique_tracked_campaign)
+        target_slope, target_spend = target_spend_slope_calculator.get_target_slope_and_spend(mystique_tracked_campaign)
         actual_spend = 0.004
-        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+        self.mystique_linear.start_iteration(campaign_id, actual_spend)
 
         # test campaign spend
         campaign_sepnd = sum(mystique_tracked_campaign.today_spend)
@@ -91,10 +93,10 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertEqual(ps, calculated_ps, "Pacing signal calculation not correct")
 
         # test for case gradient_error == 0
-        timestamp += 1
-        next_target_slope, next_target_spend = target_spend_slope_calculator.get_target_slope_and_spend(timestamp,mystique_tracked_campaign)
+        Clock.advance()
+        next_target_slope, next_target_spend = target_spend_slope_calculator.get_target_slope_and_spend(mystique_tracked_campaign)
         actual_spend = (next_target_spend - target_spend) * mystique_tracked_campaign.daily_budget     # simulating gradient_error == 0
-        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+        self.mystique_linear.start_iteration(campaign_id, actual_spend)
         spend_error = MystiquePacingSystem.get_spend_error(percent_budget_depleted_today, target_spend)
         spend_derivative_in_latest_time_interval = MystiquePacingSystem.get_spend_derivative_in_latest_time_interval(mystique_tracked_campaign)
         gradient_error = MystiquePacingSystem.get_gradient_error(spend_derivative_in_latest_time_interval, target_slope)
@@ -111,29 +113,29 @@ class TestMystiquePacingSystem(unittest.TestCase):
         # testing the edge cases:
 
         # test for runaway train
-        timestamp += 1
+        Clock.advance()
         actual_spend = 7
-        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+        self.mystique_linear.start_iteration(campaign_id, actual_spend)
         ps = self.mystique_linear.get_pacing_signal(campaign_id)
         self.assertEqual(ps, 0, "Pacing signal calculation in runaway train not correct")
 
         # test minimal ps value
-        timestamp += 1
+        Clock.advance()
         actual_spend = 0.0001
-        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+        self.mystique_linear.start_iteration(campaign_id, actual_spend)
         ps = mystique_tracked_campaign.ps
         self.assertEqual(ps, mystique_constants.minimal_ps_value, "Pacing signal calculation not minimal")
 
         # test budget depletion
-        timestamp += 1
+        Clock.advance()
         previous_ps = mystique_tracked_campaign.ps
         actual_spend = mystique_tracked_campaign.daily_budget - sum(mystique_tracked_campaign.today_spend)
-        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+        self.mystique_linear.start_iteration(campaign_id, actual_spend)
         current_ps = mystique_tracked_campaign.ps
         self.assertEqual(current_ps, previous_ps, "Pacing signal calculation in budget depletion not correct")
 
         # test end of day
-        timestamp = 0
+        Clock.reset()
         campaign_id = "2"
         campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
         self.mystique_linear.add_campaign(campaign)
@@ -141,11 +143,11 @@ class TestMystiquePacingSystem(unittest.TestCase):
         actual_spend = 0.006
         iterations = mystique_constants.num_iterations_per_day - mystique_constants.minutes_for_end_day_edge_case
         for i in range(iterations):
-            timestamp += 1
-            self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+            Clock.advance()
+            self.mystique_linear.start_iteration(campaign_id, actual_spend)
         previous_ps = mystique_tracked_campaign.ps
-        timestamp += 1
-        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+        Clock.advance()
+        self.mystique_linear.start_iteration(campaign_id, actual_spend)
         current_ps = mystique_tracked_campaign.ps
         avg_ps = mystique_tracked_campaign.get_avg_daily_ps()
         self.assertNotEqual(previous_ps, current_ps, "end of day price signal calculation not correct")
@@ -153,7 +155,7 @@ class TestMystiquePacingSystem(unittest.TestCase):
 
     def test_new_day(self):
         campaign_id = "3"
-        timestamp = 0
+        Clock.reset()
         campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
         self.mystique_linear.add_campaign(campaign)
         mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
@@ -162,8 +164,8 @@ class TestMystiquePacingSystem(unittest.TestCase):
         # going through a whole day worth of iterations
         iterations = mystique_constants.num_iterations_per_day - 1
         for i in range(iterations):
-            timestamp += 1
-            self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+            Clock.advance()
+            self.mystique_linear.start_iteration(campaign_id, actual_spend)
 
         self.assertTrue(len(mystique_tracked_campaign.today_ps) > 0, "today's pacing signal values were not updated")
         self.assertTrue(len(mystique_tracked_campaign.today_spend) > 0, "today's spend values were not updated")
@@ -172,8 +174,8 @@ class TestMystiquePacingSystem(unittest.TestCase):
 
         # new day iteration
         prev_day_avg_ps = mystique_tracked_campaign.get_avg_daily_ps_below_threshold()
-        timestamp += 1
-        self.mystique_linear.start_iteration(timestamp, campaign_id, actual_spend)
+        Clock.advance()
+        self.mystique_linear.start_iteration(campaign_id, actual_spend)
         self.assertTrue(len(mystique_tracked_campaign.today_ps) == 1, "new pacing signal values were not updated")
         self.assertTrue(len(mystique_tracked_campaign.today_spend) == 1, "new spend values were not updated")
         self.assertTrue(len(mystique_tracked_campaign.ps_history) > 0, "pacing signal history not updated when it should be")

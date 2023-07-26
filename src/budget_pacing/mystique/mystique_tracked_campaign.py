@@ -1,5 +1,6 @@
 import src.budget_pacing.mystique.mystique_constants as mystique_constants
 import src.utils as utils
+from src.budget_pacing.mystique.clock import Clock
 
 
 class MystiqueTrackedCampaign:
@@ -8,7 +9,7 @@ class MystiqueTrackedCampaign:
         self.ps = mystique_constants.pacing_signal_for_initialization
         self.previous_ps = mystique_constants.pacing_signal_for_initialization
         self.last_positive_ps = mystique_constants.pacing_signal_for_initialization
-        self.ps_history = [] # list of lists for each day, each entry in arr is the calculated ps and the location is number of iteration
+        self.ps_history = []  # list of lists for each day, each entry in arr is the calculated ps and the location is number of iteration
         self.today_ps = []    # each entry is the calculated PS, the location in the arr is the number of iteration
         self.spend_history = []   # list of lists for each day, each entry in arr is the spend and the location is number of iteration
         self.today_spend = []   # each entry is the spend reported from the previous iteration, the location in the arr is the number of iteration
@@ -48,8 +49,8 @@ class MystiqueTrackedCampaign:
         self.sum_ps_below_threshold = 0
         self.count_ps_below_threshold = 0
 
-    def update_spend(self, timestamp: int, spend: float):
-        if timestamp % mystique_constants.num_iterations_per_day == 0:
+    def update_spend(self, spend: float):
+        if Clock.minutes() == 0:
             self.new_day_init(False)
         self.today_spend.append(spend)
 
