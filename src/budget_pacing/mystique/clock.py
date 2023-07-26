@@ -5,22 +5,22 @@ import src.budget_pacing.mystique.mystique_constants as mystique_constants
 # The class will be imported by different modules which need access to the clock.
 # The (static) methods can be called through the class itself, so the class does not need to be instantiated.
 class Clock:
-    _interval = 0
+    _iterations = 0
 
     @classmethod
     def advance(cls):
-        cls._interval += 1
+        cls._iterations += 1
 
     @classmethod
-    def time(cls):
-        return cls._interval % mystique_constants.num_iterations_per_day
+    def minutes(cls):
+        return cls._iterations % mystique_constants.num_iterations_per_day
 
     @classmethod
-    def day(cls):
-        return cls._interval // mystique_constants.num_iterations_per_day
+    def days(cls):
+        return cls._iterations // mystique_constants.num_iterations_per_day
 
     @classmethod
     def reset(cls):
-        cls._interval = 0
+        cls._iterations = 0
 
 
