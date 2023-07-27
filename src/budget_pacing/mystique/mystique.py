@@ -19,7 +19,7 @@ class MystiquePacingSystem(PacingSystemInterface):
             self.target_spend_slope_calculator = target_slope.NonLinearTargetSpendStrategy()
 
     def add_campaign(self, campaign: Campaign):
-        campaign_id = campaign.campaign_id
+        campaign_id = campaign.id
         daily_budget = campaign.daily_budget
         if campaign_id not in self.mystique_tracked_campaigns.keys():
             self.mystique_tracked_campaigns[campaign_id] = MystiqueTrackedCampaign(daily_budget)
