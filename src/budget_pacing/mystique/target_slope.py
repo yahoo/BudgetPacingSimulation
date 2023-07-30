@@ -95,7 +95,7 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
             max(mystique_tracked_campaign.current_target_slope()[-1],self.min_slope)
 
         # smoothing
-        current_target_slope = mystique_tracked_campaign.current_target_slope()
+        current_target_slope = mystique_tracked_campaign.current_target_slope.copy()
         for i in range(1,len(mystique_tracked_campaign.current_target_slope())-1):
             mystique_tracked_campaign.current_target_slope()[i] = \
                 self.smoothing_factor / 2 * \
@@ -112,12 +112,12 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
 
     def get_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
 
-        target_slope = mystique_tracked_campaign.current_target_slope
+        target_slope = mystique_tracked_campaign.current_target_slope.copy()
         sum_slope = sum(target_slope)
         for i,val in enumerate(target_slope):
             target_slope[i] = 24 * val / sum_slope
 
-        target_spend_org = mystique_tracked_campaign.current_target_spend_curve
+        target_spend_org = mystique_tracked_campaign.current_target_spend_curve.copy()
         target_spend = []
         for i in range(1, len(target_spend_org)):
             target_spend.append(sum(target_spend_org[0:i]) / 24)
