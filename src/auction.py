@@ -29,18 +29,14 @@ class AuctionInterface(metaclass=abc.ABCMeta):
     def run(self, bids: list[Bid]) -> list[AuctionWinner]:
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def min_bid(self) -> float:
-        raise NotImplementedError
-
 
 class AuctionFP(AuctionInterface):
     def run(self, bids: list[Bid]) -> list[AuctionWinner]:
         if len(bids) == 0:
             return []
         winning_bid = max(bids)
+        if winning_bid.amount < constants.MINIMAL_BID:
+            return []
         return [AuctionWinner(bid=winning_bid, payment=winning_bid.amount)]
 
-    def min_bid(self) -> float:
-        return constants.AUCTIONS_MIN_BID_DEFAULT
 
