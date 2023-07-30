@@ -76,49 +76,53 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
 
     def update_slope(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
 
-        daily_to_hourly_ps_ratio = \
-            mystique_tracked_campaign.get_avg_daily_ps() / mystique_tracked_campaign.get_avg_hourly_ps()[-1]
+        for i in range(len(mystique_tracked_campaign.current_target_slope)):
+            daily_to_hourly_ps_ratio = \
+                mystique_tracked_campaign.get_avg_daily_ps() / mystique_tracked_campaign.get_avg_hourly_ps()[i]
 
-        update_factor = 1.0
-        if (mystique_tracked_campaign.get_avg_daily_ps() < self.epsilon) or \
-                (mystique_tracked_campaign.get_avg_hourly_ps()[-1] < self.epsilon):
-            update_factor = 1.0
-        else:
-            update_factor = min(daily_to_hourly_ps_ratio, self.max_update_factor)
+            if (mystique_tracked_campaign.get_avg_daily_ps() < self.epsilon) or \
+                    (mystique_tracked_campaign.get_avg_hourly_ps()[i] < self.epsilon):
+                update_factor = 1.0
+            else:
+                update_factor = min(daily_to_hourly_ps_ratio, self.max_update_factor)
 
-        mystique_tracked_campaign.current_target_slope[-1] *= update_factor
-        mystique_tracked_campaign.current_target_slope()[-1] = \
-            min(mystique_tracked_campaign.current_target_slope()[-1],self.max_slope)
-        mystique_tracked_campaign.current_target_slope()[-1] = \
-            max(mystique_tracked_campaign.current_target_slope()[-1],self.min_slope)
+            mystique_tracked_campaign.current_target_slope[i] *= update_factor
+            mystique_tracked_campaign.current_target_slope[i] = \
+                min(mystique_tracked_campaign.current_target_slope[i], self.max_slope)
+            mystique_tracked_campaign.current_target_slope[i] = \
+                max(mystique_tracked_campaign.current_target_slope[i], self.min_slope)
 
         # smoothing
         current_target_slope = mystique_tracked_campaign.current_target_slope.copy()
-        for i in range(1,len(mystique_tracked_campaign.current_target_slope())-1):
-            mystique_tracked_campaign.current_target_slope()[i] = \
+        for i in range(1, len(mystique_tracked_campaign.current_target_slope())-1):
+            mystique_tracked_campaign.current_target_slope[i] = \
                 self.smoothing_factor / 2 * \
                 (current_target_slope[i-1] + current_target_slope[i+1]) + \
                 (1 - self.smoothing_factor) * current_target_slope[i]
 
-        mystique_tracked_campaign.current_target_slope()[0] = \
+        mystique_tracked_campaign.current_target_slope[0] = \
             self.smoothing_factor * current_target_slope[1] + \
             (1 - self.smoothing_factor) * current_target_slope[0]
 
-        mystique_tracked_campaign.current_target_slope()[-1] = \
+        mystique_tracked_campaign.current_target_slope[-1] = \
             self.smoothing_factor * current_target_slope[-2] + \
             (1 - self.smoothing_factor) * current_target_slope[-1]
 
     def get_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
 
-        target_slope = mystique_tracked_campaign.current_target_slope.copy()
-        sum_slope = sum(target_slope)
-        for i,val in enumerate(target_slope):
-            target_slope[i] = 24 * val / sum_slope
+        hour = Clock.hours()
+        minute_in_hour = Clock.minutes_in_hour()
 
-        target_spend_org = mystique_tracked_campaign.current_target_spend_curve.copy()
-        target_spend = []
-        for i in range(1, len(target_spend_org)):
-            target_spend.append(sum(target_spend_org[0:i]) / 24)
+        target_slope = mystique_tracked_campaign.current_target_slope[hour]
+
+        current_target_spend_curve = mystique_tracked_campaign.current_target_spend_curve
+
+        if hour == 0:
+            target_spend = current_target_spend_curve[hour] * minute_in_hour / \
+                           mystique_constants.num_iterations_per_hour
+        else:
+            target_spend = (current_target_spend_curve[hour] - current_target_spend_curve[hour-1]) * minute_in_hour / \
+                           mystique_constants.num_iterations_per_hour
 
         return target_slope, target_spend
 
