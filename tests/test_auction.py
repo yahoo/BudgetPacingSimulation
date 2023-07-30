@@ -27,7 +27,7 @@ class TestAuctions(unittest.TestCase):
         auction = AuctionFP()
         winners = auction.run(bids)
         self.assertIsNotNone(winners, "auctions winners list is None")
-        self.assertTrue(len(winners) == 0, "auction winners list should be empty")
+        self.assertEqual(len(winners), 0, "auction winners list should be empty")
 
 
 if __name__ == '__main__':

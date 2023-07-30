@@ -21,8 +21,6 @@ class AuctionInterface(metaclass=abc.ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass):
         return (hasattr(subclass, 'run') and
-                callable(subclass.run) and
-                hasattr(subclass, 'min_bid') and
                 callable(subclass.run))
 
     @abc.abstractmethod
