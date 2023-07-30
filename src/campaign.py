@@ -1,4 +1,7 @@
 import random
+from typing import Optional
+
+from src.auction import AuctionInterface
 from src.bid import Bid
 
 
@@ -16,7 +19,7 @@ class Campaign:
         if bid_amount < auction.min_bid():
             bid_amount = auction.min_bid()
 
-        # TODO: Only in Step 4 we start tracking the campaigns' budgets
+        # Only in Step 4 we start tracking the campaigns' budgets
         # if bid_amount > self.daily_budget:
         #     bid_amount = self.daily_budget
 
