@@ -12,20 +12,20 @@ class TestAuctions(unittest.TestCase):
             bids.append(Bid(f'campaign_{i}', random.randint(0, max_bid)))
 
         auction = AuctionFP()
-        winners = auction.perform(bids)
+        winners = auction.run(bids)
         self.assertIsNotNone(winners, "auctions winners list should not be None")
         self.assertEqual(len(winners), 1, "auction winners list should contain a single entry")
         self.assertEqual(winners[0].bid, max(bids))
         # adding a bid that is higher than all existing ones
         winning_campaign_id = 'campaign_winner'
         bids.append(Bid(winning_campaign_id, max_bid*2))
-        winners = auction.perform(bids)
+        winners = auction.run(bids)
         self.assertEqual(winners[0].bid.campaign_id, winning_campaign_id, "the newly added highest bid should have won")
 
     def test_fp_auction_no_bids(self):
         bids = []
         auction = AuctionFP()
-        winners = auction.perform(bids)
+        winners = auction.run(bids)
         self.assertIsNotNone(winners, "auctions winners list is None")
         self.assertTrue(len(winners) == 0, "auction winners list should be empty")
 

@@ -11,10 +11,13 @@ class Campaign:
         self.targeting_group = targeting_group
         self.daily_budget = total_budget / run_period
 
-    def bid(self):
+    def bid(self, auction: AuctionInterface) -> Optional[Bid]:
         bid_amount = random.random() * self.max_bid
-        if bid_amount > self.daily_budget:
-            bid_amount = self.daily_budget
-        if bid_amount == 0:
-            return None
+        if bid_amount < auction.min_bid():
+            bid_amount = auction.min_bid()
+
+        # TODO: Only in Step 4 we start tracking the campaigns' budgets
+        # if bid_amount > self.daily_budget:
+        #     bid_amount = self.daily_budget
+
         return Bid(campaign_id=self.id, amount=bid_amount)

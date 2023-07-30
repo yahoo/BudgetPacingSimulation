@@ -1,5 +1,7 @@
 import abc
 from enum import Enum
+
+from src import constants
 from src.bid import Bid
 from dataclasses import dataclass
 
@@ -18,17 +20,27 @@ class AuctionType(Enum):
 class AuctionInterface(metaclass=abc.ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass):
-        return (hasattr(subclass, 'perform') and
-                callable(subclass.perform))
+        return (hasattr(subclass, 'run') and
+                callable(subclass.run) and
+                hasattr(subclass, 'min_bid') and
+                callable(subclass.run))
 
     @abc.abstractmethod
-    def perform(self, bids: list[Bid]) -> list[AuctionWinner]:
+    def run(self, bids: list[Bid]) -> list[AuctionWinner]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def min_bid(self) -> float:
         raise NotImplementedError
 
 
 class AuctionFP(AuctionInterface):
-    def perform(self, bids: list[Bid]) -> list[AuctionWinner]:
+    def run(self, bids: list[Bid]) -> list[AuctionWinner]:
         if len(bids) == 0:
             return []
         winning_bid = max(bids)
         return [AuctionWinner(bid=winning_bid, payment=winning_bid.amount)]
+
+    def min_bid(self) -> float:
+        return constants.AUCTIONS_MIN_BID_DEFAULT
+
