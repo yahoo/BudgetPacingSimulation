@@ -113,15 +113,18 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
         hour = Clock.hours()
         minute_in_hour = Clock.minutes_in_hour()
 
+        # target slope
         target_slope = mystique_tracked_campaign.current_target_slope[hour]
 
+        # target spend
         current_target_spend_curve = mystique_tracked_campaign.current_target_spend_curve
 
         if hour == 0:
             target_spend = current_target_spend_curve[hour] * minute_in_hour / \
                            mystique_constants.num_iterations_per_hour
         else:
-            target_spend = (current_target_spend_curve[hour] - current_target_spend_curve[hour-1]) * minute_in_hour / \
+            target_spend = current_target_spend_curve[hour-1] + \
+                           (current_target_spend_curve[hour] - current_target_spend_curve[hour-1]) * minute_in_hour / \
                            mystique_constants.num_iterations_per_hour
 
         return target_slope, target_spend
