@@ -1,8 +1,6 @@
 import abc
 from enum import Enum
 
-import numpy as np
-
 from src.budget_pacing.mystique.clock import Clock
 
 import src.budget_pacing.mystique.mystique_constants as mystique_constants
