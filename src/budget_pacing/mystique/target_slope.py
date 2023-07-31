@@ -96,8 +96,7 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
         smoothed_target_slope = current_target_slope.copy()
         length = len(mystique_tracked_campaign.current_target_slope())
         for i in range(length):
-            smoothed_target_slope[i] = \
-                self.smoothing_factor / 2 * \
+            smoothed_target_slope[i] = self.smoothing_factor / 2 * \
                 (current_target_slope[i-1] + current_target_slope[(i+1) % length]) + \
                 (1 - self.smoothing_factor) * current_target_slope[i]
 
@@ -115,8 +114,8 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
         current_target_spend_curve = mystique_tracked_campaign.current_target_spend_curve
 
         if hour == 0:
-            target_spend = current_target_spend_curve[hour] * minute_in_hour / \
-                           mystique_constants.num_iterations_per_hour
+            target_spend = \
+                current_target_spend_curve[hour] * minute_in_hour / mystique_constants.num_iterations_per_hour
         else:
             target_spend = current_target_spend_curve[hour-1] + \
                            (current_target_spend_curve[hour] - current_target_spend_curve[hour-1]) * minute_in_hour / \
