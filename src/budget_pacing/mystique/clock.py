@@ -16,6 +16,14 @@ class Clock:
         return cls._iterations % mystique_constants.num_iterations_per_day
 
     @classmethod
+    def minutes_in_hour(cls):
+        return cls.minutes() % mystique_constants.num_iterations_per_hour
+
+    @classmethod
+    def hours(cls):
+        return cls.minutes() // mystique_constants.num_iterations_per_hour
+
+    @classmethod
     def days(cls):
         return cls._iterations // mystique_constants.num_iterations_per_day
 
