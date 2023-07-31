@@ -94,7 +94,7 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
 
         # smoothing
         smoothed_target_slope = current_target_slope.copy()
-        length = len(mystique_tracked_campaign.current_target_slope)
+        length = len(smoothed_target_slope)
         for i in range(length):
             smoothed_target_slope[i] = self.smoothing_factor / 2 * \
                 (current_target_slope[i-1] + current_target_slope[(i+1) % length]) + \
