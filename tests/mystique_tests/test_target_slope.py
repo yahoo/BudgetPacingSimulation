@@ -14,7 +14,8 @@ class TestLinearTargetSlope(unittest.TestCase):
         cls.mystique_tracked_campaign = mystique_campaign_initialization.instance_for_target_slope_test()
         cls.target_slope_strategy = LinearTargetSpendStrategy()
         cls.required_slope_array = [1] * mystique_constants.num_hours_per_day
-        cls.required_spend_array = [(i + 1) / mystique_constants.num_hours_per_day for i in range(mystique_constants.num_hours_per_day)]
+        cls.required_spend_array = [(i + 1) / mystique_constants.num_hours_per_day for i in
+                                    range(mystique_constants.num_hours_per_day)]
 
     def test_initialization(self):
         self.target_slope_strategy.initialize_slope(self.mystique_tracked_campaign)
