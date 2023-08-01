@@ -1,30 +1,12 @@
-import numpy as np
+import random
+
+from src.configuration import *
+from src.system.campaign import Campaign
 
 
-def get_beginning_of_modulo_location(arr, modulo):
-    """Returns the location of the first element in the latest sequence that is equal or shorter than the modulo value
-    Example: if len(arr)==16 and modulo==7, this method will return 14"""
-    l = len(arr)
-    mod = l % modulo
-    if mod == 0:
-        mod = modulo
-    return len(arr) - mod
-
-
-def get_arr_sum_of_last_tuple_item(arr):
-    last_tuple_item_arr = [item[-1] for item in arr]
-    return sum(last_tuple_item_arr)
-
-
-def get_arr_sum_of_last_tuple_item_from_modulo_location(arr, modulo):
-    start_loc = get_beginning_of_modulo_location(arr, modulo)
-    sliced_arr = arr[start_loc:]
-    return get_arr_sum_of_last_tuple_item(sliced_arr)
-
-
-def get_average_per_size(arr, size):
-    """returns array of averages of length arr/size(+1) of averages of every size elements"""
-    chunks = [arr[i:(i + size)] for i in range(0, len(arr), size)]
-    return [sum(chunk) / len(chunk) for chunk in chunks]
-
-
+def generate_campaigns(n: int):
+    return [Campaign(campaign_id=f'campaign_{i}',
+                     total_budget=random.uniform(campaign_min_budget, campaign_max_budget),
+                     run_period=random.randint(campaign_min_run_period, campaign_max_run_period),
+                     max_bid=random.uniform(campaign_minimal_max_bid, campaign_maximal_max_bid))
+            for i in range(n)]

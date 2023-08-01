@@ -1,6 +1,6 @@
 import random
 import unittest
-from src.auction import *
+from src.system.auction import *
 
 
 class TestAuctions(unittest.TestCase):

@@ -1,9 +1,9 @@
 import abc
 from enum import Enum
 
-from src import constants
-from src.bid import Bid
+from src.system.bid import Bid
 from dataclasses import dataclass
+import src.configuration as config
 
 
 @dataclass
@@ -33,7 +33,7 @@ class AuctionFP(AuctionInterface):
         if len(bids) == 0:
             return []
         winning_bid = max(bids)
-        if winning_bid.amount < constants.MINIMAL_BID:
+        if winning_bid.amount < config.campaign_minimal_bid:
             return []
         return [AuctionWinner(bid=winning_bid, payment=winning_bid.amount)]
 

@@ -1,10 +1,9 @@
 import abc
 from enum import Enum
+from src.system.budget_pacing.mystique.clock import Clock
 
-from src.budget_pacing.mystique.clock import Clock
-
-import src.budget_pacing.mystique.mystique_constants as mystique_constants
-from src.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
+import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
+from src.system.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
 
 
 class TargetSpendStrategyType(Enum):
