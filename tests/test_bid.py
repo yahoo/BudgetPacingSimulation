@@ -1,6 +1,6 @@
 import random
 import unittest
-from src.bid import *
+from src.system.bid import *
 
 
 class TestBids(unittest.TestCase):

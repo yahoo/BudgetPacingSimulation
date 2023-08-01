@@ -1,6 +1,6 @@
-import src.budget_pacing.mystique.mystique_constants as mystique_constants
-import src.utils as utils
-from src.budget_pacing.mystique.clock import Clock
+import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
+import src.system.utils as utils
+from src.system.budget_pacing.mystique.clock import Clock
 
 
 class MystiqueTrackedCampaign:

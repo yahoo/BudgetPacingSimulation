@@ -1,13 +1,13 @@
 import numpy as np
 import math
-from src.budget_pacing.mystique.clock import Clock
+from src.system.budget_pacing.mystique.clock import Clock
 
-from src.budget_pacing.pacing_system_interface import PacingSystemInterface
-from src.campaign import Campaign
-import src.budget_pacing.mystique.target_slope as target_slope
-from src.budget_pacing.mystique.target_slope import TargetSpendStrategyType
-from src.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
-import src.budget_pacing.mystique.mystique_constants as mystique_constants
+from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
+from src.system.campaign import Campaign
+import src.system.budget_pacing.mystique.target_slope as target_slope
+from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
+from src.system.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
+import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
 
 
 class MystiquePacingSystem(PacingSystemInterface):

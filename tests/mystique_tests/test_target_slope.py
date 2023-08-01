@@ -1,9 +1,9 @@
 import unittest
 
-from src.budget_pacing.mystique.target_slope import LinearTargetSpendStrategy
-import src.budget_pacing.mystique.mystique_constants as mystique_constants
+from src.system.budget_pacing.mystique.target_slope import LinearTargetSpendStrategy
+import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
 import mystique_campaign_initialization
-from src.budget_pacing.mystique.clock import Clock
+from src.system.budget_pacing.mystique.clock import Clock
 
 
 class TestLinearTargetSlope(unittest.TestCase):
@@ -13,7 +13,8 @@ class TestLinearTargetSlope(unittest.TestCase):
         cls.mystique_tracked_campaign = mystique_campaign_initialization.instance_for_target_slope_test()
         cls.target_slope_strategy = LinearTargetSpendStrategy()
         cls.required_slope_array = [1] * mystique_constants.num_hours_per_day
-        cls.required_spend_array = [(i + 1) / mystique_constants.num_hours_per_day for i in range(mystique_constants.num_hours_per_day)]
+        cls.required_spend_array = [(i + 1) / mystique_constants.num_hours_per_day for i in range(
+            mystique_constants.num_hours_per_day)]
 
     def test_initialization(self):
         self.target_slope_strategy.initialize_slope(self.mystique_tracked_campaign)
@@ -56,7 +57,7 @@ class TestLinearTargetSlope(unittest.TestCase):
         Clock.advance()
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
         self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertAlmostEqual(target_spend, 1/mystique_constants.num_iterations_per_day, msg="incorrect initial target spend")
+        self.assertAlmostEqual(target_spend, 1 / mystique_constants.num_iterations_per_day, msg="incorrect initial target spend")
 
         Clock._iterations = 35
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
