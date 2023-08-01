@@ -87,6 +87,7 @@ class TestLinearTargetSlope(unittest.TestCase):
 class TestNonLinearTargetSlope(TestLinearTargetSlope):
 
     def setUp(self):
+        # runs before each test
         Clock.reset()
         self.mystique_tracked_campaign = mystique_campaign_initialization.instance_for_target_slope_test()
         self.target_slope_strategy = NonLinearTargetSpendStrategy()
