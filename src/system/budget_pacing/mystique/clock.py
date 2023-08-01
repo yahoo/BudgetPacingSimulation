@@ -1,5 +1,5 @@
 import src.configuration as config
-import mystique_constants
+import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
 
 
 # This class will serve as a global clock.
