@@ -51,7 +51,7 @@ class LinearTargetSpendStrategy(TargetSpendStrategyInterface):
         mystique_tracked_campaign.update_target_slope_curve(target_slope_array)
         mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
 
-    def get_target_slope_and_spend(self, _: MystiqueTrackedCampaign):
+    def get_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
         percent_of_day_passed = Clock.minutes() / mystique_constants.num_iterations_per_day
         target_slope = 1
         target_spend = percent_of_day_passed * target_slope
@@ -100,7 +100,9 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
                 (current_target_slope[i-1] + current_target_slope[(i+1) % length]) + \
                 (1 - self.smoothing_factor) * current_target_slope[i]
 
+        # updating spend and slop history
         mystique_tracked_campaign.update_target_slope_curve(smoothed_target_slope)
+        mystique_tracked_campaign.update_target_spend_curve(mystique_tracked_campaign.current_target_spend_curve)
 
     def get_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
 
