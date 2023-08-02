@@ -9,15 +9,11 @@ class ServingSystem:
     tracked_campaigns: dict[str, Campaign]
     old_campaigns: dict[str, Campaign]
 
-    def __init__(self, tracked_campaigns: list[Campaign] = None, n_fake_bids=0, fake_bid_max=10):
+    def __init__(self, tracked_campaigns: list[Campaign] = None):
         if tracked_campaigns is None:
             tracked_campaigns = []
         self.tracked_campaigns = {campaign.id: campaign for campaign in tracked_campaigns}
         self.old_campaigns = {}
-        self.n_fake_bids = n_fake_bids
-        if fake_bid_max <= config.campaign_minimal_bid:
-            raise Exception('invalid fake_bid_max parameter.')
-        self.fake_bid_max = fake_bid_max
 
     def add_campaign(self, campaign: Campaign):
         if campaign is None:
@@ -26,13 +22,6 @@ class ServingSystem:
             raise Exception('campaign id already exists')
         self.tracked_campaigns[campaign.id] = campaign
 
-    def _generate_fictitious_bids(self) -> list[Bid]:
-        fake_bids = []
-        for i in range(self.n_fake_bids):
-            fake_bids.append(Bid(campaign_id='untracked_campaign_' + str(i),
-                                 amount=random.uniform(config.campaign_minimal_bid, self.fake_bid_max)))
-        return fake_bids
-
     def get_bids(self) -> list[Bid]:
         bids = []
         # get "real" bids
@@ -40,8 +29,8 @@ class ServingSystem:
             bid = campaign.bid()
             if bid is not None:
                 bids.append(bid)
-        # add "fake" bids
-        bids += self._generate_fictitious_bids()
+        # add untracked bids
+        bids += self._generate_untracked_bids()
         return bids
 
     def update_winners(self, winners: list[AuctionWinner]):
@@ -57,3 +46,16 @@ class ServingSystem:
                 self.old_campaigns[campaign.id] = campaign
                 # remove campaign from the structure of active campaigns
                 self.tracked_campaigns.pop(campaign.id)
+
+    def _generate_untracked_bids(self) -> list[Bid]:
+        fake_bids = []
+        for i in range(self._calculate_number_of_untracked_bids()):
+            # We will later sample the value of the untracked bid from a distribution
+            fake_bids.append(Bid(campaign_id='untracked_campaign_' + str(i),
+                                 amount=random.uniform(config.campaign_minimal_bid, config.untracked_bid_max)))
+        return fake_bids
+
+    def _calculate_number_of_untracked_bids(self) -> int:
+        # We will later sample from distribution according to Clock.minutes()
+        return config.n_untracked_bids
+

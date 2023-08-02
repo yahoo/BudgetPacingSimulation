@@ -3,26 +3,25 @@ from typing import Optional
 
 import src.configuration as config
 from src.system.bid import Bid
-from src.system.budget_pacing.mystique.clock import Clock
+from src.system.clock import Clock
+
+# Defines the length of each entry in the spend / #won lists (lists of lists, actually).
+n_history_entries_per_day = config.n_iterations_per_day // config.n_iterations_per_hist_interval
 
 
 class CampaignStatistics:
     def __init__(self):
-        if config.n_iterations_per_day % config.n_iterations_per_hist_interval != 0:
-            raise Exception('invalid iterations_per_interval parameter')
-        self._iterations_per_interval = config.n_iterations_per_hist_interval
-        self._intervals_per_day = config.n_iterations_per_day // self._iterations_per_interval
         self.spend_history = []
         self.auctions_won = []
         self.day_created = Clock.days()
         self.setup_new_day()
 
     def setup_new_day(self):
-        self.spend_history.append([0] * self._intervals_per_day)
-        self.auctions_won.append([0] * self._intervals_per_day)
+        self.spend_history.append([0] * n_history_entries_per_day)
+        self.auctions_won.append([0] * n_history_entries_per_day)
 
     def update(self, payment: float):
-        hist_interval_index = (Clock.minutes() // self._iterations_per_interval) % self._intervals_per_day
+        hist_interval_index = (Clock.minutes() // config.n_iterations_per_hist_interval) % n_history_entries_per_day
         self.auctions_won[Clock.days()][hist_interval_index] += 1
         self.spend_history[Clock.days()][hist_interval_index] += payment
 
@@ -56,9 +55,6 @@ class Campaign:
 
     def _daily_spend(self) -> list[float]:
         return [sum(day_spend) for day_spend in self.stats.spend_history]
-
-    def daily_budget_utilization(self) -> list[float]:
-        return [total_day_spend/self.daily_budget for total_day_spend in self._daily_spend()]
 
     def spend_history(self) -> list[list[float]]:
         return self.stats.spend_history

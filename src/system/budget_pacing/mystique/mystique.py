@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from src.system.budget_pacing.mystique.clock import Clock
+from src.system.clock import Clock
 
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
 from src.system.campaign import Campaign

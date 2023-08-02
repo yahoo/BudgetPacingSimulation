@@ -3,7 +3,7 @@ import unittest
 from src.system.budget_pacing.mystique.target_slope import LinearTargetSpendStrategy
 import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
 import mystique_campaign_initialization
-from src.system.budget_pacing.mystique.clock import Clock
+from src.system.clock import Clock
 
 
 class TestLinearTargetSlope(unittest.TestCase):

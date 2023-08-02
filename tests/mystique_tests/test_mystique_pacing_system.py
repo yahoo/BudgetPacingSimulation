@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from src.system.budget_pacing.mystique.clock import Clock
+from src.system.clock import Clock
 from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
 from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem
 import mystique_campaign_initialization

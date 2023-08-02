@@ -1,6 +1,6 @@
 import abc
 from enum import Enum
-from src.system.budget_pacing.mystique.clock import Clock
+from src.system.clock import Clock
 
 import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
 from src.system.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
