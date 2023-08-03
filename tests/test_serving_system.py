@@ -27,13 +27,19 @@ class TestServingSystem(unittest.TestCase):
                 Campaign(campaign_id=f'campaign_{i}', total_budget=initial_budget, run_period=7, max_bid=25)
             )
         serving_system = ServingSystem(tracked_campaigns=campaigns)
-        self.assertEqual(len(serving_system.get_bids()), n_campaigns + config.n_untracked_bids, "wrong number of generated bids")
+        bids = serving_system.get_bids()
+        self.assertEqual(len(bids), n_campaigns + config.n_untracked_bids, "wrong number of generated bids")
+        for c in campaigns:
+            # assert that each campaign has a bid in the list of bids
+            self.assertTrue(c.id in [bid.campaign_id for bid in bids], "no bid exists for campaign")
         # simulating a winning campaign and updating its budget
         campaign_id = campaigns[0].id
         auction_winner = AuctionWinner(bid=Bid(campaign_id, 10), payment=10)
         serving_system.update_winners([auction_winner])
-        self.assertEqual(serving_system.tracked_campaigns[campaign_id].stats.spend_history[0][0],
-                         auction_winner.payment)
+        self.assertEqual(serving_system.tracked_campaigns[campaign_id].spent_today(), auction_winner.payment,
+                         "today's spend of the winning campaign should reflect the auction won")
+        self.assertEqual(serving_system.tracked_campaigns[campaign_id].n_auctions_won_today(), 1,
+                         "the number of auctions won today by the campaign should reflect the auction won")
 
 
 if __name__ == '__main__':

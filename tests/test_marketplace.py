@@ -29,10 +29,12 @@ class TestMarketPlace(unittest.TestCase):
                 marketplace.run_iteration()
                 if Clock.minutes() == 0:
                     serving_system.new_day_updates()
-            n_auctions_won = sum(
-                sum(c.stats.auctions_won[day]) for c in campaigns
+            # count the total number of auctions wins by iterating over all campaigns
+            # and inspecting the win history of the last day
+            n_auctions_won_total = sum(
+                [sum(c.stats.auctions_won_history[-1]) for c in campaigns]
             )
-            self.assertEqual(n_auctions_won,
+            self.assertEqual(n_auctions_won_total,
                              config.n_auctions_per_iteration * config.n_iterations_per_day,
                              "expected the total number of wins in an iteration to be equal to the number of auctions")
 
