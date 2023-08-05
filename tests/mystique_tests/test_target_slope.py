@@ -133,7 +133,6 @@ class TestNonLinearTargetSlope(TestLinearTargetSlope):
         self.assertTrue(len(target_spend_history) == 1, "target spend history improperly initialized")
 
     def test_get_target_slope_and_spend(self):
-        Clock.reset()
         self.target_slope_strategy.initialize_slope(self.mystique_tracked_campaign)
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
         self.assertEqual(target_slope, 1, "incorrect target slope")
