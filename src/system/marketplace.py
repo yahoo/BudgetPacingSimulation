@@ -31,8 +31,8 @@ class Marketplace:
         self.serving_system.update_winners(winners)
 
     def _generate_auctions(self) -> list[AuctionInterface]:
-        n_auctions = self._calculate_number_of_current_auctions()
-        return [self._generate_auction() for _ in range(n_auctions)]
+        num_auctions = self._calculate_number_of_current_auctions()
+        return [self._generate_auction() for _ in range(num_auctions)]
 
     def _generate_auction(self) -> AuctionInterface:
         if self.auction_type == AuctionType.FP:
@@ -47,4 +47,4 @@ class Marketplace:
 
     def _calculate_number_of_current_auctions(self) -> int:
         # We will later sample from distribution according to Clock.minutes()
-        return configuration.n_auctions_per_iteration
+        return configuration.num_auctions_per_iteration

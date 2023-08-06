@@ -5,10 +5,10 @@ from src.system.auction import *
 
 class TestAuctions(unittest.TestCase):
     def test_fp_auction(self):
-        n_bids = 5
+        num_bids = 5
         max_bid = 20
         bids = []
-        for i in range(n_bids):
+        for i in range(num_bids):
             bids.append(Bid(f'campaign_{i}', random.randint(0, max_bid)))
 
         auction = AuctionFP()

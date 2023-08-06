@@ -57,5 +57,5 @@ class ServingSystem:
 
     def _calculate_number_of_untracked_bids(self) -> int:
         # We will later sample from distribution according to Clock.minutes()
-        return config.n_untracked_bids
+        return config.num_untracked_bids
 

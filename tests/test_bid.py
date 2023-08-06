@@ -5,10 +5,10 @@ from src.system.bid import *
 
 class TestBids(unittest.TestCase):
     def test_max_min_comparison(self):
-        n_bids = 5
+        num_bids = 5
         bids = []
         amounts = []
-        for i in range(n_bids):
+        for i in range(num_bids):
             amount = random.randint(0, 20)
             amounts.append(amount)
             bids.append(Bid(f'campaign_{i}', amount))

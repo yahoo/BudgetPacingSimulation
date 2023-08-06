@@ -30,12 +30,12 @@ class CampaignStatistics:
 
     @staticmethod
     def _calculate_spend_index_in_day():
-        num_iterations_per_spend_entry = config.n_iterations_per_day // config.num_spend_entries_per_day
+        num_iterations_per_spend_entry = config.num_iterations_per_day // config.num_spend_entries_per_day
         return (Clock.minutes_in_day() // num_iterations_per_spend_entry) % config.num_spend_entries_per_day
 
     @staticmethod
     def _calculate_win_index_in_day():
-        num_iterations_per_spend_entry = config.n_iterations_per_day // config.num_win_entries_per_day
+        num_iterations_per_spend_entry = config.num_iterations_per_day // config.num_win_entries_per_day
         return (Clock.minutes_in_day() // num_iterations_per_spend_entry) % config.num_win_entries_per_day
 
 
@@ -72,5 +72,5 @@ class Campaign:
     def spent_today(self) -> float:
         return sum(self.stats.today_spend)
 
-    def n_auctions_won_today(self) -> int:
+    def num_auctions_won_today(self) -> int:
         return sum(self.stats.auctions_won_today)

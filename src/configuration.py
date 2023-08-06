@@ -1,10 +1,10 @@
 # General
-n_days_to_simulate = 7
-n_iterations_per_day = 1440
-n_auctions_per_iteration = 1000
+num_days_to_simulate = 7
+num_iterations_per_day = 1440
+num_auctions_per_iteration = 1000
 
 # Campaigns
-n_campaigns = 1000
+num_campaigns = 1000
 campaign_min_budget = 1000
 campaign_max_budget = 10000
 campaign_min_run_period = 1
@@ -16,5 +16,5 @@ num_spend_entries_per_day = 1  # Defines the granularity with which to store spe
 num_win_entries_per_day = 24  # Defines the granularity with which to store win history inside Campaigns.
 
 # Untracked bids
-n_untracked_bids = 50
+num_untracked_bids = 50
 untracked_bid_max = 20
