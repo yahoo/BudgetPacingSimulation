@@ -12,7 +12,8 @@ campaign_max_run_period = 30
 campaign_minimal_max_bid = 0.05
 campaign_maximal_max_bid = 15
 campaign_minimal_bid = 0.01
-n_iterations_per_hist_interval = 1  # Defines the granularity with which to store spend history inside Campaigns.
+num_spend_entries_per_day = 1  # Defines the granularity with which to store spend history inside Campaigns.
+num_win_entries_per_day = 24  # Defines the granularity with which to store win history inside Campaigns.
 
 # Untracked bids
 n_untracked_bids = 50

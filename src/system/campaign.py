@@ -7,28 +7,36 @@ from src.system.clock import Clock
 
 
 class CampaignStatistics:
-    # Defines the length of each entry in the spend / #won lists (lists of lists, actually).
-    n_history_entries_per_day = config.n_iterations_per_day // config.n_iterations_per_hist_interval
-
     def __init__(self):
         self.spend_history = []
         self.today_spend = []
         self.auctions_won_history = []
         self.auctions_won_today = []
         self.day_created = Clock.days()
-        self.setup_new_day()
+        self._reset_today_stats()
 
     def setup_new_day(self):
         self.spend_history.append(self.today_spend)
-        self.today_spend = [0] * CampaignStatistics.n_history_entries_per_day
         self.auctions_won_history.append(self.auctions_won_today)
-        self.auctions_won_today = [0] * CampaignStatistics.n_history_entries_per_day
+        self._reset_today_stats()
 
     def update(self, payment: float):
-        hist_interval_index = (Clock.minutes() // config.n_iterations_per_hist_interval) \
-                              % CampaignStatistics.n_history_entries_per_day
-        self.today_spend[hist_interval_index] += payment
-        self.auctions_won_today[hist_interval_index] += 1
+        self.today_spend[self._calculate_spend_index_in_day()] += payment
+        self.auctions_won_today[self._calculate_win_index_in_day()] += 1
+
+    def _reset_today_stats(self):
+        self.today_spend = [0] * config.num_spend_entries_per_day
+        self.auctions_won_today = [0] * config.num_win_entries_per_day
+
+    @staticmethod
+    def _calculate_spend_index_in_day():
+        num_iterations_per_spend_entry = config.n_iterations_per_day // config.num_spend_entries_per_day
+        return (Clock.minutes_in_day() // num_iterations_per_spend_entry) % config.num_spend_entries_per_day
+
+    @staticmethod
+    def _calculate_win_index_in_day():
+        num_iterations_per_spend_entry = config.n_iterations_per_day // config.num_win_entries_per_day
+        return (Clock.minutes_in_day() // num_iterations_per_spend_entry) % config.num_win_entries_per_day
 
 
 class Campaign:

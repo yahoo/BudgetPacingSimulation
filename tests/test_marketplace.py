@@ -11,7 +11,8 @@ class TestMarketPlace(unittest.TestCase):
     def setUpClass(cls):
         Clock.reset()
         config.n_auctions_per_iteration = 10
-        config.n_iterations_per_hist_interval = 60
+        config.num_spend_entries_per_day = 24
+        config.num_win_entries_per_day = 24 * 60
         config.n_untracked_bids = 0
 
     def test_marketplace(self):
@@ -27,7 +28,7 @@ class TestMarketPlace(unittest.TestCase):
         for day in range(n_days):
             for i in range(config.n_iterations_per_day):
                 marketplace.run_iteration()
-                if Clock.minutes() == 0:
+                if Clock.minutes_in_day() == 0:
                     serving_system.new_day_updates()
             # count the total number of auctions wins by iterating over all campaigns
             # and inspecting the win history of the last day

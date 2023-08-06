@@ -62,7 +62,7 @@ class TestLinearTargetSlope(unittest.TestCase):
         Clock._iterations = 35
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
         self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertAlmostEqual(target_spend, Clock.minutes() / mystique_constants.num_iterations_per_day,
+        self.assertAlmostEqual(target_spend, Clock.minutes_in_day() / mystique_constants.num_iterations_per_day,
                                msg="incorrect initial target spend")
 
         # Test new day

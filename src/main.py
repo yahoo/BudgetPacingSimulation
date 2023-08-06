@@ -12,5 +12,5 @@ if __name__ == '__main__':
     # Run
     for _ in range(n_days_to_simulate * n_iterations_per_day):
         marketplace.run_iteration()
-        if Clock.minutes() == 0:
+        if Clock.minutes_in_day() == 0:
             serving_system.new_day_updates()

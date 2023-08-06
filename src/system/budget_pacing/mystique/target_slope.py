@@ -51,7 +51,7 @@ class LinearTargetSpendStrategy(TargetSpendStrategyInterface):
         mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
 
     def get_target_slope_and_spend(self, _: MystiqueTrackedCampaign):
-        percent_of_day_passed = Clock.minutes() / mystique_constants.num_iterations_per_day
+        percent_of_day_passed = Clock.minutes_in_day() / mystique_constants.num_iterations_per_day
         target_slope = 1
         target_spend = percent_of_day_passed * target_slope
         return target_slope, target_spend

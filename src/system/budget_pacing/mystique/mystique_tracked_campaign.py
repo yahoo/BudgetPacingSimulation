@@ -50,7 +50,7 @@ class MystiqueTrackedCampaign:
         self.count_ps_below_threshold = 0
 
     def update_spend(self, spend: float):
-        if Clock.minutes() == 0:
+        if Clock.minutes_in_day() == 0:
             self.new_day_init(False)
         self.today_spend.append(spend)
 
