@@ -28,16 +28,21 @@ class TestMarketPlace(unittest.TestCase):
         for day in range(num_days):
             for i in range(config.num_iterations_per_day):
                 marketplace.run_iteration()
-                if Clock.minute_in_day() == 0:
-                    serving_system.new_day_updates()
             # count the total number of auctions wins by iterating over all campaigns
-            # and inspecting the win history of the last day
             num_auctions_won_total = sum(
-                [sum(c.stats.auctions_won_history[-1]) for c in campaigns]
+                [c.num_auctions_won_today() for c in campaigns]
             )
             self.assertEqual(num_auctions_won_total,
                              config.num_auctions_per_iteration * config.num_iterations_per_day,
-                             "expected the total number of wins in an iteration to be equal to the number of auctions")
+                             "expected the total number of wins in a day to be equal to the number of auctions")
+            if day > 0:
+                # check history of previous day
+                num_auctions_won_prev_day = sum(
+                    [sum(c.stats.auctions_won_history[-1]) for c in campaigns]
+                )
+                self.assertEqual(num_auctions_won_prev_day,
+                                 config.num_auctions_per_iteration * config.num_iterations_per_day,
+                                 "expected the total number of wins in a day to be equal to the number of auctions")
 
 
 if __name__ == '__main__':
