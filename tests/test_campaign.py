@@ -10,7 +10,7 @@ class TestCampaigns(unittest.TestCase):
         config.num_spend_entries_per_day = 24
         config.num_win_entries_per_day = config.num_iterations_per_day
 
-    def test_simple_campaign(self):
+    def test_simple_auction(self):
         campaign = Campaign(campaign_id='campaign_test', total_budget=1000, run_period=7, max_bid=25)
         # simulating a simple "auction"
         bid = campaign.bid()
