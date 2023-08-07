@@ -7,10 +7,10 @@ class TestCampaigns(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         Clock.reset()
-        config.num_spend_entries_per_day = 1
+        config.num_spend_entries_per_day = 24
         config.num_win_entries_per_day = config.num_iterations_per_day
 
-    def test_campaign(self):
+    def test_simple_campaign(self):
         campaign = Campaign(campaign_id='campaign_test', total_budget=1000, run_period=7, max_bid=25)
         # simulating a simple "auction"
         bid = campaign.bid()
@@ -25,18 +25,22 @@ class TestCampaigns(unittest.TestCase):
         self.assertRaises(Exception, Campaign, campaign_id='fail', total_budget=1000, run_period=1,
                           max_bid=config.campaign_minimal_bid - 0.0001)
 
-    def test_campaign_spent_today(self):
+    def test_campaign_stats_during_day(self):
         payment = 1
         campaign = Campaign(campaign_id='campaign_test', total_budget=1000, run_period=7, max_bid=25)
-        n_iterations_per_spend_entry = config.num_iterations_per_day // config.num_spend_entries_per_day
-        n_iterations_per_win_entry = config.num_iterations_per_day // config.num_win_entries_per_day
+        CampaignStatistics.num_iterations_per_spend_entry = config.num_iterations_per_day // config.num_spend_entries_per_day
+        CampaignStatistics.num_iterations_per_win_entry = config.num_iterations_per_day // config.num_win_entries_per_day
         # simulate an auction in each clock iteration
         for i in range(config.num_iterations_per_day):
+            # expected number of payments / wins in the currently active stats entry in the campaign:
+            expected_previous_payments = (i % CampaignStatistics.num_iterations_per_spend_entry) * payment
+            expected_previous_wins = i % CampaignStatistics.num_iterations_per_win_entry
+            # simulating a win
             campaign.pay(amount=payment)
             self.assertEqual(campaign.stats.today_spend[CampaignStatistics._calculate_spend_index_in_day()],
-                             (i+1) * payment if i % n_iterations_per_spend_entry != 0 else 1)
+                             expected_previous_payments + payment)
             self.assertEqual(campaign.stats.auctions_won_today[CampaignStatistics._calculate_win_index_in_day()],
-                             (i+1) if i % n_iterations_per_win_entry != 0 else 1)
+                             expected_previous_wins + 1)
             Clock.advance()
         self.assertEqual(campaign.spent_today(), config.num_iterations_per_day * payment)
 
