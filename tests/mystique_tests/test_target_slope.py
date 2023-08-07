@@ -1,10 +1,10 @@
 import unittest
 
-from src.budget_pacing.mystique.target_slope import LinearTargetSpendStrategy
+from src.system.budget_pacing.mystique.target_slope import LinearTargetSpendStrategy
 from src.budget_pacing.mystique.target_slope import NonLinearTargetSpendStrategy
-import src.budget_pacing.mystique.mystique_constants as mystique_constants
+import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
 import mystique_campaign_initialization
-from src.budget_pacing.mystique.clock import Clock
+from src.system.clock import Clock
 
 
 class TestLinearTargetSlope(unittest.TestCase):
@@ -15,7 +15,8 @@ class TestLinearTargetSlope(unittest.TestCase):
         cls.target_slope_strategy = LinearTargetSpendStrategy()
         cls.required_slope_array = [1] * mystique_constants.num_hours_per_day
         cls.required_spend_array = [(i + 1) / mystique_constants.num_hours_per_day for i in
-                                    range(mystique_constants.num_hours_per_day)]
+                                    range(
+            mystique_constants.num_hours_per_day)]
 
     def test_initialization(self):
         self.target_slope_strategy.initialize_slope(self.mystique_tracked_campaign)
@@ -58,12 +59,12 @@ class TestLinearTargetSlope(unittest.TestCase):
         Clock.advance()
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
         self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertAlmostEqual(target_spend, 1/mystique_constants.num_iterations_per_day, msg="incorrect initial target spend")
+        self.assertAlmostEqual(target_spend, 1 / mystique_constants.num_iterations_per_day, msg="incorrect initial target spend")
 
         Clock._iterations = 35
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
         self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertAlmostEqual(target_spend, Clock.minutes() / mystique_constants.num_iterations_per_day,
+        self.assertAlmostEqual(target_spend, Clock.minute_in_day() / mystique_constants.num_iterations_per_day,
                                msg="incorrect initial target spend")
 
         # Test new day

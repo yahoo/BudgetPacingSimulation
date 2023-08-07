@@ -1,4 +1,4 @@
-import src.budget_pacing.mystique.mystique_constants as mystique_constants
+import src.constants as constants
 
 
 # This class will serve as a global clock.
@@ -12,20 +12,20 @@ class Clock:
         cls._iterations += 1
 
     @classmethod
-    def minutes(cls):
-        return cls._iterations % mystique_constants.num_iterations_per_day
+    def minute_in_day(cls):
+        return cls._iterations % constants.num_minutes_in_day
 
     @classmethod
-    def minutes_in_hour(cls):
-        return cls.minutes() % mystique_constants.num_iterations_per_hour
+    def minute_in_hour(cls):
+        return cls.minute_in_day() % constants.num_minutes_in_hour
 
     @classmethod
-    def hours(cls):
-        return cls.minutes() // mystique_constants.num_iterations_per_hour
+    def hour_in_day(cls):
+        return cls.minute_in_day() // constants.num_minutes_in_hour
 
     @classmethod
     def days(cls):
-        return cls._iterations // mystique_constants.num_iterations_per_day
+        return cls._iterations // constants.num_minutes_in_day
 
     @classmethod
     def reset(cls):

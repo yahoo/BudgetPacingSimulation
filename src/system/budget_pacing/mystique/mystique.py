@@ -1,13 +1,13 @@
 import numpy as np
 import math
-from src.budget_pacing.mystique.clock import Clock
+from src.system.clock import Clock
 
-from src.budget_pacing.pacing_system_interface import PacingSystemInterface
-from src.campaign import Campaign
-import src.budget_pacing.mystique.target_slope as target_slope
-from src.budget_pacing.mystique.target_slope import TargetSpendStrategyType
-from src.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
-import src.budget_pacing.mystique.mystique_constants as mystique_constants
+from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
+from src.system.campaign import Campaign
+import src.system.budget_pacing.mystique.target_slope as target_slope
+from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
+from src.system.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
+import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
 
 
 class MystiquePacingSystem(PacingSystemInterface):
@@ -42,7 +42,7 @@ class MystiquePacingSystem(PacingSystemInterface):
 
     def calculate_new_pacing_signal(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
         # Edge case: minutes_for_end_day_edge_case minutes before budget reset
-        if Clock.minutes() > mystique_constants.num_iterations_per_day - mystique_constants.minutes_for_end_day_edge_case:
+        if Clock.minute_in_day() > mystique_constants.num_iterations_per_day - mystique_constants.minutes_for_end_day_edge_case:
             avg_daily_ps_below_threshold = mystique_tracked_campaign.get_avg_daily_ps_below_threshold()
             if avg_daily_ps_below_threshold != mystique_constants.ps_invalid_value:
                 return min(mystique_constants.max_ps, avg_daily_ps_below_threshold)
