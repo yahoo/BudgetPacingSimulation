@@ -1,12 +1,11 @@
 import unittest
 import numpy as np
 
-from src.budget_pacing.mystique.clock import Clock
-from src.budget_pacing.mystique.target_slope import TargetSpendStrategyType
-from src.budget_pacing.mystique.mystique import MystiquePacingSystem
-from src.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
+from src.system.clock import Clock
+from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
+from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem
 import mystique_campaign_initialization
-import src.budget_pacing.mystique.mystique_constants as mystique_constants
+import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
 
 
 class TestMystiquePacingSystem(unittest.TestCase):

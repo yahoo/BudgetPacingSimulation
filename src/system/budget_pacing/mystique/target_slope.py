@@ -1,10 +1,9 @@
 import abc
 from enum import Enum
+from src.system.clock import Clock
 
-from src.budget_pacing.mystique.clock import Clock
-
-import src.budget_pacing.mystique.mystique_constants as mystique_constants
-from src.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
+import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
+from src.system.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
 
 
 class TargetSpendStrategyType(Enum):
@@ -52,7 +51,7 @@ class LinearTargetSpendStrategy(TargetSpendStrategyInterface):
         mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
 
     def get_target_slope_and_spend(self, _: MystiqueTrackedCampaign):
-        percent_of_day_passed = Clock.minutes() / mystique_constants.num_iterations_per_day
+        percent_of_day_passed = Clock.minute_in_day() / mystique_constants.num_iterations_per_day
         target_slope = 1
         target_spend = percent_of_day_passed * target_slope
         return target_slope, target_spend
@@ -104,8 +103,8 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
 
     def get_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
 
-        hour = Clock.hours()
-        minute_in_hour = Clock.minutes_in_hour()
+        hour = Clock.hour_in_day()
+        minute_in_hour = Clock.minute_in_hour()
 
         # target slope
         target_slope = mystique_tracked_campaign.current_target_slope[hour]

@@ -1,2 +1,3 @@
-AUCTIONS_PER_MINUTE = 1000  # temporarily defining this value, will later sample from a distribution instead
-MINIMAL_BID = 0.01
+num_minutes_in_hour = 60
+num_minutes_in_day = 24 * num_minutes_in_hour
+
