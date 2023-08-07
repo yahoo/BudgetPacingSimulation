@@ -7,6 +7,9 @@ from src.system.clock import Clock
 
 
 class CampaignStatistics:
+    num_iterations_per_spend_entry = config.num_iterations_per_day // config.num_spend_entries_per_day
+    num_iterations_per_win_entry = config.num_iterations_per_day // config.num_win_entries_per_day
+
     def __init__(self):
         self.spend_history = []
         self.today_spend = []
@@ -30,13 +33,11 @@ class CampaignStatistics:
 
     @staticmethod
     def _calculate_spend_index_in_day():
-        num_iterations_per_spend_entry = config.num_iterations_per_day // config.num_spend_entries_per_day
-        return (Clock.minutes_in_day() // num_iterations_per_spend_entry) % config.num_spend_entries_per_day
+        return Clock.minutes_in_day() // CampaignStatistics.num_iterations_per_spend_entry
 
     @staticmethod
     def _calculate_win_index_in_day():
-        num_iterations_per_spend_entry = config.num_iterations_per_day // config.num_win_entries_per_day
-        return (Clock.minutes_in_day() // num_iterations_per_spend_entry) % config.num_win_entries_per_day
+        return Clock.minutes_in_day() // CampaignStatistics.num_iterations_per_win_entry
 
 
 class Campaign:
