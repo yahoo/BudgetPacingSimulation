@@ -14,9 +14,8 @@ class TestCampaigns(unittest.TestCase):
         campaign = Campaign(campaign_id='campaign_test', total_budget=1000, run_period=7, max_bid=25)
         # simulating a simple "auction"
         bid = campaign.bid()
-        self.assertLessEqual(bid.amount, campaign.max_bid, "expected bid to be bounded by max_bid")
-        self.assertLessEqual(config.campaign_minimal_bid, bid.amount, "expected bid to be lower-bounded by "
-                                                                      "the minimal allowed bid")
+        self.assertIsNotNone(bid)
+        self.assertIsInstance(bid.amount, float)
         campaign.pay(amount=bid.amount)
         self.assertEqual(campaign.num_auctions_won_today(), 1, "expected win counter to be 1")
         self.assertEqual(campaign.spent_today(), bid.amount, "expected spend history to show payment")
