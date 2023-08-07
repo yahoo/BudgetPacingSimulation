@@ -33,11 +33,11 @@ class CampaignStatistics:
 
     @staticmethod
     def _calculate_spend_index_in_day():
-        return Clock.minutes_in_day() // CampaignStatistics.num_iterations_per_spend_entry
+        return Clock.minute_in_day() // CampaignStatistics.num_iterations_per_spend_entry
 
     @staticmethod
     def _calculate_win_index_in_day():
-        return Clock.minutes_in_day() // CampaignStatistics.num_iterations_per_win_entry
+        return Clock.minute_in_day() // CampaignStatistics.num_iterations_per_win_entry
 
 
 class Campaign:

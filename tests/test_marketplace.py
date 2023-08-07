@@ -28,7 +28,7 @@ class TestMarketPlace(unittest.TestCase):
         for day in range(num_days):
             for i in range(config.num_iterations_per_day):
                 marketplace.run_iteration()
-                if Clock.minutes_in_day() == 0:
+                if Clock.minute_in_day() == 0:
                     serving_system.new_day_updates()
             # count the total number of auctions wins by iterating over all campaigns
             # and inspecting the win history of the last day

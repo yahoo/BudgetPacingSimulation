@@ -12,16 +12,16 @@ class Clock:
         cls._iterations += 1
 
     @classmethod
-    def minutes_in_day(cls):
+    def minute_in_day(cls):
         return cls._iterations % constants.num_minutes_in_day
 
     @classmethod
-    def minutes_in_hour(cls):
-        return cls.minutes_in_day() % constants.num_minutes_in_hour
+    def minute_in_hour(cls):
+        return cls.minute_in_day() % constants.num_minutes_in_hour
 
     @classmethod
-    def hours_in_day(cls):
-        return cls.minutes_in_day() // constants.num_minutes_in_hour
+    def hour_in_day(cls):
+        return cls.minute_in_day() // constants.num_minutes_in_hour
 
     @classmethod
     def days(cls):
