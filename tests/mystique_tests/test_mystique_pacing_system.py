@@ -10,7 +10,7 @@ import src.system.budget_pacing.mystique.mystique_constants as mystique_constant
 
 class TestMystiquePacingSystem(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUp(cls):
         cls.mystique_linear = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
         Clock.reset()
 
@@ -43,9 +43,11 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertEqual(mystique_tracked_campaign.last_positive_ps, mystique_constants.max_ps, "last positive pacing signal initialization not correct")
 
     def test_ps_calculation(self):
-        Clock.reset()
         campaign_id = "0"
+        campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
+        self.mystique_linear.add_campaign(campaign)
         Clock.advance()
+
         mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
         target_spend_slope_calculator = self.mystique_linear.target_spend_slope_calculator
         target_slope, target_spend = target_spend_slope_calculator.get_target_slope_and_spend(mystique_tracked_campaign)
@@ -154,7 +156,6 @@ class TestMystiquePacingSystem(unittest.TestCase):
 
     def test_new_day(self):
         campaign_id = "3"
-        Clock.reset()
         campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
         self.mystique_linear.add_campaign(campaign)
         mystique_tracked_campaign = self.mystique_linear.mystique_tracked_campaigns[campaign_id]
@@ -183,3 +184,6 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertEqual(prev_day_avg_ps, mystique_tracked_campaign.last_positive_ps, "last positive pacing signal on new day not correct")
 
 
+# run the test
+if __name__ == '__main__':
+    unittest.main()
