@@ -3,6 +3,7 @@ import random
 from src.system.campaign import Campaign
 from src.system.auction import *
 import src.configuration as config
+from src.system.clock import Clock
 
 
 class ServingSystem:
@@ -14,6 +15,7 @@ class ServingSystem:
             tracked_campaigns = []
         self.tracked_campaigns = {campaign.id: campaign for campaign in tracked_campaigns}
         self.old_campaigns = {}
+        self.days_run = 0
 
     def add_campaign(self, campaign: Campaign):
         if campaign is None:
@@ -38,7 +40,14 @@ class ServingSystem:
             if winner.bid.campaign_id in self.tracked_campaigns:
                 self.tracked_campaigns[winner.bid.campaign_id].pay(winner.payment)
 
-    def new_day_updates(self):
+    def end_iteration(self):
+        # Budget Pacing periodic (every minute) spend updates will be added here
+        # Daily campaign updates
+        if Clock.days() > self.days_run:
+            self._daily_campaign_updates()
+            self.days_run += 1
+
+    def _daily_campaign_updates(self):
         for campaign in list(self.tracked_campaigns.values()):
             campaign.setup_new_day()
             if campaign.run_period == 0:
