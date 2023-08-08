@@ -15,6 +15,7 @@ class Marketplace:
     def run_iteration(self):
         self._run_auctions()
         Clock.advance()
+        self.serving_system.end_iteration()
         # generate new auctions for the new iteration
         self.current_auctions = self._generate_auctions()
 
