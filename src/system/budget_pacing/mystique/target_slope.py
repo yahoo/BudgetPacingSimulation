@@ -101,7 +101,8 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
 
         # updating spend and slop history
         mystique_tracked_campaign.update_target_slope_curve(smoothed_target_slope)
-        mystique_tracked_campaign.update_target_spend_curve(mystique_tracked_campaign.current_target_spend_curve)
+        target_spend_array = LinearTargetSpendStrategy.get_target_spend_array(smoothed_target_slope)
+        mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
 
     def get_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
 
