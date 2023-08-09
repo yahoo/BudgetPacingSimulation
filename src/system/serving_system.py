@@ -14,11 +14,13 @@ class ServingSystem:
     def __init__(self, pacing_system: PacingSystemInterface = None, tracked_campaigns: list[Campaign] = None):
         if tracked_campaigns is None:
             tracked_campaigns = []
-        self.tracked_campaigns = {campaign.id: campaign for campaign in tracked_campaigns}
+        self.tracked_campaigns = {}
         self.old_campaigns = {}
         self.pacing_system = pacing_system
         self.pending_pacing_spend_updates = {}
         self.days_run = 0
+        for campaign in tracked_campaigns:
+            self.add_campaign(campaign)
 
     def add_campaign(self, campaign: Campaign):
         if campaign is None:
