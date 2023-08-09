@@ -1,7 +1,11 @@
+import src.constants as constants
+
 # General
 num_days_to_simulate = 7
 num_iterations_per_day = 1440
 num_auctions_per_iteration = 1000
+# Budget Pacing System
+pacing_algorithm = constants.BudgetPacingAlgorithms.MYSTIQUE_NON_LINEAR
 
 # Campaigns
 num_campaigns = 1000
