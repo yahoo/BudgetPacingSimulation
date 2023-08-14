@@ -69,6 +69,10 @@ class MystiquePacingSystem(PacingSystemInterface):
         previous_ps = mystique_tracked_campaign.last_positive_ps
         return self.get_new_pacing_signal(previous_ps, spend_error, gradient_error, w1, w2)
 
+    def new_day_init(self):
+        for campaign in self.mystique_tracked_campaigns.values():
+            campaign.new_day_init(False)
+
     @staticmethod
     def get_percent_budget_depleted_today(mystique_tracked_campaign: MystiqueTrackedCampaign):
         return mystique_tracked_campaign.get_today_spend() / mystique_tracked_campaign.daily_budget

@@ -67,22 +67,26 @@ class TestServingSystem(unittest.TestCase):
         # check that campaigns were added to Mystique
         self.assertTrue(campaign.id in mystique.mystique_tracked_campaigns,
                         "campaign was not added to pacing system")
+        serving_system.start_iteration()
         bids = serving_system.get_bids()
         self.assertEqual(len(bids), 1)
         bid = bids[0]
         self.assertGreater(bid.amount, 0)
         payment = bid.amount
         serving_system.update_winners([AuctionWinner(bid=bid, payment=payment)])
-        serving_system.end_iteration()
+        # check that the campaign itself was updated
+        self.assertEqual(campaign.spent_today(), payment, "expected campaign spend to be equal to payment")
         # check that the tracked campaign in mystique was updated with the spend of the campaign
         mystique_tracked_campaign = mystique.mystique_tracked_campaigns.get(campaign.id)
         self.assertEqual(len(mystique_tracked_campaign.today_spend), 1,
                          "expected mystique tracked campaign to contain a single entry in its daily spend list")
-        self.assertEqual(mystique_tracked_campaign.today_spend[0], payment,
+        Clock.advance()
+        serving_system.end_of_day_updates()  # push stats to history
+        self.assertEqual(mystique_tracked_campaign.spend_history[0][1], payment,
                          "expected mystique tracked campaign to contain an entry equal to the amount it payed "
                          "during the last iteration in its daily spend list")
-        # check that the Campaign itself was updated
-        self.assertEqual(campaign.spent_today(), payment, "expected campaign spend to be equal to payment")
+        # check that the CampaignStatistics history were updated
+        self.assertEqual(campaign.stats.spend_history[0][0], payment, "expected campaign spend history to include payment")
 
 
 class MockPacingSystem(PacingSystemInterface):
@@ -97,6 +101,9 @@ class MockPacingSystem(PacingSystemInterface):
 
     def get_pacing_signal(self, campaign_id):
         return self.pacing_signal
+
+    def new_day_init(self):
+        pass
 
 
 if __name__ == '__main__':

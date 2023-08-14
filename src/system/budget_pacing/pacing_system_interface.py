@@ -25,3 +25,7 @@ class PacingSystemInterface(metaclass=abc.ABCMeta):
     def get_pacing_signal(self, campaign_id):
         """Returns the current pacing signal of the campaign"""
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def new_day_init(self):
+        raise NotImplementedError

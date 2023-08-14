@@ -3,7 +3,6 @@ import random
 from src.system.campaign import Campaign
 from src.system.auction import *
 import src.configuration as config
-from src.system.clock import Clock
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
 
 
@@ -18,7 +17,6 @@ class ServingSystem:
         self.old_campaigns = {}
         self.pacing_system = pacing_system
         self.pending_pacing_spend_updates = {}
-        self.days_run = 0
         for campaign in tracked_campaigns:
             self.add_campaign(campaign)
 
@@ -60,13 +58,20 @@ class ServingSystem:
                     else:
                         self.pending_pacing_spend_updates[winner.bid.campaign_id] = winner.payment
 
-    def end_iteration(self):
+    def start_iteration(self):
         # Budget Pacing periodic (every minute) spend updates
         self._update_pacing_system()
-        # Daily campaign updates
-        if Clock.days() > self.days_run:
-            self._daily_campaign_updates()
-            self.days_run += 1
+
+    # end_of_day_updates() will ensure that all statistics of the last day (Campaigns, Mystique) are pushed into
+    # history arrays. This is needed so that the statistics we read at the end will include the last day
+    # and the last minute of the day.
+    def end_of_day_updates(self):
+        # Flush pending spend updates into pacing system
+        if self.pacing_system is not None:
+            self._update_pacing_system()  # needed to register the spend in the last minute of the day
+            self.pacing_system.new_day_init()
+        # Perform daily campaign updates
+        self._daily_campaign_updates()
 
     def _update_pacing_system(self):
         if self.pacing_system is None:

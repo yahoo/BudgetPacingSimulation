@@ -2,6 +2,7 @@ from src.system.auction import *
 from src.system.clock import Clock
 from src.system.serving_system import ServingSystem
 from src import configuration
+import src.constants as constants
 
 
 class Marketplace:
@@ -13,9 +14,13 @@ class Marketplace:
         self.current_auctions = self._generate_auctions()
 
     def run_iteration(self):
+        self.serving_system.start_iteration()
         self._run_auctions()
+        if Clock.minute_in_day() == constants.num_minutes_in_day-1:
+            # This was the last iteration of the day.
+            # Performing end-of-day updates
+            self.serving_system.end_of_day_updates()
         Clock.advance()
-        self.serving_system.end_iteration()
         # generate new auctions for the new iteration
         self.current_auctions = self._generate_auctions()
 
