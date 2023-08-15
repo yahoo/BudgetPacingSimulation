@@ -14,12 +14,8 @@ class Marketplace:
         self.current_auctions = self._generate_auctions()
 
     def run_iteration(self):
-        self.serving_system.start_iteration()
         self._run_auctions()
-        if Clock.minute_in_day() == constants.num_minutes_in_day-1:
-            # This was the last iteration of the day.
-            # Performing end-of-day updates
-            self.serving_system.end_of_day_updates()
+        self.serving_system.end_iteration()
         Clock.advance()
         # generate new auctions for the new iteration
         self.current_auctions = self._generate_auctions()

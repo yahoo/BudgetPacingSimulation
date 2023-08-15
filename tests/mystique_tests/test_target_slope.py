@@ -50,20 +50,13 @@ class TestLinearTargetSlope(unittest.TestCase):
 
     def test_get_target_slope_and_spend(self):
         Clock.reset()
-        target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
-        self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertEqual(target_spend, 0, "incorrect initial target spend")
-
-        Clock.advance()
-        target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
-        self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertAlmostEqual(target_spend, 1 / mystique_constants.num_iterations_per_day, msg="incorrect initial target spend")
-
-        Clock._iterations = 35
-        target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
-        self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertAlmostEqual(target_spend, Clock.minute_in_day() / mystique_constants.num_iterations_per_day,
-                               msg="incorrect initial target spend")
+        for i in range(1, 35):
+            target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(
+                self.mystique_tracked_campaign)
+            self.assertEqual(target_slope, 1, "incorrect target slope")
+            self.assertEqual(target_spend, i / mystique_constants.num_iterations_per_day,
+                             "incorrect initial target spend")
+            Clock.advance()
 
         # Test new day
         self.assertEqual(Clock.days(), 0)
@@ -71,7 +64,7 @@ class TestLinearTargetSlope(unittest.TestCase):
         self.assertEqual(Clock.days(), 1, "day counter should increase")
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
         self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertEqual(target_spend, 0, "incorrect initial target spend")
+        self.assertEqual(target_spend, 1/mystique_constants.num_iterations_per_day, "incorrect initial target spend")
 
     def get_target_spend_array(self):
         target_spend_arr = self.target_slope_strategy.get_target_spend_array(self.mystique_tracked_campaign.current_target_slope)

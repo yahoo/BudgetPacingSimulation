@@ -25,11 +25,15 @@ class MystiquePacingSystem(PacingSystemInterface):
             self.mystique_tracked_campaigns[campaign_id] = MystiqueTrackedCampaign(daily_budget)
             self.target_spend_slope_calculator.initialize_slope(self.mystique_tracked_campaigns[campaign_id])
 
-    def start_iteration(self, campaign_id: str, spend_since_last_iteration: float):
+    def end_iteration(self, campaign_id: str, spend_since_last_iteration: float):
         if campaign_id in self.mystique_tracked_campaigns.keys():
             mystique_tracked_campaign = self.mystique_tracked_campaigns[campaign_id]
             mystique_tracked_campaign.update_spend(spend_since_last_iteration)
             self.update_pacing_signal(mystique_tracked_campaign)
+            # check if this was the last iteration of the day
+            if Clock.minute_in_day() == mystique_constants.num_iterations_per_day - 1:
+                # push campaign's statistics of the day into history
+                mystique_tracked_campaign.new_day_init(False)
 
     def get_pacing_signal(self, campaign_id: str):
         if campaign_id in self.mystique_tracked_campaigns.keys():
@@ -68,10 +72,6 @@ class MystiquePacingSystem(PacingSystemInterface):
         w1, w2 = MystiquePacingSystem.get_pacing_signal_correction_weights(estimated_intervals_until_target_is_hit)
         previous_ps = mystique_tracked_campaign.last_positive_ps
         return self.get_new_pacing_signal(previous_ps, spend_error, gradient_error, w1, w2)
-
-    def new_day_init(self):
-        for campaign in self.mystique_tracked_campaigns.values():
-            campaign.new_day_init(False)
 
     @staticmethod
     def get_percent_budget_depleted_today(mystique_tracked_campaign: MystiqueTrackedCampaign):

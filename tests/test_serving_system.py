@@ -1,5 +1,6 @@
 import unittest
 
+from src.constants import num_minutes_in_day
 from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem
 from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
@@ -67,22 +68,24 @@ class TestServingSystem(unittest.TestCase):
         # check that campaigns were added to Mystique
         self.assertTrue(campaign.id in mystique.mystique_tracked_campaigns,
                         "campaign was not added to pacing system")
-        serving_system.start_iteration()
         bids = serving_system.get_bids()
         self.assertEqual(len(bids), 1)
         bid = bids[0]
         self.assertGreater(bid.amount, 0)
         payment = bid.amount
         serving_system.update_winners([AuctionWinner(bid=bid, payment=payment)])
+        serving_system.end_iteration()
         # check that the campaign itself was updated
         self.assertEqual(campaign.spent_today(), payment, "expected campaign spend to be equal to payment")
         # check that the tracked campaign in mystique was updated with the spend of the campaign
         mystique_tracked_campaign = mystique.mystique_tracked_campaigns.get(campaign.id)
         self.assertEqual(len(mystique_tracked_campaign.today_spend), 1,
                          "expected mystique tracked campaign to contain a single entry in its daily spend list")
-        Clock.advance()
-        serving_system.end_of_day_updates()  # push stats to history
-        self.assertEqual(mystique_tracked_campaign.spend_history[0][1], payment,
+        # simulate days passed
+        for _ in range(num_minutes_in_day*2):
+            Clock.advance()
+            serving_system.end_iteration()
+        self.assertEqual(mystique_tracked_campaign.spend_history[0][0], payment,
                          "expected mystique tracked campaign to contain an entry equal to the amount it payed "
                          "during the last iteration in its daily spend list")
         # check that the CampaignStatistics history were updated
@@ -96,7 +99,7 @@ class MockPacingSystem(PacingSystemInterface):
     def add_campaign(self, campaign):
         pass
 
-    def start_iteration(self, campaign_id, spend_since_last_iteration):
+    def end_iteration(self, campaign_id, spend_since_last_iteration):
         pass
 
     def get_pacing_signal(self, campaign_id):
