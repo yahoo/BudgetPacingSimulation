@@ -112,7 +112,11 @@ class MystiquePacingSystem(PacingSystemInterface):
 
     @staticmethod
     def get_estimated_intervals_until_target_is_hit(spend_error: float, gradient_error: float):
-        if math.isclose(gradient_error, 0):
+        # from the documentation of math.isclose(a, b, *, rel_tol=1e-09, abs_tol=0.0):
+        # " ...if no errors occur, the result will be:
+        # abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol) "
+        # therefore, when comparing with 0 we better use a non-zero abs_tol value
+        if math.isclose(gradient_error, 0, abs_tol=1e-9):
             return mystique_constants.max_interval
         return -1 * mystique_constants.num_iterations_per_day * spend_error / gradient_error
 

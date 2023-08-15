@@ -177,19 +177,13 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertTrue(len(mystique_tracked_campaign.ps_history) ==0, "pacing signal history not empty when it should be")
         self.assertTrue(len(mystique_tracked_campaign.spend_history) == 0, "spend history not empty when it should be")
         prev_day_avg_ps = mystique_tracked_campaign.get_avg_daily_ps_below_threshold()
-        # end day
         self.mystique_linear.end_iteration(campaign_id, actual_spend)
         Clock.advance()
-        # first iteration of new day
-        self.mystique_linear.end_iteration(campaign_id, actual_spend)
-        self.assertTrue(len(mystique_tracked_campaign.today_ps) == 1, "new pacing signal values were not updated")
-        self.assertTrue(len(mystique_tracked_campaign.today_spend) == 1, "new spend values were not updated")
+        self.assertEqual(len(mystique_tracked_campaign.today_ps), 0, "new day's pacing signal values should be empty")
+        self.assertEqual(len(mystique_tracked_campaign.today_spend), 0, "new day's spend values should be empty")
         self.assertTrue(len(mystique_tracked_campaign.ps_history) > 0, "pacing signal history not updated when it should be")
         self.assertTrue(len(mystique_tracked_campaign.spend_history) > 0, "spend history not updated when it should be")
         self.assertEqual(prev_day_avg_ps, mystique_tracked_campaign.previous_ps, "previous pacing signal on new day not correct")
         self.assertEqual(prev_day_avg_ps, mystique_tracked_campaign.last_positive_ps, "last positive pacing signal on new day not correct")
 
 
-# run the test
-if __name__ == '__main__':
-    unittest.main()

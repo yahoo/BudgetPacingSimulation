@@ -49,7 +49,6 @@ class TestLinearTargetSlope(unittest.TestCase):
         self.assertTrue(len(target_spend_history) == 1, "target spend history improperly initialized")
 
     def test_get_target_slope_and_spend(self):
-        Clock.reset()
         for i in range(1, 35):
             target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(
                 self.mystique_tracked_campaign)
@@ -127,20 +126,15 @@ class TestNonLinearTargetSlope(TestLinearTargetSlope):
             #self.assertAlmostEqual(calculated_spend_array[i], target_spend_history[1][i], msg="incorrect value of target spend curve array")
 
     def test_get_target_slope_and_spend(self):
-        target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
-        self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertEqual(target_spend, 0, "incorrect initial target spend")
+        Clock.reset()
+        for i in range(1, 35):
+            target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(
+                self.mystique_tracked_campaign)
+            self.assertEqual(target_slope, 1, "incorrect target slope")
+            self.assertAlmostEqual(target_spend, i / mystique_constants.num_iterations_per_day,
+                             msg="incorrect initial target spend")
+            Clock.advance()
 
-        Clock.advance()
-        target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
-        self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertAlmostEqual(target_spend, 1/mystique_constants.num_iterations_per_day, msg="incorrect initial target spend")
-
-        Clock._iterations = 35
-        target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
-        self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertAlmostEqual(target_spend, Clock.minute_in_day() / mystique_constants.num_iterations_per_day,
-                               msg="incorrect initial target spend")
 
 # run the test
 if __name__ == '__main__':
