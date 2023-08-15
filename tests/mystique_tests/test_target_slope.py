@@ -159,15 +159,6 @@ class TestNonLinearTargetSlope(TestLinearTargetSlope):
         self.assertEqual(target_slope, 1, "incorrect target slope")
         self.assertEqual(target_spend, 0, "incorrect initial target spend")
 
-    def test_get_target_spend_array(self):
-        target_spend_arr = self.target_slope_strategy.get_target_spend_array(self.mystique_tracked_campaign.current_target_slope)
-        i = 0
-        self.assertEqual(target_spend_arr[i], 1/mystique_constants.num_hours_per_day, "incorrect target spend value")
-        i = int(len(target_spend_arr) / 2) - 1
-        self.assertAlmostEqual(target_spend_arr[i], 0.5, msg="incorrect target spend value")
-        i = len(target_spend_arr) - 1
-        self.assertAlmostEqual(target_spend_arr[i], 1, msg="incorrect target spend value")
-
 # run the test
 if __name__ == '__main__':
     unittest.main()
