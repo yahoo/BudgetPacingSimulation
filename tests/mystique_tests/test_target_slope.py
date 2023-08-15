@@ -8,16 +8,16 @@ from src.system.clock import Clock
 
 class TestLinearTargetSlope(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUp(cls):
         Clock.reset()
         cls.mystique_tracked_campaign = mystique_campaign_initialization.instance_for_target_slope_test()
         cls.target_slope_strategy = LinearTargetSpendStrategy()
+        cls.target_slope_strategy.initialize_slope(cls.mystique_tracked_campaign)
         cls.required_slope_array = [1] * mystique_constants.num_hours_per_day
         cls.required_spend_array = [(i + 1) / mystique_constants.num_hours_per_day for i in range(
             mystique_constants.num_hours_per_day)]
 
     def test_initialization(self):
-        self.target_slope_strategy.initialize_slope(self.mystique_tracked_campaign)
         calculated_slope_array = self.mystique_tracked_campaign.current_target_slope
         calculated_spend_array = self.mystique_tracked_campaign.current_target_spend_curve
         target_slope_history = self.mystique_tracked_campaign.target_slope_history
@@ -49,7 +49,6 @@ class TestLinearTargetSlope(unittest.TestCase):
         self.assertTrue(len(target_spend_history) == 1, "target spend history improperly initialized")
 
     def test_get_target_slope_and_spend(self):
-        Clock.reset()
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
         self.assertEqual(target_slope, 1, "incorrect target slope")
         self.assertEqual(target_spend, 0, "incorrect initial target spend")
