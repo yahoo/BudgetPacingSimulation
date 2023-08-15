@@ -92,22 +92,22 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
             current_target_slope[i] = max(current_target_slope[i], self.min_slope)
 
         # smoothing
-        smoothed_target_slope = current_target_slope.copy()
-        length = len(smoothed_target_slope)
+        smoothed_normalized_target_slope = current_target_slope.copy()
+        length = len(smoothed_normalized_target_slope)
         sum_slopes = 0.0
         for i in range(length):
-            smoothed_target_slope[i] = self.smoothing_factor / 2 * \
+            smoothed_normalized_target_slope[i] = self.smoothing_factor / 2 * \
                 (current_target_slope[i-1] + current_target_slope[(i+1) % length]) + \
                 (1 - self.smoothing_factor) * current_target_slope[i]
-            sum_slopes += smoothed_target_slope[i]
+            sum_slopes += smoothed_normalized_target_slope[i]
 
         # normalization
         for i in range(length):
-            smoothed_target_slope[i] = mystique_constants.num_hours_per_day * smoothed_target_slope[i] / sum_slopes
+            smoothed_normalized_target_slope[i] = mystique_constants.num_hours_per_day * smoothed_normalized_target_slope[i] / sum_slopes
 
         # updating spend and slop history
-        mystique_tracked_campaign.update_target_slope_curve(smoothed_target_slope)
-        target_spend_array = LinearTargetSpendStrategy.get_target_spend_array(smoothed_target_slope)
+        mystique_tracked_campaign.update_target_slope_curve(smoothed_normalized_target_slope)
+        target_spend_array = self.get_target_spend_array(smoothed_normalized_target_slope)
         mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
 
     def get_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
