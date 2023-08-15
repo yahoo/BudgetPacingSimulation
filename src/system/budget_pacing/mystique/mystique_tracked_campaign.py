@@ -91,4 +91,4 @@ class MystiqueTrackedCampaign:
         return self.get_avg_daily_ps_below_threshold()
 
     def get_avg_hourly_ps(self):
-        return utils.get_average_per_size(self.today_ps, mystique_constants.num_hours_per_day)
+        return utils.get_average_per_size(self.today_ps, mystique_constants.num_iterations_per_hour)
