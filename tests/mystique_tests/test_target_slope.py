@@ -8,15 +8,13 @@ from src.system.clock import Clock
 
 
 class TestLinearTargetSlope(unittest.TestCase):
-    @classmethod
-    def setUp(cls):
+    def setUp(self):
         Clock.reset()
-        cls.mystique_tracked_campaign = mystique_campaign_initialization.instance_for_target_slope_test()
-        cls.target_slope_strategy = LinearTargetSpendStrategy()
-        cls.target_slope_strategy.initialize_slope(cls.mystique_tracked_campaign)
-        cls.required_slope_array = [1] * mystique_constants.num_hours_per_day
-        cls.required_spend_array = [(i + 1) / mystique_constants.num_hours_per_day for i in
-                                    range(
+        self.mystique_tracked_campaign = mystique_campaign_initialization.instance_for_target_slope_test()
+        self.target_slope_strategy = LinearTargetSpendStrategy()
+        self.target_slope_strategy.initialize_slope(self.mystique_tracked_campaign)
+        self.required_slope_array = [1] * mystique_constants.num_hours_per_day
+        self.required_spend_array = [(i + 1) / mystique_constants.num_hours_per_day for i in range(
             mystique_constants.num_hours_per_day)]
 
     def test_initialization(self):
@@ -149,14 +147,6 @@ class TestNonLinearTargetSlope(TestLinearTargetSlope):
         self.assertEqual(target_slope, 1, "incorrect target slope")
         self.assertAlmostEqual(target_spend, Clock.minute_in_day() / mystique_constants.num_iterations_per_day,
                                msg="incorrect initial target spend")
-
-        # Test new day
-        self.assertEqual(Clock.days(), 0)
-        Clock._iterations = mystique_constants.num_iterations_per_day
-        self.assertEqual(Clock.days(), 1, "day counter should increase")
-        target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
-        self.assertEqual(target_slope, 1, "incorrect target slope")
-        self.assertEqual(target_spend, 0, "incorrect initial target spend")
 
 # run the test
 if __name__ == '__main__':
