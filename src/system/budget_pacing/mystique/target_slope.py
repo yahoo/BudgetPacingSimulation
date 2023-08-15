@@ -94,10 +94,16 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
         # smoothing
         smoothed_target_slope = current_target_slope.copy()
         length = len(smoothed_target_slope)
+        sum_slopes = 0.0
         for i in range(length):
             smoothed_target_slope[i] = self.smoothing_factor / 2 * \
                 (current_target_slope[i-1] + current_target_slope[(i+1) % length]) + \
                 (1 - self.smoothing_factor) * current_target_slope[i]
+            sum_slopes += smoothed_target_slope[i]
+
+        # normalization
+        for i in range(length):
+            smoothed_target_slope[i] = mystique_constants.num_hours_per_day * smoothed_target_slope[i] / sum_slopes
 
         # updating spend and slop history
         mystique_tracked_campaign.update_target_slope_curve(smoothed_target_slope)
