@@ -99,10 +99,10 @@ class TestNonLinearTargetSlope(TestLinearTargetSlope):
                                      range(mystique_constants.num_hours_per_day)]
         self.today_ps = [1.0] * mystique_constants.num_iterations_per_day
         self.mystique_tracked_campaign.today_ps = self.today_ps
+        self.target_slope_strategy.initialize_slope(self.mystique_tracked_campaign)
 
     def test_update_slope(self):
 
-        self.target_slope_strategy.initialize_slope(self.mystique_tracked_campaign)
         for i in range(mystique_constants.num_iterations_per_day):
             if i < mystique_constants.num_iterations_per_day // 2:
                 self.today_ps[i] = 0.4
@@ -136,7 +136,6 @@ class TestNonLinearTargetSlope(TestLinearTargetSlope):
             #self.assertAlmostEqual(calculated_spend_array[i], target_spend_history[1][i], msg="incorrect value of target spend curve array")
 
     def test_get_target_slope_and_spend(self):
-        self.target_slope_strategy.initialize_slope(self.mystique_tracked_campaign)
         target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(self.mystique_tracked_campaign)
         self.assertEqual(target_slope, 1, "incorrect target slope")
         self.assertEqual(target_spend, 0, "incorrect initial target spend")
@@ -161,7 +160,6 @@ class TestNonLinearTargetSlope(TestLinearTargetSlope):
         self.assertEqual(target_spend, 0, "incorrect initial target spend")
 
     def test_get_target_spend_array(self):
-        self.target_slope_strategy.initialize_slope(self.mystique_tracked_campaign)
         target_spend_arr = self.target_slope_strategy.get_target_spend_array(self.mystique_tracked_campaign.current_target_slope)
         i = 0
         self.assertEqual(target_spend_arr[i], 1/mystique_constants.num_hours_per_day, "incorrect target spend value")
