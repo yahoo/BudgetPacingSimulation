@@ -112,7 +112,7 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
 
     def get_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
         hour = Clock.hour_in_day()
-        minute_in_hour = min(Clock.minute_in_hour() + 1, mystique_constants.num_iterations_per_day - 1)
+        minute_in_hour = Clock.minute_in_hour() + 1
 
         # target slope
         target_slope = mystique_tracked_campaign.current_target_slope[hour]
