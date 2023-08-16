@@ -1,9 +1,11 @@
 import random
 
+from src.constants import num_minutes_in_day
 from src.system.campaign import Campaign
 from src.system.auction import *
 import src.configuration as config
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
+from src.system.clock import Clock
 
 
 class ServingSystem:
@@ -38,7 +40,6 @@ class ServingSystem:
                 continue
             if self.pacing_system is not None:
                 pacing_signal = self.pacing_system.get_pacing_signal(campaign_id=campaign.id)
-                assert 0 <= pacing_signal <= 1
                 bid.amount *= pacing_signal
             if bid.amount > 0:
                 bids.append(bid)
@@ -58,20 +59,13 @@ class ServingSystem:
                     else:
                         self.pending_pacing_spend_updates[winner.bid.campaign_id] = winner.payment
 
-    def start_iteration(self):
+    def end_iteration(self):
         # Budget Pacing periodic (every minute) spend updates
         self._update_pacing_system()
-
-    # end_of_day_updates() will ensure that all statistics of the last day (Campaigns, Mystique) are pushed into
-    # history arrays. This is needed so that the statistics we read at the end will include the last day
-    # and the last minute of the day.
-    def end_of_day_updates(self):
-        # Flush pending spend updates into pacing system
-        if self.pacing_system is not None:
-            self._update_pacing_system()  # needed to register the spend in the last minute of the day
-            self.pacing_system.new_day_init()
-        # Perform daily campaign updates, including ending campaigns whose run period has passed
-        self._daily_campaign_updates()
+        # Check if this is the last iteration of the day
+        if Clock.minute_in_day() == num_minutes_in_day - 1:
+            # Perform daily campaign updates
+            self._daily_campaign_updates()
 
     def _update_pacing_system(self):
         if self.pacing_system is None:
@@ -79,7 +73,7 @@ class ServingSystem:
         for campaign in self.tracked_campaigns.values():
             # get the spend amount of each campaign during the last minute, and send it to the budget pacing system
             spend = self.pending_pacing_spend_updates.pop(campaign.id, 0)
-            self.pacing_system.start_iteration(campaign_id=campaign.id, spend_since_last_iteration=spend)
+            self.pacing_system.end_iteration(campaign_id=campaign.id, spend_since_last_iteration=spend)
 
     def _daily_campaign_updates(self):
         for campaign in list(self.tracked_campaigns.values()):

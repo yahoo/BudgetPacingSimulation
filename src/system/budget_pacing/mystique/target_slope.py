@@ -33,7 +33,7 @@ class TargetSpendStrategyInterface(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_target_slope_and_spend(self, mystique_tracked_campaign):
-        """getting the target slope and spend corresponding to the timestamp"""
+        """getting the target slope and spend for the current iteration"""
         raise NotImplementedError
 
 
@@ -51,7 +51,7 @@ class LinearTargetSpendStrategy(TargetSpendStrategyInterface):
         mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
 
     def get_target_slope_and_spend(self, _: MystiqueTrackedCampaign):
-        percent_of_day_passed = Clock.minute_in_day() / mystique_constants.num_iterations_per_day
+        percent_of_day_passed = (Clock.minute_in_day() + 1) / mystique_constants.num_iterations_per_day
         target_slope = 1
         target_spend = percent_of_day_passed * target_slope
         return target_slope, target_spend
@@ -92,19 +92,27 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
             current_target_slope[i] = max(current_target_slope[i], self.min_slope)
 
         # smoothing
-        smoothed_target_slope = current_target_slope.copy()
-        length = len(smoothed_target_slope)
+        updated_target_slope = current_target_slope.copy()
+        length = len(updated_target_slope)
+        sum_slopes = 0.0
         for i in range(length):
-            smoothed_target_slope[i] = self.smoothing_factor / 2 * \
+            updated_target_slope[i] = self.smoothing_factor / 2 * \
                 (current_target_slope[i-1] + current_target_slope[(i+1) % length]) + \
                 (1 - self.smoothing_factor) * current_target_slope[i]
+            sum_slopes += updated_target_slope[i]
 
-        mystique_tracked_campaign.update_target_slope_curve(smoothed_target_slope)
+        # normalization
+        for i in range(length):
+            updated_target_slope[i] = mystique_constants.num_hours_per_day * updated_target_slope[i] / sum_slopes
+
+        # updating spend and slop history
+        mystique_tracked_campaign.update_target_slope_curve(updated_target_slope)
+        target_spend_array = self.get_target_spend_array(updated_target_slope)
+        mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
 
     def get_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
-
         hour = Clock.hour_in_day()
-        minute_in_hour = Clock.minute_in_hour()
+        minute_in_hour = Clock.minute_in_hour() + 1
 
         # target slope
         target_slope = mystique_tracked_campaign.current_target_slope[hour]
