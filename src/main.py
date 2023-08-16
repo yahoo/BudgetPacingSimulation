@@ -17,10 +17,11 @@ if __name__ == '__main__':
     for _ in range(config.num_days_to_simulate * config.num_iterations_per_day):
         marketplace.run_iteration()
     # Get output metrics as rows
-    output_metrics = serving_system.get_statistics_for_all_campaigns()
+    output_statistics = serving_system.get_statistics_for_all_campaigns()
     # Write metrics to csv file
     with open(OUTPUT_FILE_PATH, 'w') as f:
-        w = csv.DictWriter(f, fieldnames=output_metrics[0].keys())
+        all_fields = output_statistics[0].keys()
+        w = csv.DictWriter(f, fieldnames=all_fields)
         w.writeheader()
-        w.writerows(output_metrics)
+        w.writerows(output_statistics)
 
