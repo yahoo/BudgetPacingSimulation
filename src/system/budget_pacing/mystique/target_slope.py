@@ -33,7 +33,7 @@ class TargetSpendStrategyInterface(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_target_slope_and_spend(self, mystique_tracked_campaign):
-        """getting the target slope and spend for the next iteration"""
+        """getting the target slope and spend for the current iteration"""
         raise NotImplementedError
 
 
