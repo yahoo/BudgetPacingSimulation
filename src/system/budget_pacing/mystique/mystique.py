@@ -78,7 +78,6 @@ class MystiquePacingSystem(PacingSystemInterface):
     def get_pacing_statistics(self, campaign_id: str) -> dict[str, object]:
         campaign = self.mystique_tracked_campaigns[campaign_id]
         return {
-            mystique_constants.FIELD_DAILY_BUDGET: campaign.daily_budget,
             mystique_constants.FIELD_SPEND_HISTORY: campaign.spend_history,
             mystique_constants.FIELD_TARGET_SPEND_HISTORY: campaign.target_spend_history,
             mystique_constants.FIELD_TARGET_SLOPE_HISTORY: campaign.target_slope_history,
