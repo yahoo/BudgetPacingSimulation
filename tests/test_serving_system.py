@@ -102,7 +102,7 @@ class MockPacingSystem(PacingSystemInterface):
     def get_pacing_signal(self, campaign_id):
         return self.pacing_signal
 
-    def new_day_init(self):
+    def get_pacing_statistics(self, campaign_id: str) -> dict[str, object]:
         pass
 
 

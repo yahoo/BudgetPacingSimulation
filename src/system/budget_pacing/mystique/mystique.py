@@ -73,6 +73,16 @@ class MystiquePacingSystem(PacingSystemInterface):
         for campaign in self.mystique_tracked_campaigns.values():
             campaign.new_day_init(False)
 
+    def get_pacing_statistics(self, campaign_id: str) -> dict[str, object]:
+        campaign = self.mystique_tracked_campaigns[campaign_id]
+        return {
+            mystique_constants.FIELD_DAILY_BUDGET: campaign.daily_budget,
+            mystique_constants.FIELD_SPEND_HISTORY: campaign.spend_history,
+            mystique_constants.FIELD_TARGET_SPEND_HISTORY: campaign.target_spend_history,
+            mystique_constants.FIELD_TARGET_SLOPE_HISTORY: campaign.target_slope_history,
+            mystique_constants.FIELD_PACING_SIGNAL_HISTORY: campaign.ps_history
+        }
+
     @staticmethod
     def get_percent_budget_depleted_today(mystique_tracked_campaign: MystiqueTrackedCampaign):
         return mystique_tracked_campaign.get_today_spend() / mystique_tracked_campaign.daily_budget

@@ -28,4 +28,11 @@ class PacingSystemInterface(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def new_day_init(self):
+        """Performs the required updates for initializing a new day"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_pacing_statistics(self, campaign_id: str) -> dict[str, object]:
+        """Returns a dictionary with the statistics of the campaign with the provided id.
+           the dictionary is indexed by the name (string) of each statistic."""
         raise NotImplementedError

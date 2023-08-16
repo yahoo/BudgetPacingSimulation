@@ -70,7 +70,7 @@ class ServingSystem:
         if self.pacing_system is not None:
             self._update_pacing_system()  # needed to register the spend in the last minute of the day
             self.pacing_system.new_day_init()
-        # Perform daily campaign updates
+        # Perform daily campaign updates, including ending campaigns whose run period has passed
         self._daily_campaign_updates()
 
     def _update_pacing_system(self):
@@ -83,8 +83,9 @@ class ServingSystem:
 
     def _daily_campaign_updates(self):
         for campaign in list(self.tracked_campaigns.values()):
+            assert campaign.days_left_to_run() > 0
             campaign.setup_new_day()
-            if campaign.run_period == 0:
+            if campaign.days_left_to_run() == 0:
                 # add campaign to the structure of campaigns that are done
                 self.old_campaigns[campaign.id] = campaign
                 # remove campaign from the structure of active campaigns
@@ -98,7 +99,25 @@ class ServingSystem:
                                  amount=random.uniform(config.campaign_minimal_bid, config.untracked_bid_max)))
         return fake_bids
 
+    def get_pacing_statistics_per_campaign(self) -> dict[str, dict]:
+        stats_per_campaign = {}
+        for campaign in self._all_campaigns():
+            stats_per_campaign[campaign.id] = self.pacing_system.get_pacing_statistics(campaign.id)
+        return stats_per_campaign
+
+    # get_num_wins_history_per_campaign: Returns the history of the number of wins for each campaign, aggregated using
+    # the granularity defined in config.num_win_entries_per_day
+    def get_num_wins_history_per_campaign(self) -> dict[str, list[list[float]]]:
+        # Getting number of wins as stored inside Campaigns
+        num_wins_history_per_campaign = {}
+        for campaign in self._all_campaigns():
+            num_wins_history_per_campaign[campaign.id] = campaign.num_auctions_won_history()
+        return num_wins_history_per_campaign
+
     @staticmethod
     def _calculate_number_of_untracked_bids() -> int:
         # We will later sample from distribution according to Clock.minutes()
         return config.num_untracked_bids
+
+    def _all_campaigns(self) -> list[Campaign]:
+        return list(self.tracked_campaigns.values()) + list(self.old_campaigns.values())
