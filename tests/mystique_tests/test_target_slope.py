@@ -49,11 +49,12 @@ class TestLinearTargetSlope(unittest.TestCase):
         self.assertTrue(len(target_spend_history) == 1, "target spend history improperly initialized")
 
     def test_get_target_slope_and_spend(self):
-        for i in range(1, 35):
+        # iterate over a number of iterations and assert that the target slope/spend in each of them is correct
+        for iteration in range(1, 35):
             target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(
                 self.mystique_tracked_campaign)
             self.assertEqual(target_slope, 1, "incorrect target slope")
-            self.assertEqual(target_spend, i / mystique_constants.num_iterations_per_day,
+            self.assertEqual(target_spend, iteration / mystique_constants.num_iterations_per_day,
                              "incorrect initial target spend")
             Clock.advance()
 
@@ -126,12 +127,12 @@ class TestNonLinearTargetSlope(TestLinearTargetSlope):
             #self.assertAlmostEqual(calculated_spend_array[i], target_spend_history[1][i], msg="incorrect value of target spend curve array")
 
     def test_get_target_slope_and_spend(self):
-        Clock.reset()
-        for i in range(1, 35):
+        # iterate over a number of iterations and assert that the target slope/spend in each of them is correct
+        for iteration in range(1, 35):
             target_slope, target_spend = self.target_slope_strategy.get_target_slope_and_spend(
                 self.mystique_tracked_campaign)
             self.assertEqual(target_slope, 1, "incorrect target slope")
-            self.assertAlmostEqual(target_spend, i / mystique_constants.num_iterations_per_day,
+            self.assertAlmostEqual(target_spend, iteration / mystique_constants.num_iterations_per_day,
                              msg="incorrect initial target spend")
             Clock.advance()
 
