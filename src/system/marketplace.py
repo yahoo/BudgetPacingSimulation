@@ -2,6 +2,7 @@ from src.system.auction import *
 from src.system.clock import Clock
 from src.system.serving_system import ServingSystem
 from src import configuration
+import src.constants as constants
 
 
 class Marketplace:
@@ -14,8 +15,8 @@ class Marketplace:
 
     def run_iteration(self):
         self._run_auctions()
-        Clock.advance()
         self.serving_system.end_iteration()
+        Clock.advance()
         # generate new auctions for the new iteration
         self.current_auctions = self._generate_auctions()
 
