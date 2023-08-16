@@ -12,7 +12,7 @@ from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyTy
 def generate_campaigns(n: int):
     return [Campaign(campaign_id=f'campaign_{i}',
                      total_budget=random.uniform(config.campaign_min_budget, config.campaign_max_budget),
-                     run_period=random.randint(config.campaign_min_run_period, config.campaign_max_run_period),
+                     run_period=5,
                      max_bid=random.uniform(config.campaign_minimal_max_bid, config.campaign_maximal_max_bid))
             for i in range(n)]
 
