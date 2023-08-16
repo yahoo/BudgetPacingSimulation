@@ -36,9 +36,11 @@ class MystiquePacingSystem(PacingSystemInterface):
                 mystique_tracked_campaign.new_day_init(False)
 
     def get_pacing_signal(self, campaign_id: str):
+        ps = mystique_constants.default_ps_value
         if campaign_id in self.mystique_tracked_campaigns.keys():
-            return self.mystique_tracked_campaigns[campaign_id].ps
-        return mystique_constants.default_ps_value
+            ps = self.mystique_tracked_campaigns[campaign_id].ps
+        assert mystique_constants.min_ps <= ps <= mystique_constants.max_ps
+        return ps
 
     def update_pacing_signal(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
         new_ps = self.calculate_new_pacing_signal(mystique_tracked_campaign)

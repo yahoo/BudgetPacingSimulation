@@ -40,7 +40,6 @@ class ServingSystem:
                 continue
             if self.pacing_system is not None:
                 pacing_signal = self.pacing_system.get_pacing_signal(campaign_id=campaign.id)
-                assert 0 <= pacing_signal <= 1
                 bid.amount *= pacing_signal
             if bid.amount > 0:
                 bids.append(bid)

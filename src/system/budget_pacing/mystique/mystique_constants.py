@@ -10,6 +10,7 @@ num_iterations_for_avg_daily_ps_below_threshold_reset = num_iterations_per_day -
 num_iterations_per_hour = 60
 pacing_signal_for_initialization = 0.0001
 max_ps = 1
+min_ps = 0
 error_corresponding_to_max_correction = 0.25
 max_ps_correction = 0.025
 gradient_error_corresponding_to_max_correction = 1.5
