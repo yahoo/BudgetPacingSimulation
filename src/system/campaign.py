@@ -51,13 +51,15 @@ class CampaignStatistics:
 
 
 class Campaign:
-    def __init__(self, campaign_id: str, total_budget: float, run_period: int, max_bid: float):
+    def __init__(self, campaign_id: str, total_budget: float, run_period: int, max_bid: float, targeting_groups: list[int]):
         self.id = campaign_id
         if max_bid <= config.campaign_minimal_bid:
             raise Exception('Invalid max_bid parameter.')
         self.max_bid = max_bid
         self.total_budget = total_budget
-        # self.targeting_group = targeting_group
+        if targeting_groups is None:
+            targeting_groups = []
+        self._targeting_groups = set(targeting_groups)
         self.daily_budget = total_budget / run_period
         self.stats = CampaignStatistics(run_period=run_period)
 
@@ -88,3 +90,6 @@ class Campaign:
 
     def num_auctions_won_today(self) -> int:
         return sum(self.stats.auctions_won_today)
+
+    def targeting_groups(self) -> set[int]:
+        return self._targeting_groups

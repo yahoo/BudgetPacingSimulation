@@ -13,7 +13,8 @@ def generate_campaigns(n: int):
     return [Campaign(campaign_id=f'campaign_{i}',
                      total_budget=random.uniform(config.campaign_min_budget, config.campaign_max_budget),
                      run_period=random.randint(config.campaign_min_run_period, config.campaign_max_run_period),
-                     max_bid=random.uniform(config.campaign_minimal_max_bid, config.campaign_maximal_max_bid))
+                     max_bid=random.uniform(config.campaign_minimal_max_bid, config.campaign_maximal_max_bid),
+                     targeting_groups=list(range(config.num_targeting_groups)))
             for i in range(n)]
 
 

@@ -1,10 +1,9 @@
 import random
 
 import src.constants as constants
-from src.system.campaign import Campaign
 from src.system.auction import *
-import src.configuration as config
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
+from src.system.campaign import Campaign
 from src.system.clock import Clock
 
 
@@ -31,10 +30,17 @@ class ServingSystem:
         if self.pacing_system is not None:
             self.pacing_system.add_campaign(campaign)
 
-    def get_bids(self) -> list[Bid]:
+    def get_bids(self, auction: AuctionInterface) -> tuple[list[Bid], bool]:
         bids = []
+        flag_tracked_bids_exist = False
         # get "real" bids
         for campaign in self.tracked_campaigns.values():
+            # make sure the campaign hasn't reached his daily budget
+            if campaign.spent_today() >= campaign.daily_budget:
+                continue
+            # check if the auction is relevant to the campaign
+            if auction.targeting_group() not in campaign.targeting_groups():
+                continue
             bid = campaign.bid()
             if bid is None:
                 continue
@@ -43,9 +49,10 @@ class ServingSystem:
                 bid.amount *= pacing_signal
             if bid.amount > 0:
                 bids.append(bid)
+                flag_tracked_bids_exist = True
         # add untracked bids
         bids += self._generate_untracked_bids()
-        return bids
+        return bids, flag_tracked_bids_exist
 
     def update_winners(self, winners: list[AuctionWinner]):
         for winner in winners:

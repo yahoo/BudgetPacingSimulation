@@ -11,7 +11,7 @@ class TestAuctions(unittest.TestCase):
         for i in range(num_bids):
             bids.append(Bid(f'campaign_{i}', random.randint(0, max_bid)))
 
-        auction = AuctionFP()
+        auction = AuctionFP(targeting_group=0)
         winners = auction.run(bids)
         self.assertIsNotNone(winners, "auctions winners list should not be None")
         self.assertEqual(len(winners), 1, "auction winners list should contain a single entry")
@@ -24,7 +24,7 @@ class TestAuctions(unittest.TestCase):
 
     def test_fp_auction_no_bids(self):
         bids = []
-        auction = AuctionFP()
+        auction = AuctionFP(targeting_group=0)
         winners = auction.run(bids)
         self.assertIsNotNone(winners, "auctions winners list is None")
         self.assertEqual(len(winners), 0, "auction winners list should be empty")
