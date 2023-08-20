@@ -32,7 +32,8 @@ class TestServingSystem(unittest.TestCase):
                 Campaign(campaign_id=f'campaign_{i}', total_budget=initial_budget, run_period=7, max_bid=25)
             )
         serving_system = ServingSystem(tracked_campaigns=campaigns)
-        bids = serving_system.get_bids()
+        bids, tracked_bids_exist = serving_system.get_bids()
+        self.assertTrue(tracked_bids_exist)
         self.assertEqual(len(bids), num_campaigns + config.num_untracked_bids, "wrong number of generated bids")
         for c in campaigns:
             # assert that each campaign has a bid in the list of bids
@@ -56,7 +57,8 @@ class TestServingSystem(unittest.TestCase):
             )
         serving_system = ServingSystem(pacing_system=MockPacingSystem(pacing_signal=0),
                                        tracked_campaigns=campaigns)
-        bids = serving_system.get_bids()
+        bids, tracked_bids_exist = serving_system.get_bids()
+        self.assertFalse(tracked_bids_exist)
         self.assertEqual(len(bids), 0, "expected list of bids to be empty when all bids are zero")
 
     def test_with_mystique_budget_pacing(self):
@@ -68,7 +70,8 @@ class TestServingSystem(unittest.TestCase):
         # check that campaigns were added to Mystique
         self.assertTrue(campaign.id in mystique.mystique_tracked_campaigns,
                         "campaign was not added to pacing system")
-        bids = serving_system.get_bids()
+        bids, tracked_bids_exist = serving_system.get_bids()
+        self.assertTrue(tracked_bids_exist)
         self.assertEqual(len(bids), 1)
         bid = bids[0]
         self.assertGreater(bid.amount, 0)

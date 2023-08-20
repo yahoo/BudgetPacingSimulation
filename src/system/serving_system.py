@@ -31,10 +31,16 @@ class ServingSystem:
         if self.pacing_system is not None:
             self.pacing_system.add_campaign(campaign)
 
-    def get_bids(self) -> list[Bid]:
+    def get_bids(self) -> tuple[list[Bid], bool]:
         bids = []
+        # The second return value of this method is a flag indicating whether bids of tracked campaigns exist.
+        # This is used for an optimization which ignores such auctions.
+        flag_tracked_bids_exist = False
         # get "real" bids
         for campaign in self.tracked_campaigns.values():
+            # make sure the campaign hasn't reached its daily budget
+            if campaign.spent_today() >= campaign.daily_budget:
+                continue
             bid = campaign.bid()
             if bid is None:
                 continue
@@ -43,9 +49,10 @@ class ServingSystem:
                 bid.amount *= pacing_signal
             if bid.amount > 0:
                 bids.append(bid)
+                flag_tracked_bids_exist = True
         # add untracked bids
         bids += self._generate_untracked_bids()
-        return bids
+        return bids, flag_tracked_bids_exist
 
     def update_winners(self, winners: list[AuctionWinner]):
         for winner in winners:

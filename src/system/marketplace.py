@@ -2,7 +2,6 @@ from src.system.auction import *
 from src.system.clock import Clock
 from src.system.serving_system import ServingSystem
 from src import configuration
-import src.constants as constants
 
 
 class Marketplace:
@@ -26,8 +25,8 @@ class Marketplace:
             self._run_single_auction(auction)
 
     def _run_single_auction(self, auction: AuctionInterface):
-        bids = self.serving_system.get_bids()
-        if len(bids) == 0:
+        bids, tracked_bids_exist = self.serving_system.get_bids()
+        if not tracked_bids_exist:
             return
         winners = auction.run(bids)
         self.serving_system.update_winners(winners)

@@ -21,7 +21,7 @@ class TestMarketPlace(unittest.TestCase):
         campaigns = []
         for i in range(num_campaigns):
             campaigns.append(
-                Campaign(campaign_id=f'campaign_{i}', total_budget=1000, run_period=7, max_bid=25)
+                Campaign(campaign_id=f'campaign_{i}', total_budget=1000000, run_period=7, max_bid=25)
             )
         serving_system = ServingSystem(tracked_campaigns=campaigns)
         marketplace = Marketplace(serving_system=serving_system)
