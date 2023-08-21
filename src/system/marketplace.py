@@ -1,8 +1,9 @@
+import math
 import random
 from src.system.auction import *
 from src.system.clock import Clock
 from src.system.serving_system import ServingSystem
-from src import configuration
+from scipy import stats
 
 
 class Marketplace:
@@ -48,6 +49,18 @@ class Marketplace:
     def _get_current_auctions(self) -> list[AuctionInterface]:
         return self.current_auctions
 
-    def _calculate_number_of_current_auctions(self) -> int:
-        # We will later sample from distribution according to Clock.minutes()
-        return configuration.num_auctions_per_iteration
+    @staticmethod
+    def _calculate_number_of_current_auctions() -> int:
+        # calculate the mean of the Poisson distribution
+        mu = Marketplace._calculate_mean_num_auctions_in_minute(Clock.minute_in_day())
+        return stats.poisson.rvs(mu)
+
+    @staticmethod
+    def _calculate_mean_num_auctions_in_minute(minute_in_day: int) -> float:
+        assert 0 <= minute_in_day < config.num_iterations_per_day
+        return config.dist_mean_num_auctions_in_minute_param_a \
+            + config.dist_mean_num_auctions_in_minute_param_b * \
+            math.cos(
+                (2 * math.pi * minute_in_day / config.num_iterations_per_day) +
+                config.dist_mean_num_auctions_in_minute_param_c
+            )

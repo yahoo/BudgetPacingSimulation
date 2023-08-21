@@ -1,3 +1,5 @@
+import math
+
 import src.constants as constants
 
 # General
@@ -23,3 +25,12 @@ num_win_entries_per_day = 24  # Defines the granularity with which to store win 
 # Untracked bids
 num_untracked_bids = 50
 untracked_bid_max = 20
+
+# # #  Distributions  # # #
+# We calculate the mean of the distribution of the number of auctions in each minute as:
+# a + b * cos(x*(2*math.pi/num_iterations_per_day) + c),
+# where a, b, c are marketplace parameters (a = DC, b = Amplitude, c = Phase)
+# We use that value to define the mean of a Poisson distribution, from which we will sample the number of auctions
+dist_mean_num_auctions_in_minute_param_a = 400
+dist_mean_num_auctions_in_minute_param_b = 300
+dist_mean_num_auctions_in_minute_param_c = 1.5 * math.pi
