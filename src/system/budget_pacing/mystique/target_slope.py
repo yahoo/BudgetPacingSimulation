@@ -27,7 +27,7 @@ class TargetSpendStrategyInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update_slope(self, mystique_tracked_campaign):
+    def update_target_slope_and_spend(self, mystique_tracked_campaign):
         """updating the slope of the campaign according to last day behavior"""
         raise NotImplementedError
 
@@ -44,7 +44,7 @@ class LinearTargetSpendStrategy(TargetSpendStrategyInterface):
         mystique_tracked_campaign.update_target_slope_curve(target_slope_array)
         mystique_tracked_campaign.update_target_spend_curve(target_spend_array)
 
-    def update_slope(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
+    def update_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
         target_slope_array = mystique_tracked_campaign.current_target_slope
         target_spend_array = mystique_tracked_campaign.current_target_spend_curve
         mystique_tracked_campaign.update_target_slope_curve(target_slope_array)
@@ -73,7 +73,7 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
     smoothing_factor = 0.5
     epsilon = 0.0002
 
-    def update_slope(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
+    def update_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
 
         avg_daily_ps = mystique_tracked_campaign.get_avg_daily_ps()
         avg_hourly_ps = mystique_tracked_campaign.get_avg_hourly_ps()

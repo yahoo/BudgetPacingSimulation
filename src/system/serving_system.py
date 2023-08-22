@@ -65,7 +65,7 @@ class ServingSystem:
         # Check if this is the last iteration of the day
         if Clock.minute_in_day() == constants.num_minutes_in_day - 1:
             # Perform daily campaign updates
-            self._daily_campaign_updates()
+            self._end_of_day_campaign_updates()
 
     def _update_pacing_system(self):
         if self.pacing_system is None:
@@ -75,10 +75,10 @@ class ServingSystem:
             spend = self.pending_pacing_spend_updates.pop(campaign.id, 0)
             self.pacing_system.end_iteration(campaign_id=campaign.id, spend_since_last_iteration=spend)
 
-    def _daily_campaign_updates(self):
+    def _end_of_day_campaign_updates(self):
         for campaign in list(self.tracked_campaigns.values()):
-            assert campaign.days_left_to_run() > 0
-            campaign.setup_new_day()
+            campaign.prepare_for_new_day()
+            assert campaign.days_left_to_run() >= 0
             if campaign.days_left_to_run() == 0:
                 # add campaign to the structure of campaigns that are done
                 self.old_campaigns[campaign.id] = campaign

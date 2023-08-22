@@ -20,7 +20,7 @@ class CampaignStatistics:
         self.day_ended = None
         self._reset_today_stats()
 
-    def setup_new_day(self):
+    def prepare_for_new_day(self):
         # set start day if not already set
         if self.day_started is None:
             self.day_started = Clock.days()
@@ -71,8 +71,8 @@ class Campaign:
     def pay(self, amount: float):
         self.stats.update(amount)
 
-    def setup_new_day(self):
-        self.stats.setup_new_day()
+    def prepare_for_new_day(self):
+        self.stats.prepare_for_new_day()
 
     def days_left_to_run(self):
         return self.stats.days_left_to_run
