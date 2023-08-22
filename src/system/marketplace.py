@@ -25,8 +25,8 @@ class Marketplace:
             self._run_single_auction(auction)
 
     def _run_single_auction(self, auction: AuctionInterface):
-        bids, tracked_bids_exist = self.serving_system.get_bids()
-        if not tracked_bids_exist:
+        bids = self.serving_system.get_bids()
+        if len(bids) == 0:
             return
         winners = auction.run(bids)
         self.serving_system.update_winners(winners)
