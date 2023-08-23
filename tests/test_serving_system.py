@@ -1,13 +1,12 @@
-import configparser
 import unittest
 
 from src.constants import num_minutes_in_day
+from src.system.auction import AuctionWinner
 from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem
 from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
 from src.system.campaign import *
 from src.system.serving_system import ServingSystem
-from src.system.auction import AuctionWinner
 
 
 class TestServingSystem(unittest.TestCase):
