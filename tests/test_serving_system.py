@@ -2,13 +2,13 @@ import unittest
 
 from src import constants
 from src.constants import num_minutes_in_day
+from src.system.auction import *
 from src.system.budget_pacing.mystique import mystique_constants
 from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem
 from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
 from src.system.campaign import *
 from src.system.serving_system import ServingSystem
-from src.system.auction import AuctionWinner
 
 
 class TestServingSystem(unittest.TestCase):
@@ -59,6 +59,24 @@ class TestServingSystem(unittest.TestCase):
                                        tracked_campaigns=campaigns)
         bids = serving_system.get_bids()
         self.assertEqual(len(bids), 0, "expected list of bids to be empty when all bids are zero")
+
+    def test_campaign_budget_depletion(self):
+        # Creating a single campaign, depleting its budget,
+        # and checking that the serving system no longer gets bids from it.
+        config.num_untracked_bids = 0
+        campaign_daily_budget = config.campaign_minimal_bid
+        campaign_run_period = 2
+        campaign = Campaign(campaign_id='campaign', total_budget=campaign_daily_budget * campaign_run_period,
+                            run_period=campaign_run_period, max_bid=campaign_daily_budget+0.1)
+        serving_system = ServingSystem(tracked_campaigns=[campaign])
+        bids = serving_system.get_bids()
+        self.assertEqual(len(bids), 1, "expected to get a bid from a single campaign")
+        # simulating a win for the campaign which depletes its budget
+        auction_winner = AuctionWinner(bid=Bid(campaign.id, campaign.max_bid), payment=campaign.max_bid)
+        serving_system.update_winners([auction_winner])
+        self.assertGreater(campaign.spent_today(), campaign.daily_budget)
+        bids_after_depletion = serving_system.get_bids()
+        self.assertEqual(bids_after_depletion, [], "expected list of bids to be empty after depleting campaign's budget")
 
     def test_with_mystique_budget_pacing(self):
         config.num_untracked_bids = 0

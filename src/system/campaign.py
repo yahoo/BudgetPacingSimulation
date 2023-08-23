@@ -58,7 +58,8 @@ class Campaign:
         self.max_bid = max_bid
         self.total_budget = total_budget
         # self.targeting_group = targeting_group
-        self.daily_budget = total_budget / run_period
+        self.daily_budget = total_budget / run_period        
+        assert self.daily_budget >= config.campaign_minimal_bid
         self.stats = CampaignStatistics(run_period=run_period)
 
     def bid(self) -> Optional[Bid]:
