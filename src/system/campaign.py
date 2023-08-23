@@ -10,15 +10,25 @@ class CampaignStatistics:
     num_iterations_per_spend_entry = config.num_iterations_per_day // config.num_spend_entries_per_day
     num_iterations_per_win_entry = config.num_iterations_per_day // config.num_win_entries_per_day
 
-    def __init__(self):
+    def __init__(self, run_period: int):
         self.spend_history = []
         self.today_spend = []
         self.auctions_won_history = []
         self.auctions_won_today = []
-        self.day_created = Clock.days()
+        self.days_left_to_run = run_period
+        self.day_started = None
+        self.day_ended = None
         self._reset_today_stats()
 
-    def setup_new_day(self):
+    def prepare_for_new_day(self):
+        # set start day if not already set
+        if self.day_started is None:
+            self.day_started = Clock.days()
+        # decrement the number of days left for the campaign to run
+        self.days_left_to_run -= 1
+        if self.days_left_to_run == 0:
+            self.day_ended = Clock.days()
+        # update history
         self.spend_history.append(self.today_spend)
         self.auctions_won_history.append(self.auctions_won_today)
         self._reset_today_stats()
@@ -47,10 +57,9 @@ class Campaign:
             raise Exception('Invalid max_bid parameter.')
         self.max_bid = max_bid
         self.total_budget = total_budget
-        self.run_period = run_period
         # self.targeting_group = targeting_group
         self.daily_budget = total_budget / run_period
-        self.stats = CampaignStatistics()
+        self.stats = CampaignStatistics(run_period=run_period)
 
     def bid(self) -> Optional[Bid]:
         bid_amount = random.uniform(config.campaign_minimal_bid, self.max_bid)
@@ -62,16 +71,20 @@ class Campaign:
     def pay(self, amount: float):
         self.stats.update(amount)
 
-    def setup_new_day(self):
-        if self.run_period > 0:
-            self.run_period -= 1
-        self.stats.setup_new_day()
+    def prepare_for_new_day(self):
+        self.stats.prepare_for_new_day()
+
+    def days_left_to_run(self):
+        return self.stats.days_left_to_run
 
     def spend_history(self) -> list[list[float]]:
         return self.stats.spend_history
 
     def spent_today(self) -> float:
         return sum(self.stats.today_spend)
+
+    def num_auctions_won_history(self) -> list[list[int]]:
+        return self.stats.auctions_won_history
 
     def num_auctions_won_today(self) -> int:
         return sum(self.stats.auctions_won_today)

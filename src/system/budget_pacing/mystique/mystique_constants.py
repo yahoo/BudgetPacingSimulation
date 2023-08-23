@@ -23,3 +23,9 @@ ps_correction_weight_factor = 0.2
 budget_spend_threshold = 0.95
 ps_invalid_value = -1
 minutes_for_end_day_edge_case = 3
+
+# field names for mystique's statistics
+FIELD_SPEND_HISTORY = 'spend_history'
+FIELD_TARGET_SPEND_HISTORY = 'target_spend_history'
+FIELD_TARGET_SLOPE_HISTORY = 'target_slope_history'
+FIELD_PACING_SIGNAL_HISTORY = 'pacing_signal_history'

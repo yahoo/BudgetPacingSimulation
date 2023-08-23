@@ -55,7 +55,7 @@ class TestCampaigns(unittest.TestCase):
         # simulating day passed
         for _ in range(config.num_iterations_per_day):
             Clock.advance()
-        campaign.setup_new_day()
+        campaign.prepare_for_new_day()
         self.assertEqual(len(campaign.stats.spend_history), 1)
         self.assertEqual(len(campaign.stats.auctions_won_history), 1)
         # checking history
