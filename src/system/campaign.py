@@ -50,6 +50,7 @@ class Campaign:
         self.run_period = run_period
         # self.targeting_group = targeting_group
         self.daily_budget = total_budget / run_period
+        assert self.daily_budget >= config.campaign_minimal_bid
         self.stats = CampaignStatistics()
 
     def bid(self) -> Optional[Bid]:
