@@ -25,7 +25,7 @@ class TestMarketPlace(unittest.TestCase):
             )
         serving_system = ServingSystem(tracked_campaigns=campaigns)
         # replacing the function that calculates the number of auctions for each minute
-        Marketplace._calculate_number_of_current_auctions = lambda _: num_auctions_per_iteration
+        Marketplace._sample_current_num_of_auctions = lambda _: num_auctions_per_iteration
         marketplace = Marketplace(serving_system=serving_system)
         for day in range(num_days):
             for i in range(config.num_iterations_per_day):
