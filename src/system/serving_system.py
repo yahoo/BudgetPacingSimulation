@@ -1,6 +1,6 @@
 import random
 
-from src.constants import num_minutes_in_day
+import src.constants as constants
 from src.system.campaign import Campaign
 from src.system.auction import *
 import src.configuration as config
@@ -67,9 +67,9 @@ class ServingSystem:
         # Budget Pacing periodic (every minute) spend updates
         self._update_pacing_system()
         # Check if this is the last iteration of the day
-        if Clock.minute_in_day() == num_minutes_in_day - 1:
+        if Clock.minute_in_day() == constants.num_minutes_in_day - 1:
             # Perform daily campaign updates
-            self._daily_campaign_updates()
+            self._end_of_day_campaign_updates()
 
     def _update_pacing_system(self):
         if self.pacing_system is None:
@@ -79,10 +79,11 @@ class ServingSystem:
             spend = self.pending_pacing_spend_updates.pop(campaign.id, 0)
             self.pacing_system.end_iteration(campaign_id=campaign.id, spend_since_last_iteration=spend)
 
-    def _daily_campaign_updates(self):
+    def _end_of_day_campaign_updates(self):
         for campaign in list(self.tracked_campaigns.values()):
-            campaign.setup_new_day()
-            if campaign.run_period == 0:
+            campaign.prepare_for_new_day()
+            assert campaign.days_left_to_run() >= 0
+            if campaign.days_left_to_run() == 0:
                 # add campaign to the structure of campaigns that are done
                 self.old_campaigns[campaign.id] = campaign
                 # remove campaign from the structure of active campaigns
@@ -96,7 +97,27 @@ class ServingSystem:
                                  amount=random.uniform(config.campaign_minimal_bid, config.untracked_bid_max)))
         return fake_bids
 
+    def get_statistics_for_all_campaigns(self) -> list[dict[str, object]]:
+        campaigns_statistics_as_rows = []
+        for campaign in self._all_campaigns():
+            campaign_statistics = {
+                constants.FIELD_CAMPAIGN_ID: campaign.id,
+                constants.FIELD_DAY_STARTED: campaign.stats.day_started,
+                constants.FIELD_DAY_ENDED: campaign.stats.day_ended,
+                constants.FIELD_DAILY_BUDGET: campaign.daily_budget,
+                constants.FIELD_NUM_AUCTIONS_WON_HISTORY: campaign.num_auctions_won_history()
+            }
+            if self.pacing_system is not None:
+                # merge campaign's pacing statistics the basic statistics
+                campaign_statistics |= self.pacing_system.get_pacing_statistics(campaign.id)
+            # add the combined statistics of the campaign to the output list
+            campaigns_statistics_as_rows.append(campaign_statistics)
+        return campaigns_statistics_as_rows
+
     @staticmethod
     def _calculate_number_of_untracked_bids() -> int:
         # We will later sample from distribution according to Clock.minutes()
         return config.num_untracked_bids
+
+    def _all_campaigns(self) -> list[Campaign]:
+        return list(self.tracked_campaigns.values()) + list(self.old_campaigns.values())

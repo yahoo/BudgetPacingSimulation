@@ -26,3 +26,9 @@ class PacingSystemInterface(metaclass=abc.ABCMeta):
         """Returns the current pacing signal of the campaign"""
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def get_pacing_statistics(self, campaign_id: str) -> dict[str, object]:
+        """Returns the pacing statistics of the campaign"""
+        raise NotImplementedError
+
+
