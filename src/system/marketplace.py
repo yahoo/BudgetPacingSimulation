@@ -58,9 +58,8 @@ class Marketplace:
     def _calculate_current_mean_num_of_auctions() -> float:
         # Calculate the mean of the Poisson distribution from which we sample the number of auctions for each minute.
         # The calculation depends on the current value of the Clock (minute_in_day).
-        return config.dist_mean_num_auctions_in_minute_param_a \
-            + config.dist_mean_num_auctions_in_minute_param_b * \
-            math.cos(
-                (2 * math.pi * Clock.minute_in_day() / config.num_iterations_per_day) +
-                config.dist_mean_num_auctions_in_minute_param_c
-            )
+        dc = config.dist_mean_num_auctions_in_minute_param_dc
+        cos_amplitude = config.dist_mean_num_auctions_in_minute_param_cos_amplitude
+        phase = config.dist_mean_num_auctions_in_minute_param_phase
+        return dc * (1 + cos_amplitude * math.cos((2 * math.pi)*(Clock.minute_in_day() / config.num_iterations_per_day
+                                                  + phase)))

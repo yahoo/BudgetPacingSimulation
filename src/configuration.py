@@ -26,10 +26,13 @@ num_untracked_bids = 50
 untracked_bid_max = 20
 
 # # #  Distributions  # # #
-# We calculate the mean of the distribution of the number of auctions in each minute as:
-# a + b * cos(x*(2*math.pi/num_iterations_per_day) + c),
-# where a, b, c are marketplace parameters (a = DC, b = Amplitude, c = Phase)
+# We calculate the mean of the distribution of the number of auctions in each minute (m) of the day as:
+# a * (1 + b * math.cos((2*math.pi)*(m/num_iterations_per_day + c))),
+# where a, b, c are marketplace parameters:
+# a: DC
+# b: cosine amplitude, as a fraction of DC
+# c: phase offset, as a fraction of the day (e.g., 0.25 means "shift the wave by a quarter of a day")
 # We use that value to define the mean of a Poisson distribution, from which we will sample the number of auctions
-dist_mean_num_auctions_in_minute_param_a = 400
-dist_mean_num_auctions_in_minute_param_b = 300
-dist_mean_num_auctions_in_minute_param_c = 1.5 * math.pi
+dist_mean_num_auctions_in_minute_param_dc = 400
+dist_mean_num_auctions_in_minute_param_cos_amplitude = 0.75
+dist_mean_num_auctions_in_minute_param_phase = 0.75
