@@ -61,5 +61,5 @@ class Marketplace:
         dc = config.dist_mean_num_auctions_in_minute_param_dc
         cos_amplitude = config.dist_mean_num_auctions_in_minute_param_cos_amplitude
         phase = config.dist_mean_num_auctions_in_minute_param_phase
-        return dc * (1 + cos_amplitude * math.cos((2 * math.pi)*(Clock.minute_in_day() / config.num_iterations_per_day
-                                                  + phase)))
+        current_fraction_of_day = Clock.minute_in_day() / config.num_iterations_per_day
+        return dc * (1 + cos_amplitude * math.cos((2 * math.pi) * (current_fraction_of_day + phase)))
