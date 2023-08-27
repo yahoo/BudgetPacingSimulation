@@ -5,7 +5,6 @@ import src.constants as constants
 # General
 num_days_to_simulate = 7
 num_iterations_per_day = 1440
-num_auctions_per_iteration = 1000
 # Budget Pacing System
 pacing_algorithm = constants.BudgetPacingAlgorithms.MYSTIQUE_LINEAR
 
@@ -35,4 +34,4 @@ untracked_bid_max = 20
 # We use that value to define the mean of a Poisson distribution, from which we will sample the number of auctions
 dist_mean_num_auctions_in_minute_param_dc = 400
 dist_mean_num_auctions_in_minute_param_cos_amplitude = 0.75
-dist_mean_num_auctions_in_minute_param_phase = 0.75
+dist_mean_num_auctions_in_minute_param_phase = 1.2
