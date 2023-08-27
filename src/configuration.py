@@ -3,13 +3,13 @@ import math
 import src.constants as constants
 
 # General
-num_days_to_simulate = 1
+num_days_to_simulate = 3
 num_iterations_per_day = 1440
 # Budget Pacing System
 pacing_algorithm = constants.BudgetPacingAlgorithms.MYSTIQUE_LINEAR
 
 # Campaigns
-num_campaigns = 2
+num_campaigns = 10
 campaign_min_budget = 1000
 campaign_max_budget = 10000
 campaign_min_run_period = 1

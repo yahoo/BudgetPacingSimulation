@@ -30,11 +30,11 @@ class AuctionInterface(metaclass=abc.ABCMeta):
 
 class AuctionFP(AuctionInterface):
     def run(self, bids: list[Bid]) -> list[AuctionWinner]:
-        if len(bids) == 0:
+        # change 5
+        if bids == []:
+        # if len(bids) == 0:
             return []
         winning_bid = max(bids)
         if winning_bid.amount < config.campaign_minimal_bid:
             return []
         return [AuctionWinner(bid=winning_bid, payment=winning_bid.amount)]
-
-

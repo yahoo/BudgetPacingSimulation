@@ -28,14 +28,19 @@ if __name__ == '__main__':
     serving_system = ServingSystem(pacing_system=pacing_system, tracked_campaigns=campaigns)
     marketplace = Marketplace(serving_system=serving_system)
     # Run
+    start_iter = time.time()
+    day=0
     for i in range(config.num_days_to_simulate * config.num_iterations_per_day):
-        start_iter = time.time()
         marketplace.run_iteration()
-        end_iter = time.time()
-        output = "The time of execution of iteration " + str(i) + " is :"
-        seconds = get_seconds(start_iter, end_iter)
-        print(output,
-              seconds, "s")
+        if(i%1440==0):
+            end_iter = time.time()
+            output = "The time of execution of day " + str(day) + " is :"
+            seconds = get_seconds(start_iter, end_iter)
+            print(output,
+                  seconds, "s")
+            day += 1
+            start_iter = time.time()
+
     # Get output metrics as rows
     output_statistics = serving_system.get_statistics_for_all_campaigns()
 
