@@ -1,7 +1,8 @@
 from src.system.auction import *
 from src.system.clock import Clock
 from src.system.serving_system import ServingSystem
-from src import configuration
+from scipy import stats
+import math
 
 
 class Marketplace:
@@ -32,7 +33,7 @@ class Marketplace:
         self.serving_system.update_winners(winners)
 
     def _generate_auctions(self) -> list[AuctionInterface]:
-        num_auctions = self._calculate_number_of_current_auctions()
+        num_auctions = self._sample_current_num_of_auctions()
         return [self._generate_auction() for _ in range(num_auctions)]
 
     def _generate_auction(self) -> AuctionInterface:
@@ -46,6 +47,19 @@ class Marketplace:
     def _get_current_auctions(self) -> list[AuctionInterface]:
         return self.current_auctions
 
-    def _calculate_number_of_current_auctions(self) -> int:
-        # We will later sample from distribution according to Clock.minutes()
-        return configuration.num_auctions_per_iteration
+    @staticmethod
+    def _sample_current_num_of_auctions() -> int:
+        # Calculate the mean of the Poisson distribution:
+        mu = Marketplace._calculate_current_mean_num_of_auctions()
+        # Sample from the Poisson distribution:
+        return stats.poisson.rvs(mu)
+
+    @staticmethod
+    def _calculate_current_mean_num_of_auctions() -> float:
+        # Calculate the mean of the Poisson distribution from which we sample the number of auctions for each minute.
+        # The calculation depends on the current value of the Clock (minute_in_day).
+        dc = config.dist_mean_num_auctions_in_minute_param_dc
+        cos_amplitude = config.dist_mean_num_auctions_in_minute_param_cos_amplitude
+        phase = config.dist_mean_num_auctions_in_minute_param_phase
+        current_fraction_of_day = Clock.minute_in_day() / config.num_iterations_per_day
+        return dc * (1 + cos_amplitude * math.cos((2 * math.pi) * (current_fraction_of_day + phase)))
