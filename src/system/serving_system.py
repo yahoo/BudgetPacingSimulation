@@ -59,13 +59,8 @@ class ServingSystem:
 
                 if self.pacing_system is not None:
                     # add payment to the pending updates which will be sent to the budget pacing system
-                    # change 2
                     self.pending_pacing_spend_updates[winner.bid.campaign_id] = self.pending_pacing_spend_updates.get(
                         winner.bid.campaign_id, 0) + winner.payment
-                    # if winner.bid.campaign_id in self.pending_pacing_spend_updates:
-                    #     self.pending_pacing_spend_updates[winner.bid.campaign_id] += winner.payment
-                    # else:
-                    #     self.pending_pacing_spend_updates[winner.bid.campaign_id] = winner.payment
 
     def end_iteration(self):
         # Budget Pacing periodic (every minute) spend updates
@@ -94,9 +89,9 @@ class ServingSystem:
                 self.tracked_campaigns.pop(campaign.id)
 
     def _generate_untracked_bids(self) -> list[Bid]:
-        # change 4
         return [Bid(campaign_id='untracked_campaign_' + str(i),
-                         amount=random.uniform(config.campaign_minimal_bid, config.untracked_bid_max)) for i in range(self._calculate_number_of_untracked_bids())]
+                    amount=random.uniform(config.campaign_minimal_bid, config.untracked_bid_max))
+                for i in range(self._calculate_number_of_untracked_bids())]
 
     def get_statistics_for_all_campaigns(self) -> list[dict[str, object]]:
         campaigns_statistics_as_rows = []
