@@ -58,12 +58,11 @@ class ServingSystem:
             if winner.bid.campaign_id in self.tracked_campaigns:
                 # update campaign
                 self.tracked_campaigns[winner.bid.campaign_id].pay(winner.payment)
+
                 if self.pacing_system is not None:
                     # add payment to the pending updates which will be sent to the budget pacing system
-                    if winner.bid.campaign_id in self.pending_pacing_spend_updates:
-                        self.pending_pacing_spend_updates[winner.bid.campaign_id] += winner.payment
-                    else:
-                        self.pending_pacing_spend_updates[winner.bid.campaign_id] = winner.payment
+                    self.pending_pacing_spend_updates[winner.bid.campaign_id] = self.pending_pacing_spend_updates.get(
+                        winner.bid.campaign_id, 0) + winner.payment
 
     def end_iteration(self):
         # Budget Pacing periodic (every minute) spend updates
@@ -92,12 +91,9 @@ class ServingSystem:
                 self.tracked_campaigns.pop(campaign.id)
 
     def _generate_untracked_bids(self) -> list[Bid]:
-        fake_bids = []
-        for i in range(self._calculate_number_of_untracked_bids()):
-            # We will later sample the value of the untracked bid from a distribution
-            fake_bids.append(Bid(campaign_id='untracked_campaign_' + str(i),
-                                 amount=random.uniform(config.campaign_minimal_bid, config.untracked_bid_max)))
-        return fake_bids
+        return [Bid(campaign_id='untracked_campaign_' + str(i),
+                    amount=random.uniform(config.campaign_minimal_bid, config.untracked_bid_max))
+                for i in range(self._calculate_number_of_untracked_bids())]
 
     def get_statistics_for_all_campaigns(self) -> list[dict[str, object]]:
         campaigns_statistics_as_rows = []

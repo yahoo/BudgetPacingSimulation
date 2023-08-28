@@ -40,7 +40,7 @@ class AuctionFP(AuctionInterface):
         self._user_properties = user_properties
 
     def run(self, bids: list[Bid]) -> list[AuctionWinner]:
-        if len(bids) == 0:
+        if not bids:
             return []
         winning_bid = max(bids)
         if winning_bid.amount < config.campaign_minimal_bid:
