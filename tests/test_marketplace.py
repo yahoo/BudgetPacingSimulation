@@ -2,10 +2,8 @@ import unittest
 from unittest import mock
 
 from src.system.campaign import *
-from src.system.daily_cosine import DailyCosineWave
-from src.system.serving_system import ServingSystem
 from src.system.marketplace import Marketplace
-from src import configuration as config
+from src.system.serving_system import ServingSystem
 
 
 class TestMarketPlace(unittest.TestCase):
@@ -19,14 +17,10 @@ class TestMarketPlace(unittest.TestCase):
     def test_marketplace(self):
         num_days = 3
         num_campaigns = 10
-        campaigns = []
-        for i in range(num_campaigns):
-            campaigns.append(
-                Campaign(campaign_id=f'campaign_{i}', total_budget=100000, run_period=7, max_bid=1)
-            )
+        campaigns = [Campaign(campaign_id=f'campaign_{i}', total_budget=100000, run_period=7, max_bid=1)
+                     for i in range(num_campaigns)]
         serving_system = ServingSystem(tracked_campaigns=campaigns)
-        marketplace = Marketplace(serving_system=serving_system,
-                                  traffic_mean_cos_wave=DailyCosineWave(dc=10, amplitude=0.4, phase=1.2))
+        marketplace = Marketplace(serving_system=serving_system)
         for day in range(num_days):
             for i in range(config.num_iterations_per_day):
                 marketplace.run_iteration()
