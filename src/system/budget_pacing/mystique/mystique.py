@@ -32,10 +32,10 @@ class MystiquePacingSystem(PacingSystemInterface):
             self.update_pacing_signal(mystique_tracked_campaign)
             # check if this was the last iteration of the day
             if Clock.minute_in_day() == mystique_constants.num_iterations_per_day - 1:
+                # update target slope and spend
+                self.target_spend_slope_calculator.update_target_slope_and_spend(mystique_tracked_campaign)
                 # push campaign's statistics of the day into history
                 mystique_tracked_campaign.new_day_init(False)
-                # update target slope and spend
-                self.target_spend_slope_calculator.update_slope(mystique_tracked_campaign)
 
     def get_pacing_signal(self, campaign_id: str):
         ps = mystique_constants.default_ps_value

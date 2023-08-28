@@ -1,66 +1,73 @@
-import math
-import random
+import numpy as np
+
 from src.system.auction import *
 from src.system.clock import Clock
+from src.system.daily_cosine import DailyCosineWave
 from src.system.serving_system import ServingSystem
 from scipy import stats
+from scipy.special import softmax
 
 
 class Marketplace:
-    def __init__(self, serving_system: ServingSystem, auction_type: AuctionType = AuctionType.FP):
+    def __init__(self, serving_system: ServingSystem, auction_type: AuctionType = AuctionType.FP,
+                 traffic_mean_cos_wave: DailyCosineWave = config.traffic_mean_cos_wave):
         if serving_system is None:
             raise Exception('invalid serving_system parameter')
         self.serving_system = serving_system
         self.auction_type = auction_type
-        self.current_auctions = self._generate_auctions()
+        self.traffic_mean_cos_wave = traffic_mean_cos_wave
 
     def run_iteration(self):
-        self._run_auctions()
+        # generate and run auctions
+        auctions = self._generate_auctions()
+        self._run_auctions(auctions)
+        # end the iteration
         self.serving_system.end_iteration()
         Clock.advance()
-        # generate new auctions for the new iteration
-        self.current_auctions = self._generate_auctions()
 
-    def _run_auctions(self):
-        auctions = self._get_current_auctions()
+    def _run_auctions(self, auctions: list[AuctionInterface]):
         for auction in auctions:
             self._run_single_auction(auction)
 
     def _run_single_auction(self, auction: AuctionInterface):
-        bids, tracked_bids_exist = self.serving_system.get_bids(auction)
-        if not tracked_bids_exist:
+        bids = self.serving_system.get_bids(auction)
+        if len(bids) == 0:
             return
         winners = auction.run(bids)
         self.serving_system.update_winners(winners)
 
     def _generate_auctions(self) -> list[AuctionInterface]:
-        num_auctions = self._calculate_number_of_current_auctions()
-        return [self._generate_auction() for _ in range(num_auctions)]
+        num_auctions = self._sample_current_num_of_auctions()
+        # generate a probability array for each user property
+        probabilities_per_property = {
+            feature: softmax([cos_wave.calculate_current_value()
+                              for cos_wave in config.user_properties[feature].values()])
+            for feature in config.user_properties
+        }
+        return [self._generate_auction(user_properties_probabilities=probabilities_per_property)
+                for _ in range(num_auctions)]
 
-    def _generate_auction(self) -> AuctionInterface:
+    def _generate_auction(self, user_properties_probabilities: dict[str, list[float]]) -> AuctionInterface:
         if self.auction_type == AuctionType.FP:
-            target_group = random.randint(0, config.num_targeting_groups-1)  # TODO: distribution
-            return AuctionFP(targeting_group=target_group)
+            user_properties = {
+                feature: np.random.choice(list(config.user_properties[feature].keys()),
+                                          p=user_properties_probabilities[feature])
+                for feature in user_properties_probabilities
+            }
+            return AuctionFP(user_properties=user_properties)
         elif self.auction_type == AuctionType.GSP:
             raise NotImplementedError
         else:
             raise NotImplementedError
 
-    def _get_current_auctions(self) -> list[AuctionInterface]:
-        return self.current_auctions
-
-    @staticmethod
-    def _calculate_number_of_current_auctions() -> int:
-        # calculate the mean of the Poisson distribution
-        mu = Marketplace._calculate_mean_num_auctions_in_minute(Clock.minute_in_day())
+    def _sample_current_num_of_auctions(self) -> int:
+        # Calculate the mean of the Poisson distribution:
+        mu = self._calculate_current_mean_num_of_auctions()
+        # Sample from the Poisson distribution:
         return stats.poisson.rvs(mu)
 
-    @staticmethod
-    def _calculate_mean_num_auctions_in_minute(minute_in_day: int) -> float:
-        assert 0 <= minute_in_day < config.num_iterations_per_day
-        return config.dist_mean_num_auctions_in_minute_param_a \
-            + config.dist_mean_num_auctions_in_minute_param_b * \
-            math.cos(
-                (2 * math.pi * minute_in_day / config.num_iterations_per_day) +
-                config.dist_mean_num_auctions_in_minute_param_c
-            )
+    def _calculate_current_mean_num_of_auctions(self) -> float:
+        # Calculate the mean of the Poisson distribution from which we sample the number of auctions for each minute.
+        # The calculation depends on the current value of the Clock (minute_in_day).
+        return self.traffic_mean_cos_wave.calculate_current_value()
+

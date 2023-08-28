@@ -2,6 +2,7 @@ import random
 from typing import Optional
 
 import src.configuration as config
+from src.system.auction import AuctionInterface
 from src.system.bid import Bid
 from src.system.clock import Clock
 
@@ -20,7 +21,7 @@ class CampaignStatistics:
         self.day_ended = None
         self._reset_today_stats()
 
-    def setup_new_day(self):
+    def prepare_for_new_day(self):
         # set start day if not already set
         if self.day_started is None:
             self.day_started = Clock.days()
@@ -51,16 +52,18 @@ class CampaignStatistics:
 
 
 class Campaign:
-    def __init__(self, campaign_id: str, total_budget: float, run_period: int, max_bid: float, targeting_groups: list[int]):
+    def __init__(self, campaign_id: str, total_budget: float, run_period: int, max_bid: float,
+                 targeting_groups: dict[str, set[int]] = None):
         self.id = campaign_id
         if max_bid <= config.campaign_minimal_bid:
             raise Exception('Invalid max_bid parameter.')
         self.max_bid = max_bid
         self.total_budget = total_budget
-        if targeting_groups is None:
-            targeting_groups = []
-        self._targeting_groups = set(targeting_groups)
         self.daily_budget = total_budget / run_period
+        assert self.daily_budget >= config.campaign_minimal_bid
+        if targeting_groups is None:
+            targeting_groups = {}
+        self._targeting_groups = targeting_groups
         self.stats = CampaignStatistics(run_period=run_period)
 
     def bid(self) -> Optional[Bid]:
@@ -73,8 +76,8 @@ class Campaign:
     def pay(self, amount: float):
         self.stats.update(amount)
 
-    def setup_new_day(self):
-        self.stats.setup_new_day()
+    def prepare_for_new_day(self):
+        self.stats.prepare_for_new_day()
 
     def days_left_to_run(self):
         return self.stats.days_left_to_run
@@ -91,5 +94,9 @@ class Campaign:
     def num_auctions_won_today(self) -> int:
         return sum(self.stats.auctions_won_today)
 
-    def targeting_groups(self) -> set[int]:
-        return self._targeting_groups
+    def is_relevant_auction(self, auction: AuctionInterface) -> bool:
+        user_properties = auction.user_properties()
+        for (feature, desired_values) in self._targeting_groups.items():
+            if user_properties[feature] not in desired_values:
+                return False
+        return True

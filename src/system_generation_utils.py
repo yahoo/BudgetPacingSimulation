@@ -1,6 +1,8 @@
 import random
 from typing import Optional
 
+import numpy as np
+
 import src.configuration as config
 import src.constants as constants
 from src.system.campaign import Campaign
@@ -14,7 +16,12 @@ def generate_campaigns(n: int):
                      total_budget=random.uniform(config.campaign_min_budget, config.campaign_max_budget),
                      run_period=random.randint(config.campaign_min_run_period, config.campaign_max_run_period),
                      max_bid=random.uniform(config.campaign_minimal_max_bid, config.campaign_maximal_max_bid),
-                     targeting_groups=list(range(config.num_targeting_groups)))
+                     targeting_groups={
+                         feature: {np.random.choice(list(config.user_properties[feature].keys()))}
+                         for feature in config.user_properties
+                         # coin flip w.p. 0.5 to decide whether to include the property in campaign's targets
+                         if np.random.random() < 0.5
+                     })
             for i in range(n)]
 
 

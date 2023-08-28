@@ -30,16 +30,15 @@ class ServingSystem:
         if self.pacing_system is not None:
             self.pacing_system.add_campaign(campaign)
 
-    def get_bids(self, auction: AuctionInterface) -> tuple[list[Bid], bool]:
+    def get_bids(self, auction: AuctionInterface) -> list[Bid]:
         bids = []
-        flag_tracked_bids_exist = False
         # get "real" bids
         for campaign in self.tracked_campaigns.values():
-            # make sure the campaign hasn't reached his daily budget
+            # make sure the campaign hasn't reached its daily budget
             if campaign.spent_today() >= campaign.daily_budget:
                 continue
-            # check if the auction is relevant to the campaign
-            if auction.targeting_group() not in campaign.targeting_groups():
+            # check if the auction is relevant (matches campaign's target group) to the campaign
+            if not campaign.is_relevant_auction(auction):
                 continue
             bid = campaign.bid()
             if bid is None:
@@ -49,10 +48,10 @@ class ServingSystem:
                 bid.amount *= pacing_signal
             if bid.amount > 0:
                 bids.append(bid)
-                flag_tracked_bids_exist = True
-        # add untracked bids
-        bids += self._generate_untracked_bids()
-        return bids, flag_tracked_bids_exist
+        if bids:
+            # add untracked bids
+            bids += self._generate_untracked_bids()
+        return bids
 
     def update_winners(self, winners: list[AuctionWinner]):
         for winner in winners:
@@ -72,7 +71,7 @@ class ServingSystem:
         # Check if this is the last iteration of the day
         if Clock.minute_in_day() == constants.num_minutes_in_day - 1:
             # Perform daily campaign updates
-            self._daily_campaign_updates()
+            self._end_of_day_campaign_updates()
 
     def _update_pacing_system(self):
         if self.pacing_system is None:
@@ -82,10 +81,10 @@ class ServingSystem:
             spend = self.pending_pacing_spend_updates.pop(campaign.id, 0)
             self.pacing_system.end_iteration(campaign_id=campaign.id, spend_since_last_iteration=spend)
 
-    def _daily_campaign_updates(self):
+    def _end_of_day_campaign_updates(self):
         for campaign in list(self.tracked_campaigns.values()):
-            assert campaign.days_left_to_run() > 0
-            campaign.setup_new_day()
+            campaign.prepare_for_new_day()
+            assert campaign.days_left_to_run() >= 0
             if campaign.days_left_to_run() == 0:
                 # add campaign to the structure of campaigns that are done
                 self.old_campaigns[campaign.id] = campaign
