@@ -1,5 +1,4 @@
 import abc
-from enum import Enum
 
 from src.system.bid import Bid
 from dataclasses import dataclass
@@ -10,11 +9,6 @@ import src.configuration as config
 class AuctionWinner:
     bid: Bid
     payment: float
-
-
-class AuctionType(Enum):
-    FP = 1
-    GSP = 2
 
 
 class AuctionInterface(metaclass=abc.ABCMeta):

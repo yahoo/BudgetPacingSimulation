@@ -1,5 +1,6 @@
 import numpy as np
 
+from src.constants import AuctionType
 from src.system.auction import *
 from src.system.clock import Clock
 from src.system.daily_cosine import DailyCosineWave

@@ -1,9 +1,11 @@
 import src.constants as constants
+from src.constants import AuctionType
 from src.system.daily_cosine import DailyCosineWave
 
 # General
 num_days_to_simulate = 7
 num_iterations_per_day = 1440
+auction_type = AuctionType.FP
 
 # Budget Pacing System
 pacing_algorithm = constants.BudgetPacingAlgorithms.MYSTIQUE_LINEAR

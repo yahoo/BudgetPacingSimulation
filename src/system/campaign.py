@@ -97,6 +97,6 @@ class Campaign:
     def is_relevant_auction(self, auction: AuctionInterface) -> bool:
         user_properties = auction.user_properties()
         for (feature, desired_values) in self._targeting_groups.items():
-            if user_properties[feature] not in desired_values:
+            if user_properties.get(feature) not in desired_values:
                 return False
         return True
