@@ -27,7 +27,7 @@ class Marketplace:
 
     def _run_single_auction(self, auction: AuctionInterface):
         bids = self.serving_system.get_bids()
-        if len(bids) == 0:
+        if not bids:
             return
         winners = auction.run(bids)
         self.serving_system.update_winners(winners)
