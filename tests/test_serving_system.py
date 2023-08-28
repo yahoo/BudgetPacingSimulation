@@ -111,6 +111,27 @@ class TestServingSystem(unittest.TestCase):
         self.assertEqual(campaign.stats.spend_history[0][0], payment,
                          "expected campaign spend history to include payment")
 
+    def test_targeting_groups(self):
+        config.num_untracked_bids = 0
+        campaign = Campaign(campaign_id='campaign1', total_budget=1000, run_period=7, max_bid=25, targeting_groups={})
+        serving_system = ServingSystem(pacing_system=None, tracked_campaigns=[campaign])
+        # test without targeting groups
+        bids = serving_system.get_bids(auction=AuctionFP({}))
+        self.assertEqual(len(bids), 1, "expected to see a single bid")
+        # test with a targeting group different from that of the auction
+        property_name = 'Property1'
+        # set targeting group for the campaign
+        campaign._targeting_groups = {property_name: {4, 5, 6}}
+        bids = serving_system.get_bids(AuctionFP({property_name: 1}))
+        self.assertEqual(len(bids), 0, "expected to see no bids for the auction")
+        # check that all valid values for the target property produce a bid from the campaign
+        for target_value in campaign._targeting_groups[property_name]:
+            bids = serving_system.get_bids(AuctionFP({property_name: target_value}))
+            self.assertEqual(len(bids), 1, "expected to see a single bid")
+        # test a property with a different name than the target property
+        bids = serving_system.get_bids(AuctionFP({f'{property_name}_different': 4}))
+        self.assertEqual(len(bids), 0, "expected to see no bids for the auction")
+
     def test_statistics_with_mystique(self):
         num_days = 2
         config.num_untracked_bids = 0
