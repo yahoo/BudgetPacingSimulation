@@ -17,10 +17,12 @@ def generate_campaigns(n: int):
                      run_period=random.randint(config.campaign_min_run_period, config.campaign_max_run_period),
                      max_bid=random.uniform(config.campaign_minimal_max_bid, config.campaign_maximal_max_bid),
                      targeting_groups={
-                         feature: {np.random.choice(list(config.user_properties[feature].keys()))}
+                         feature: set(
+                             np.random.choice(list(config.user_properties[feature].keys()),
+                                              size=num_target_values,
+                                              replace=False))
                          for feature in config.user_properties
-                         # coin flip w.p. 0.5 to decide whether to include the property in campaign's targets
-                         if np.random.random() < 0.5
+                         if (num_target_values := random.randint(0, len(config.user_properties[feature].keys()))) > 0
                      })
             for i in range(n)]
 
@@ -34,4 +36,3 @@ def generate_pacing_system(algorithm: constants.BudgetPacingAlgorithms) -> Optio
         return None
     else:
         raise Exception(f'Unsupported budget pacing algorithm: {algorithm}')
-
