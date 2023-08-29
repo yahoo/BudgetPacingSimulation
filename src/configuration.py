@@ -36,10 +36,10 @@ user_properties = {
     'Location': {
         0: DailyCosineWave(5, 0.4, 0),
         1: DailyCosineWave(5, 0.2, 0.5),
-        2: DailyCosineWave(6, 0.5, 1),
-        3: DailyCosineWave(7, 0.8, 1.5),
-        4: DailyCosineWave(8, 0.7, 1.8),
-        5: DailyCosineWave(9, 0.4, 1.8)
+        2: DailyCosineWave(6, 0.5, 0.4),
+        3: DailyCosineWave(7, 0.8, 0.5),
+        4: DailyCosineWave(8, 0.7, 0.8),
+        5: DailyCosineWave(9, 0.4, 0.8)
     }
 }
 
@@ -47,5 +47,5 @@ user_properties = {
 # We calculate the mean of the distribution of the number of auctions in each minute (m) of the day as:
 # dc * (1 + amplitude * math.cos((2*math.pi)*(m/num_iterations_per_day + phase))),
 # We use that value to define the mean of a Poisson distribution, from which we will sample the number of auctions
-traffic_mean_cos_wave = DailyCosineWave(dc=1500, amplitude=0.75, phase=1.2)
+traffic_mean_cos_wave = DailyCosineWave(dc=1500, amplitude=0.75, phase=0.2)
 

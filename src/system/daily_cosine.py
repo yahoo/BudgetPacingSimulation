@@ -15,7 +15,7 @@ class DailyCosineWave:
     def __init__(self, dc: float, amplitude: float, phase: float):
         assert dc > 0
         assert 0 <= amplitude <= 1
-        assert 0 <= phase <= 2*math.pi
+        assert 0 <= phase <= 1
         self.dc = dc
         self.amplitude = amplitude
         self.phase = phase
