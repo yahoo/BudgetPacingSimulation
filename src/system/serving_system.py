@@ -108,7 +108,7 @@ class ServingSystem:
                 constants.FIELD_NUM_AUCTIONS_WON_HISTORY: campaign.num_auctions_won_history(),
                 constants.FIELD_CPM_DAILY_HISTORY: campaign.cpm_daily_history(),
                 constants.FIELD_BUDGET_UTILIZATION_DAILY_HISTORY: campaign.budget_utilization_daily_history(),
-                constants.FIELD_OVERSPEND_DAILY_HISTORY: campaign.overspend_percentage_daily_history()
+                constants.FIELD_OVERSPEND_DAILY_HISTORY: campaign.overspend_value_daily_history()
             }
             if self.pacing_system is not None:
                 # merge campaign's pacing statistics the basic statistics

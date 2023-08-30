@@ -99,7 +99,7 @@ class Campaign:
         return [sum(self.spend_history()[day]) / self.daily_budget
                 for day in range(len(self.num_auctions_won_history()))]
 
-    def overspend_percentage_daily_history(self) -> list[float]:
-        return [(spent_in_day - self.daily_budget) / self.daily_budget
+    def overspend_value_daily_history(self) -> list[float]:
+        return [spent_in_day - self.daily_budget
                 if (spent_in_day := sum(self.spend_history()[day])) > self.daily_budget else 0
                 for day in range(len(self.num_auctions_won_history()))]
