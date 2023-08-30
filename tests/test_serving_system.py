@@ -33,7 +33,7 @@ class TestServingSystem(unittest.TestCase):
                 Campaign(campaign_id=f'campaign_{i}', total_budget=initial_budget, run_period=7, max_bid=25)
             )
         serving_system = ServingSystem(tracked_campaigns=campaigns)
-        bids = serving_system.get_bids()
+        bids = serving_system.get_bids(AuctionFP({}))
         self.assertEqual(len(bids), num_campaigns + config.num_untracked_bids, "wrong number of generated bids")
         for c in campaigns:
             # assert that each campaign has a bid in the list of bids
@@ -57,7 +57,7 @@ class TestServingSystem(unittest.TestCase):
             )
         serving_system = ServingSystem(pacing_system=MockPacingSystem(pacing_signal=0),
                                        tracked_campaigns=campaigns)
-        bids = serving_system.get_bids()
+        bids = serving_system.get_bids(AuctionFP({}))
         self.assertEqual(len(bids), 0, "expected list of bids to be empty when all bids are zero")
 
     def test_campaign_budget_depletion(self):
@@ -69,13 +69,13 @@ class TestServingSystem(unittest.TestCase):
         campaign = Campaign(campaign_id='campaign', total_budget=campaign_daily_budget * campaign_run_period,
                             run_period=campaign_run_period, max_bid=campaign_daily_budget+0.1)
         serving_system = ServingSystem(tracked_campaigns=[campaign])
-        bids = serving_system.get_bids()
+        bids = serving_system.get_bids(AuctionFP({}))
         self.assertEqual(len(bids), 1, "expected to get a bid from a single campaign")
         # simulating a win for the campaign which depletes its budget
         auction_winner = AuctionWinner(bid=Bid(campaign.id, campaign.max_bid), payment=campaign.max_bid)
         serving_system.update_winners([auction_winner])
         self.assertGreater(campaign.spent_today(), campaign.daily_budget)
-        bids_after_depletion = serving_system.get_bids()
+        bids_after_depletion = serving_system.get_bids(AuctionFP({}))
         self.assertEqual(bids_after_depletion, [], "expected list of bids to be empty after depleting campaign's budget")
 
     def test_with_mystique_budget_pacing(self):
@@ -87,7 +87,7 @@ class TestServingSystem(unittest.TestCase):
         # check that campaigns were added to Mystique
         self.assertTrue(campaign.id in mystique.mystique_tracked_campaigns,
                         "campaign was not added to pacing system")
-        bids = serving_system.get_bids()
+        bids = serving_system.get_bids(AuctionFP({}))
         self.assertEqual(len(bids), 1)
         bid = bids[0]
         self.assertGreater(bid.amount, 0)
@@ -111,6 +111,27 @@ class TestServingSystem(unittest.TestCase):
         self.assertEqual(campaign.stats.spend_history[0][0], payment,
                          "expected campaign spend history to include payment")
 
+    def test_targeting_groups(self):
+        config.num_untracked_bids = 0
+        campaign = Campaign(campaign_id='campaign1', total_budget=1000, run_period=7, max_bid=25, targeting_groups={})
+        serving_system = ServingSystem(pacing_system=None, tracked_campaigns=[campaign])
+        # test without targeting groups
+        bids = serving_system.get_bids(auction=AuctionFP({}))
+        self.assertEqual(len(bids), 1, "expected to see a single bid")
+        # test with a targeting group different from that of the auction
+        property_name = 'Property1'
+        # set targeting group for the campaign
+        campaign._targeting_groups = {property_name: {4, 5, 6}}
+        bids = serving_system.get_bids(AuctionFP({property_name: 1}))
+        self.assertEqual(len(bids), 0, "expected to see no bids for the auction")
+        # check that all valid values for the target property produce a bid from the campaign
+        for target_value in campaign._targeting_groups[property_name]:
+            bids = serving_system.get_bids(AuctionFP({property_name: target_value}))
+            self.assertEqual(len(bids), 1, "expected to see a single bid")
+        # test a property with a different name than the target property
+        bids = serving_system.get_bids(AuctionFP({f'{property_name}_different': 4}))
+        self.assertEqual(len(bids), 0, "expected to see no bids for the auction")
+
     def test_statistics_with_mystique(self):
         num_days = 2
         config.num_untracked_bids = 0
@@ -124,7 +145,7 @@ class TestServingSystem(unittest.TestCase):
         serving_system = ServingSystem(pacing_system=mystique,
                                        tracked_campaigns=campaigns)
         # simulate an auction
-        bids = serving_system.get_bids()
+        bids = serving_system.get_bids(AuctionFP({}))
         self.assertEqual(len(bids), num_campaigns)
         serving_system.update_winners([AuctionWinner(bid=bids[0], payment=bids[0].amount)])
         for _ in range(num_minutes_in_day * num_days):
