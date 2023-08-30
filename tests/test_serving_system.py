@@ -67,7 +67,7 @@ class TestServingSystem(unittest.TestCase):
         campaign_daily_budget = config.campaign_minimal_bid
         campaign_run_period = 2
         campaign = Campaign(campaign_id='campaign', total_budget=campaign_daily_budget * campaign_run_period,
-                            run_period=campaign_run_period, max_bid=campaign_daily_budget+0.1)
+                            run_period=campaign_run_period, max_bid=campaign_daily_budget + 0.1)
         serving_system = ServingSystem(tracked_campaigns=[campaign])
         bids = serving_system.get_bids()
         self.assertEqual(len(bids), 1, "expected to get a bid from a single campaign")
@@ -76,7 +76,8 @@ class TestServingSystem(unittest.TestCase):
         serving_system.update_winners([auction_winner])
         self.assertGreater(campaign.spent_today(), campaign.daily_budget)
         bids_after_depletion = serving_system.get_bids()
-        self.assertEqual(bids_after_depletion, [], "expected list of bids to be empty after depleting campaign's budget")
+        self.assertEqual(bids_after_depletion, [],
+                         "expected list of bids to be empty after depleting campaign's budget")
 
     def test_with_mystique_budget_pacing(self):
         config.num_untracked_bids = 0
@@ -115,11 +116,8 @@ class TestServingSystem(unittest.TestCase):
         num_days = 2
         config.num_untracked_bids = 0
         num_campaigns = 5
-        campaigns = []
-        for i in range(num_campaigns):
-            campaigns.append(
-                Campaign(campaign_id=f'campaign_{i}', total_budget=1000, run_period=7, max_bid=25)
-            )
+        campaigns = [Campaign(campaign_id=f'campaign_{i}', total_budget=1000, run_period=7, max_bid=25)
+                     for i in range(num_campaigns)]
         mystique = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
         serving_system = ServingSystem(pacing_system=mystique,
                                        tracked_campaigns=campaigns)
@@ -137,10 +135,20 @@ class TestServingSystem(unittest.TestCase):
         campaign_stats = stats_per_campaign_list[0]
         self.assertIsNotNone(campaign_stats)
         # check that basic statistics exist
+        daily_stats_fields = [constants.FIELD_CPM_DAILY_HISTORY,
+                              constants.FIELD_BUDGET_UTILIZATION_DAILY_HISTORY, constants.FIELD_OVERSPEND_DAILY_HISTORY]
         basic_stats_fields = [constants.FIELD_CAMPAIGN_ID, constants.FIELD_DAY_STARTED, constants.FIELD_DAY_ENDED,
-                              constants.FIELD_DAILY_BUDGET, constants.FIELD_NUM_AUCTIONS_WON_HISTORY]
+                              constants.FIELD_DAILY_BUDGET,
+                              constants.FIELD_NUM_AUCTIONS_WON_HISTORY] + daily_stats_fields
+        # check that all basic statistics exist
         for field in basic_stats_fields:
             self.assertTrue(field in campaign_stats, f'basic statistic {field} is missing.')
+        # check that statistics which have a single entry per day are indeed num_days long
+        for field in daily_stats_fields:
+            self.assertEqual(len(campaign_stats[field]), num_days)
+            for value_in_day in campaign_stats[field]:
+                self.assertGreaterEqual(value_in_day, 0, "expected value in a day to be >= 0")
+        # check expected values for specific basic statistics
         self.assertEqual(len(campaign_stats[constants.FIELD_NUM_AUCTIONS_WON_HISTORY]), num_days)
         self.assertEqual(len(campaign_stats[constants.FIELD_NUM_AUCTIONS_WON_HISTORY][0]),
                          config.num_win_entries_per_day)

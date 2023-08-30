@@ -105,7 +105,10 @@ class ServingSystem:
                 constants.FIELD_DAY_STARTED: campaign.stats.day_started,
                 constants.FIELD_DAY_ENDED: campaign.stats.day_ended,
                 constants.FIELD_DAILY_BUDGET: campaign.daily_budget,
-                constants.FIELD_NUM_AUCTIONS_WON_HISTORY: campaign.num_auctions_won_history()
+                constants.FIELD_NUM_AUCTIONS_WON_HISTORY: campaign.num_auctions_won_history(),
+                constants.FIELD_CPM_DAILY_HISTORY: campaign.cpm_daily_history(),
+                constants.FIELD_BUDGET_UTILIZATION_DAILY_HISTORY: campaign.budget_utilization_daily_history(),
+                constants.FIELD_OVERSPEND_DAILY_HISTORY: campaign.overspend_percentage_daily_history()
             }
             if self.pacing_system is not None:
                 # merge campaign's pacing statistics the basic statistics

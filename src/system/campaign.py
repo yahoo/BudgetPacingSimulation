@@ -58,7 +58,7 @@ class Campaign:
         self.max_bid = max_bid
         self.total_budget = total_budget
         # self.targeting_group = targeting_group
-        self.daily_budget = total_budget / run_period        
+        self.daily_budget = total_budget / run_period
         assert self.daily_budget >= config.campaign_minimal_bid
         self.stats = CampaignStatistics(run_period=run_period)
 
@@ -89,3 +89,17 @@ class Campaign:
 
     def num_auctions_won_today(self) -> int:
         return sum(self.stats.auctions_won_today)
+
+    def cpm_daily_history(self) -> list[float]:
+        return [sum(self.spend_history()[day]) / num_wins_in_day
+                if (num_wins_in_day := sum(self.num_auctions_won_history()[day])) > 0 else 0
+                for day in range(len(self.num_auctions_won_history()))]
+
+    def budget_utilization_daily_history(self) -> list[float]:
+        return [sum(self.spend_history()[day]) / self.daily_budget
+                for day in range(len(self.num_auctions_won_history()))]
+
+    def overspend_percentage_daily_history(self) -> list[float]:
+        return [(spent_in_day - self.daily_budget) / self.daily_budget
+                if (spent_in_day := sum(self.spend_history()[day])) > self.daily_budget else 0
+                for day in range(len(self.num_auctions_won_history()))]
