@@ -2,6 +2,7 @@ import random
 from typing import Optional
 
 import src.configuration as config
+from src.system.auction import AuctionInterface
 from src.system.bid import Bid
 from src.system.clock import Clock
 
@@ -51,15 +52,18 @@ class CampaignStatistics:
 
 
 class Campaign:
-    def __init__(self, campaign_id: str, total_budget: float, run_period: int, max_bid: float):
+    def __init__(self, campaign_id: str, total_budget: float, run_period: int, max_bid: float,
+                 targeting_groups: dict[str, set[int]] = None):
         self.id = campaign_id
         if max_bid <= config.campaign_minimal_bid:
             raise Exception('Invalid max_bid parameter.')
         self.max_bid = max_bid
         self.total_budget = total_budget
-        # self.targeting_group = targeting_group
         self.daily_budget = total_budget / run_period
         assert self.daily_budget >= config.campaign_minimal_bid
+        if targeting_groups is None:
+            targeting_groups = {}
+        self._targeting_groups = targeting_groups
         self.stats = CampaignStatistics(run_period=run_period)
 
     def bid(self) -> Optional[Bid]:
@@ -103,3 +107,11 @@ class Campaign:
         return [spent_in_day - self.daily_budget
                 if (spent_in_day := sum(self.spend_history()[day])) > self.daily_budget else 0
                 for day in range(len(self.num_auctions_won_history()))]
+
+    def is_relevant_auction(self, auction: AuctionInterface) -> bool:
+        user_properties = auction.user_properties()
+        for (feature, desired_values) in self._targeting_groups.items():
+            if user_properties.get(feature) not in desired_values:
+                return False
+        return True
+
