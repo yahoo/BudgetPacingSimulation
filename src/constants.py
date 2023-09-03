@@ -23,3 +23,6 @@ FIELD_NUM_AUCTIONS_WON_HISTORY = 'num_auctions_won_history'
 FIELD_CPM_DAILY_HISTORY = 'cpm_daily_history'
 FIELD_BUDGET_UTILIZATION_DAILY_HISTORY = 'budget_utilization_daily_history'
 FIELD_OVERSPEND_DAILY_HISTORY = 'overspend_daily_history'
+# global output metrics field names
+FIELD_AVERAGE_NUM_OVER_BUDGET_CAMPAIGNS = 'average_num_over_budget_campaigns'
+FIELD_AVERAGE_CPM = 'average_cpm'

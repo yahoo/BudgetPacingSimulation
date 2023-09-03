@@ -132,23 +132,47 @@ class TestServingSystem(unittest.TestCase):
         bids = serving_system.get_bids(AuctionFP({f'{property_name}_different': 4}))
         self.assertEqual(len(bids), 0, "expected to see no bids for the auction")
 
-    def test_statistics_with_mystique(self):
+    def test_global_statistics_with_mystique(self):
         num_days = 2
         config.num_untracked_bids = 0
         num_campaigns = 5
-        campaigns = [Campaign(campaign_id=f'campaign_{i}', total_budget=1000, run_period=7, max_bid=25)
+        campaigns = [Campaign(campaign_id=f'campaign_{i}', total_budget=1000, run_period=7, max_bid=1)
                      for i in range(num_campaigns)]
         mystique = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
         serving_system = ServingSystem(pacing_system=mystique,
                                        tracked_campaigns=campaigns)
-        # simulate an auction
-        bids = serving_system.get_bids(AuctionFP({}))
-        self.assertEqual(len(bids), num_campaigns)
-        serving_system.update_winners([AuctionWinner(bid=bids[0], payment=bids[0].amount)])
         for _ in range(num_minutes_in_day * num_days):
+            auction_winner = AuctionWinner(bid=Bid(random.choice([campaign.id for campaign in campaigns]), 0.01),
+                                           payment=0.005)
+            serving_system.update_winners([auction_winner])
             Clock.advance()
             serving_system.end_iteration()
-        stats_per_campaign_list = serving_system.get_statistics_for_all_campaigns()
+        global_statistics = serving_system.get_global_statistics()
+        global_stats_fields = [constants.FIELD_AVERAGE_CPM,
+                               constants.FIELD_AVERAGE_NUM_OVER_BUDGET_CAMPAIGNS,
+                               mystique_constants.FIELD_AVERAGE_NUM_NBC_CAMPAIGNS,
+                               mystique_constants.FIELD_AVERAGE_NUM_BC_CAMPAIGNS]
+        for field in global_stats_fields:
+            self.assertIn(field, global_statistics)
+            self.assertGreaterEqual(global_statistics[field], 0)
+
+    def test_statistics_with_mystique(self):
+        num_days = 2
+        config.num_untracked_bids = 0
+        num_campaigns = 5
+        campaigns = [Campaign(campaign_id=f'campaign_{i}', total_budget=1000, run_period=7, max_bid=1)
+                     for i in range(num_campaigns)]
+        mystique = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
+        serving_system = ServingSystem(pacing_system=mystique,
+                                       tracked_campaigns=campaigns)
+        for _ in range(num_minutes_in_day * num_days):
+            # simulate an auction
+            auction_winner = AuctionWinner(bid=Bid(random.choice([campaign.id for campaign in campaigns]), 0.01),
+                                           payment=0.005)
+            serving_system.update_winners([auction_winner])
+            Clock.advance()
+            serving_system.end_iteration()
+        stats_per_campaign_list = serving_system.get_statistics_per_campaign()
         # validate structure correctness of statistics
         self.assertEqual(len(stats_per_campaign_list), num_campaigns, "length of list of statistics should be "
                                                                       "equal to the total number of tracked campaigns.")
@@ -167,6 +191,9 @@ class TestServingSystem(unittest.TestCase):
         for field in daily_stats_fields:
             self.assertEqual(len(campaign_stats[field]), num_days)
             for value_in_day in campaign_stats[field]:
+                if value_in_day is None:
+                    # CPM can be None
+                    continue
                 self.assertGreaterEqual(value_in_day, 0, "expected value in a day to be >= 0")
         # check expected values for specific basic statistics
         self.assertEqual(len(campaign_stats[constants.FIELD_NUM_AUCTIONS_WON_HISTORY]), num_days)
@@ -199,6 +226,9 @@ class MockPacingSystem(PacingSystemInterface):
         return self.pacing_signal
 
     def get_pacing_statistics(self, campaign_id: str) -> dict[str, object]:
+        pass
+
+    def get_global_pacing_statistics(self) -> dict[str, object]:
         pass
 
 

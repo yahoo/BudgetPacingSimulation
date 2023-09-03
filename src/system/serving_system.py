@@ -1,4 +1,5 @@
 import random
+import statistics
 
 import src.constants as constants
 from src.system.auction import *
@@ -95,7 +96,7 @@ class ServingSystem:
                     amount=random.uniform(config.campaign_minimal_bid, config.untracked_bid_max))
                 for i in range(self._calculate_number_of_untracked_bids())]
 
-    def get_statistics_for_all_campaigns(self) -> list[dict[str, object]]:
+    def get_statistics_per_campaign(self) -> list[dict[str, object]]:
         campaigns_statistics_as_rows = []
         for campaign in self._all_campaigns():
             campaign_statistics = {
@@ -108,12 +109,28 @@ class ServingSystem:
                 constants.FIELD_BUDGET_UTILIZATION_DAILY_HISTORY: campaign.budget_utilization_daily_history(),
                 constants.FIELD_OVERSPEND_DAILY_HISTORY: campaign.overspend_value_daily_history()
             }
-            if self.pacing_system is not None:
+            if self.pacing_system:
                 # merge campaign's pacing statistics the basic statistics
                 campaign_statistics |= self.pacing_system.get_pacing_statistics(campaign.id)
             # add the combined statistics of the campaign to the output list
             campaigns_statistics_as_rows.append(campaign_statistics)
         return campaigns_statistics_as_rows
+
+    def get_global_statistics(self) -> dict[str, object]:
+        global_statistics = {
+            constants.FIELD_AVERAGE_CPM: statistics.mean([
+                statistics.mean(daily_cpm_list)
+                for campaign in self.tracked_campaigns.values()
+                if (daily_cpm_list := [cpm for cpm in campaign.cpm_daily_history() if cpm is not None])
+            ]),
+            constants.FIELD_AVERAGE_NUM_OVER_BUDGET_CAMPAIGNS: statistics.mean([
+                statistics.mean(campaign.overspend_value_daily_history())
+                for campaign in self.tracked_campaigns.values()
+            ])
+        }
+        if self.pacing_system:
+            global_statistics |= self.pacing_system.get_global_pacing_statistics()
+        return global_statistics
 
     @staticmethod
     def _calculate_number_of_untracked_bids() -> int:

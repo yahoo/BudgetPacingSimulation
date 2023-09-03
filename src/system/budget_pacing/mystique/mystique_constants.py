@@ -24,8 +24,11 @@ budget_spend_threshold = 0.95
 ps_invalid_value = -1
 minutes_for_end_day_edge_case = 3
 
-# field names for mystique's statistics
+# field names for mystique's per-campaign statistics
 FIELD_SPEND_HISTORY = 'spend_history'
 FIELD_TARGET_SPEND_HISTORY = 'target_spend_history'
 FIELD_TARGET_SLOPE_HISTORY = 'target_slope_history'
 FIELD_PACING_SIGNAL_HISTORY = 'pacing_signal_history'
+# field names for mystique's global statistics
+FIELD_AVERAGE_NUM_BC_CAMPAIGNS = 'average_num_bc_campaigns'
+FIELD_AVERAGE_NUM_NBC_CAMPAIGNS = 'average_num_nbc_campaigns'

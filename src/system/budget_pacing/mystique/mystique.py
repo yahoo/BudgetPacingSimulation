@@ -1,3 +1,5 @@
+import statistics
+
 import numpy as np
 import math
 from src.system.clock import Clock
@@ -61,16 +63,22 @@ class MystiquePacingSystem(PacingSystemInterface):
         if math.isclose(today_spend, daily_budget) or today_spend > daily_budget:
             return mystique_tracked_campaign.ps
 
-        percent_budget_depleted_today = MystiquePacingSystem.get_percent_budget_depleted_today(mystique_tracked_campaign)
-        current_target_slope, current_target_spend = self.target_spend_slope_calculator.get_target_slope_and_spend(mystique_tracked_campaign)
+        percent_budget_depleted_today = MystiquePacingSystem.get_percent_budget_depleted_today(
+            mystique_tracked_campaign)
+        current_target_slope, current_target_spend = self.target_spend_slope_calculator.get_target_slope_and_spend(
+            mystique_tracked_campaign)
         spend_error = MystiquePacingSystem.get_spend_error(percent_budget_depleted_today, current_target_spend)
 
-        spend_derivative_in_latest_time_interval = MystiquePacingSystem.get_spend_derivative_in_latest_time_interval(mystique_tracked_campaign)
-        gradient_error = MystiquePacingSystem.get_gradient_error(spend_derivative_in_latest_time_interval, current_target_slope)
-        estimated_intervals_until_target_is_hit = MystiquePacingSystem.get_estimated_intervals_until_target_is_hit(spend_error, gradient_error)
+        spend_derivative_in_latest_time_interval = MystiquePacingSystem.get_spend_derivative_in_latest_time_interval(
+            mystique_tracked_campaign)
+        gradient_error = MystiquePacingSystem.get_gradient_error(spend_derivative_in_latest_time_interval,
+                                                                 current_target_slope)
+        estimated_intervals_until_target_is_hit = MystiquePacingSystem.get_estimated_intervals_until_target_is_hit(
+            spend_error, gradient_error)
 
         # Edge case: runaway train
-        if gradient_error > 12 and estimated_intervals_until_target_is_hit < 3600 and percent_budget_depleted_today > min(current_target_spend, 1):
+        if gradient_error > 12 and estimated_intervals_until_target_is_hit < 3600 and percent_budget_depleted_today > min(
+                current_target_spend, 1):
             return 0
 
         w1, w2 = MystiquePacingSystem.get_pacing_signal_correction_weights(estimated_intervals_until_target_is_hit)
@@ -84,6 +92,24 @@ class MystiquePacingSystem(PacingSystemInterface):
             mystique_constants.FIELD_TARGET_SPEND_HISTORY: campaign.target_spend_history,
             mystique_constants.FIELD_TARGET_SLOPE_HISTORY: campaign.target_slope_history,
             mystique_constants.FIELD_PACING_SIGNAL_HISTORY: campaign.ps_history
+        }
+
+    def get_global_pacing_statistics(self) -> dict[str, object]:
+        return {
+            mystique_constants.FIELD_AVERAGE_NUM_BC_CAMPAIGNS: statistics.mean([
+                statistics.mean([
+                    1 if statistics.mean(campaign.ps_history[day]) < 0.95 else 0
+                    for day in range(len(campaign.ps_history))
+                ])
+                for campaign in self.mystique_tracked_campaigns.values()
+            ]),
+            mystique_constants.FIELD_AVERAGE_NUM_NBC_CAMPAIGNS: statistics.mean([
+                statistics.mean([
+                    1 if statistics.mean(campaign.ps_history[day]) >= 0.95 else 0
+                    for day in range(len(campaign.ps_history))
+                ])
+                for campaign in self.mystique_tracked_campaigns.values()
+            ])
         }
 
     @staticmethod
@@ -100,7 +126,8 @@ class MystiquePacingSystem(PacingSystemInterface):
 
     @staticmethod
     def get_spend_error_correction(error_intensity: float):
-        return mystique_constants.max_ps_correction * min(1, error_intensity / mystique_constants.error_corresponding_to_max_correction)
+        return mystique_constants.max_ps_correction * min(1,
+                                                          error_intensity / mystique_constants.error_corresponding_to_max_correction)
 
     @staticmethod
     def get_spend_derivative_in_latest_time_interval(mystique_tracked_campaign: MystiqueTrackedCampaign):
@@ -121,7 +148,8 @@ class MystiquePacingSystem(PacingSystemInterface):
 
     @staticmethod
     def get_gradient_error_correction(gradient_error_intensity: float):
-        return max(mystique_constants.minimal_non_zero_ps_correction, mystique_constants.max_ps_correction * gradient_error_intensity / mystique_constants.gradient_error_corresponding_to_max_correction)
+        return max(mystique_constants.minimal_non_zero_ps_correction,
+                   mystique_constants.max_ps_correction * gradient_error_intensity / mystique_constants.gradient_error_corresponding_to_max_correction)
 
     @staticmethod
     def get_estimated_intervals_until_target_is_hit(spend_error: float, gradient_error: float):
@@ -138,8 +166,9 @@ class MystiquePacingSystem(PacingSystemInterface):
         """returns the spend error and the gradient error weights"""
         if estimated_intervals_until_target_is_hit < 0:
             return 0.5, 0.5
-        w1 = min(mystique_constants.max_ps_correction_weight, mystique_constants.ps_correction_weight_factor * estimated_intervals_until_target_is_hit)
-        return w1, 1.0-w1
+        w1 = min(mystique_constants.max_ps_correction_weight,
+                 mystique_constants.ps_correction_weight_factor * estimated_intervals_until_target_is_hit)
+        return w1, 1.0 - w1
 
     @staticmethod
     def get_new_pacing_signal(previous_ps: float, spend_error: float, gradient_error: float, w1: float, w2: float):
@@ -150,12 +179,9 @@ class MystiquePacingSystem(PacingSystemInterface):
         gradient_error_correction = MystiquePacingSystem.get_gradient_error_correction(gradient_error_intensity)
         gradient_error_sign = np.sign(gradient_error)
 
-        calculated_ps = previous_ps - (w1 * spend_error_correction * spend_error_sign) - (w2 * gradient_error_correction * gradient_error_sign)
+        calculated_ps = previous_ps - (w1 * spend_error_correction * spend_error_sign) - (
+                    w2 * gradient_error_correction * gradient_error_sign)
         calculated_ps = max(mystique_constants.minimal_ps_value, calculated_ps)
         if calculated_ps > mystique_constants.max_ps:
             return mystique_constants.max_ps
         return calculated_ps
-
-
-
-

@@ -95,8 +95,8 @@ class Campaign:
         return sum(self.stats.auctions_won_today)
 
     def cpm_daily_history(self) -> list[float]:
-        return [sum(self.spend_history()[day]) / num_wins_in_day
-                if (num_wins_in_day := sum(self.num_auctions_won_history()[day])) > 0 else 0
+        return [1000 * sum(self.spend_history()[day]) / num_wins_in_day
+                if (num_wins_in_day := sum(self.num_auctions_won_history()[day])) > 0 else None
                 for day in range(len(self.num_auctions_won_history()))]
 
     def budget_utilization_daily_history(self) -> list[float]:
