@@ -22,7 +22,6 @@ num_win_entries_per_day = 24  # Defines the granularity with which to store win 
 
 # Untracked bids
 num_untracked_bids = 50
-untracked_bid_max = 20
 
 # # #  Distributions  # # #
 # We calculate the mean of the distribution of the number of auctions in each minute (m) of the day as:

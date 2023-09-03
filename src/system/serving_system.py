@@ -1,10 +1,10 @@
-import random
+import numpy as np
+from scipy.stats import norm
 
 import src.constants as constants
-from src.system.campaign import Campaign
 from src.system.auction import *
-import src.configuration as config
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
+from src.system.campaign import Campaign
 from src.system.clock import Clock
 
 
@@ -90,12 +90,13 @@ class ServingSystem:
                 self.tracked_campaigns.pop(campaign.id)
 
     def _generate_untracked_bids(self) -> list[Bid]:
-        fake_bids = []
-        for i in range(self._calculate_number_of_untracked_bids()):
-            # We will later sample the value of the untracked bid from a distribution
-            fake_bids.append(Bid(campaign_id='untracked_campaign_' + str(i),
-                                 amount=random.uniform(config.campaign_minimal_bid, config.untracked_bid_max)))
-        return fake_bids
+        num_bids = self._calculate_number_of_untracked_bids()
+        sampled_bids = norm.rvs(loc=constants.UNTRACKED_BIDS_LOG_NORM_MU,
+                                scale=constants.UNTRACKED_BIDS_LOG_NORM_SIGMA,
+                                size=num_bids)
+        # Since the values were sampled from the distribution of logs, perform exp() on the sampled values
+        sampled_bids = np.exp(sampled_bids)
+        return [Bid(campaign_id='untracked_campaign_' + str(i), amount=sampled_bids[i]) for i in range(num_bids)]
 
     def get_statistics_for_all_campaigns(self) -> list[dict[str, object]]:
         campaigns_statistics_as_rows = []
