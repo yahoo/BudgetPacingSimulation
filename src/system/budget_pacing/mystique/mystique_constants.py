@@ -30,5 +30,5 @@ FIELD_TARGET_SPEND_HISTORY = 'target_spend_history'
 FIELD_TARGET_SLOPE_HISTORY = 'target_slope_history'
 FIELD_PACING_SIGNAL_HISTORY = 'pacing_signal_history'
 # field names for mystique's global statistics
-FIELD_AVERAGE_NUM_BC_CAMPAIGNS = 'average_num_bc_campaigns'
-FIELD_AVERAGE_NUM_NBC_CAMPAIGNS = 'average_num_nbc_campaigns'
+FIELD_NUM_BC_CAMPAIGNS_DAILY_HISTORY = 'num_bc_campaigns_daily_history'
+FIELD_NUM_NBC_CAMPAIGNS_DAILY_HISTORY = 'num_nbc_campaigns_daily_history'

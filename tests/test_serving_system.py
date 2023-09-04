@@ -145,16 +145,19 @@ class TestServingSystem(unittest.TestCase):
             auction_winner = AuctionWinner(bid=Bid(random.choice([campaign.id for campaign in campaigns]), 0.01),
                                            payment=0.005)
             serving_system.update_winners([auction_winner])
-            Clock.advance()
             serving_system.end_iteration()
+            Clock.advance()
         global_statistics = serving_system.get_global_statistics()
-        global_stats_fields = [constants.FIELD_AVERAGE_CPM,
-                               constants.FIELD_AVERAGE_NUM_OVER_BUDGET_CAMPAIGNS,
-                               mystique_constants.FIELD_AVERAGE_NUM_NBC_CAMPAIGNS,
-                               mystique_constants.FIELD_AVERAGE_NUM_BC_CAMPAIGNS]
-        for field in global_stats_fields:
+        self.assertIn(constants.FIELD_OVERALL_CPM, global_statistics)
+        self.assertGreater(global_statistics[constants.FIELD_OVERALL_CPM], 0)
+        daily_global_stats_fields = [
+                               constants.FIELD_NUM_OVER_BUDGET_CAMPAIGNS_DAILY_HISTORY,
+                               constants.FIELD_CPM_DAILY_HISTORY,
+                               mystique_constants.FIELD_NUM_BC_CAMPAIGNS_DAILY_HISTORY,
+                               mystique_constants.FIELD_NUM_BC_CAMPAIGNS_DAILY_HISTORY]
+        for field in daily_global_stats_fields:
             self.assertIn(field, global_statistics)
-            self.assertGreaterEqual(global_statistics[field], 0)
+            self.assertEqual(len(global_statistics[field]), num_days)
 
     def test_statistics_with_mystique(self):
         num_days = 2

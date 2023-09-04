@@ -117,17 +117,28 @@ class ServingSystem:
         return campaigns_statistics_as_rows
 
     def get_global_statistics(self) -> dict[str, object]:
+        num_over_budget_campaigns_per_day = [0] * Clock.days()
+        total_spend_per_day = [0] * Clock.days()
+        total_num_wins_per_day = [0] * Clock.days()
+        for campaign in self.tracked_campaigns.values():
+            campaign_overspend_history = campaign.overspend_value_daily_history()
+            campaign_spend_history = campaign.spend_history()
+            campaign_num_wins_history = campaign.num_auctions_won_history()
+            for day in range(len(campaign.overspend_value_daily_history())):
+                adjusted_day_index = campaign.stats.day_started + day
+                # Updating daily total spend and daily total wins, which are used to calculate daily and overall CPM
+                total_spend_per_day[adjusted_day_index] += sum(campaign_spend_history[day])
+                total_num_wins_per_day[adjusted_day_index] += sum(campaign_num_wins_history[day])
+                if campaign_overspend_history[day] > 0:
+                    # Updating the number of over-budget campaigns
+                    num_over_budget_campaigns_per_day[adjusted_day_index] += 1
         global_statistics = {
-            constants.FIELD_AVERAGE_CPM: statistics.mean([
-                statistics.mean(daily_cpm_list)
-                for campaign in self.tracked_campaigns.values()
-                if (daily_cpm_list := [cpm for cpm in campaign.cpm_daily_history() if cpm is not None])
-            ]),
-            constants.FIELD_AVERAGE_NUM_OVER_BUDGET_CAMPAIGNS: statistics.mean([
-                statistics.mean(campaign.overspend_value_daily_history())
-                for campaign in self.tracked_campaigns.values()
-            ])
+            constants.FIELD_OVERALL_CPM: 1000 * sum(total_spend_per_day) / sum(total_num_wins_per_day),
+            constants.FIELD_CPM_DAILY_HISTORY: [1000*total_spend_per_day[i]/total_num_wins_per_day[i]
+                                                for i in range(len(total_spend_per_day))],
+            constants.FIELD_NUM_OVER_BUDGET_CAMPAIGNS_DAILY_HISTORY: num_over_budget_campaigns_per_day
         }
+        # Merge global statistics from pacing system
         if self.pacing_system:
             global_statistics |= self.pacing_system.get_global_pacing_statistics()
         return global_statistics

@@ -95,21 +95,17 @@ class MystiquePacingSystem(PacingSystemInterface):
         }
 
     def get_global_pacing_statistics(self) -> dict[str, object]:
+        num_bc_campaigns_per_day = [0] * Clock.days()
+        num_nbc_campaigns_per_day = [0] * Clock.days()
+        for campaign in self.mystique_tracked_campaigns.values():
+            for day in range(len(campaign.ps_history)):
+                if statistics.mean(campaign.ps_history[day]) < 0.95:
+                    num_bc_campaigns_per_day[campaign.day_started + day] += 1
+                else:
+                    num_nbc_campaigns_per_day[campaign.day_started + day] += 1
         return {
-            mystique_constants.FIELD_AVERAGE_NUM_BC_CAMPAIGNS: statistics.mean([
-                statistics.mean([
-                    1 if statistics.mean(campaign.ps_history[day]) < 0.95 else 0
-                    for day in range(len(campaign.ps_history))
-                ])
-                for campaign in self.mystique_tracked_campaigns.values()
-            ]),
-            mystique_constants.FIELD_AVERAGE_NUM_NBC_CAMPAIGNS: statistics.mean([
-                statistics.mean([
-                    1 if statistics.mean(campaign.ps_history[day]) >= 0.95 else 0
-                    for day in range(len(campaign.ps_history))
-                ])
-                for campaign in self.mystique_tracked_campaigns.values()
-            ])
+            mystique_constants.FIELD_NUM_BC_CAMPAIGNS_DAILY_HISTORY: num_bc_campaigns_per_day,
+            mystique_constants.FIELD_NUM_NBC_CAMPAIGNS_DAILY_HISTORY: num_nbc_campaigns_per_day
         }
 
     @staticmethod
