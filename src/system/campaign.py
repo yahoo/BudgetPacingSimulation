@@ -4,6 +4,7 @@ from typing import Optional
 from scipy import stats
 
 import src.configuration as config
+from src.system.auction import AuctionInterface
 from src import constants
 from src.system.bid import Bid
 from src.system.clock import Clock
@@ -58,7 +59,7 @@ class CampaignStatistics:
 
 class Campaign:
     def __init__(self, campaign_id: str, total_budget: float, run_period: int,
-                 bids_distribution: stats.rv_continuous = None):
+                 targeting_groups: dict[str, set[int]] = None, bids_distribution: stats.rv_continuous = None):
         self.id = campaign_id
         self.bids_distribution = bids_distribution
         if self.bids_distribution is None:
@@ -69,9 +70,11 @@ class Campaign:
                 sigma = constants.distribution_of_sigma_of_bids_log_distribution.rvs()
             self.bids_distribution = stats.norm(loc=mu, scale=sigma)
         self.total_budget = total_budget
-        # self.targeting_group = targeting_group
-        self.daily_budget = total_budget / run_period        
+        self.daily_budget = total_budget / run_period
         assert self.daily_budget >= config.campaign_minimal_bid
+        if targeting_groups is None:
+            targeting_groups = {}
+        self._targeting_groups = targeting_groups
         self.stats = CampaignStatistics(run_period=run_period)
 
     def bid(self) -> Optional[Bid]:
@@ -100,3 +103,10 @@ class Campaign:
 
     def num_auctions_won_today(self) -> int:
         return sum(self.stats.auctions_won_today)
+
+    def is_relevant_auction(self, auction: AuctionInterface) -> bool:
+        user_properties = auction.user_properties()
+        for (feature, desired_values) in self._targeting_groups.items():
+            if user_properties.get(feature) not in desired_values:
+                return False
+        return True

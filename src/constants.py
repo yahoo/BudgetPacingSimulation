@@ -10,6 +10,11 @@ class BudgetPacingAlgorithms(Enum):
     MYSTIQUE_NON_LINEAR = 2
 
 
+class AuctionType(Enum):
+    FP = 1
+    GSP = 2
+
+
 # output metrics field names
 FIELD_CAMPAIGN_ID = 'campaign_id'
 FIELD_DAILY_BUDGET = 'daily_budget'

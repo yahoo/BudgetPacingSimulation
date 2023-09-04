@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.stats import norm
 
 import src.constants as constants
 from src.system.auction import *
@@ -31,12 +30,15 @@ class ServingSystem:
         if self.pacing_system is not None:
             self.pacing_system.add_campaign(campaign)
 
-    def get_bids(self) -> list[Bid]:
+    def get_bids(self, auction: AuctionInterface) -> list[Bid]:
         bids = []
         # get "real" bids
         for campaign in self.tracked_campaigns.values():
             # make sure the campaign hasn't reached its daily budget
             if campaign.spent_today() >= campaign.daily_budget:
+                continue
+            # check if the auction is relevant (matches campaign's target group) to the campaign
+            if not campaign.is_relevant_auction(auction):
                 continue
             bid = campaign.bid()
             if bid is None:
@@ -54,12 +56,11 @@ class ServingSystem:
             if winner.bid.campaign_id in self.tracked_campaigns:
                 # update campaign
                 self.tracked_campaigns[winner.bid.campaign_id].pay(winner.payment)
+
                 if self.pacing_system is not None:
                     # add payment to the pending updates which will be sent to the budget pacing system
-                    if winner.bid.campaign_id in self.pending_pacing_spend_updates:
-                        self.pending_pacing_spend_updates[winner.bid.campaign_id] += winner.payment
-                    else:
-                        self.pending_pacing_spend_updates[winner.bid.campaign_id] = winner.payment
+                    self.pending_pacing_spend_updates[winner.bid.campaign_id] = self.pending_pacing_spend_updates.get(
+                        winner.bid.campaign_id, 0) + winner.payment
 
     def end_iteration(self):
         # Budget Pacing periodic (every minute) spend updates

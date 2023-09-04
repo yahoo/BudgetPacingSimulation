@@ -2,6 +2,8 @@ import random
 from typing import Optional
 from scipy import stats
 
+import numpy as np
+
 import src.configuration as config
 import src.constants as constants
 from src.system.campaign import Campaign
@@ -24,6 +26,15 @@ def generate_campaigns(n: int):
                                   total_budget=random.uniform(config.campaign_min_budget, config.campaign_max_budget),
                                   run_period=random.randint(config.campaign_min_run_period,
                                                             config.campaign_max_run_period),
+                                  targeting_groups={
+                                      feature: set(
+                                          np.random.choice(list(config.user_properties[feature].keys()),
+                                                           size=num_target_values,
+                                                           replace=False))
+                                      for feature in config.user_properties
+                                      if (num_target_values := random.randint(0, len(
+                                          config.user_properties[feature].keys()))) > 0
+                                  },
                                   bids_distribution=bids_distribution))
         return campaigns
 
