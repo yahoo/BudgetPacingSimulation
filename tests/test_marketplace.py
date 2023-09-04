@@ -4,6 +4,7 @@ from src.system.campaign import *
 from src.system.serving_system import ServingSystem
 from src.system.marketplace import Marketplace
 from src import configuration as config
+from tests.tests_utils import create_campaigns
 
 
 class TestMarketPlace(unittest.TestCase):
@@ -11,17 +12,13 @@ class TestMarketPlace(unittest.TestCase):
         Clock.reset()
         config.num_spend_entries_per_day = 24
         config.num_win_entries_per_day = 24 * 60
-        config.num_untracked_bids = 0
+        config.factor_untracked_bids = 0
 
     def test_marketplace(self):
         num_days = 3
         num_campaigns = 10
         num_auctions_per_iteration = 10
-        campaigns = []
-        for i in range(num_campaigns):
-            campaigns.append(
-                Campaign(campaign_id=f'campaign_{i}', total_budget=1000000, run_period=7, max_bid=25)
-            )
+        campaigns = create_campaigns(num_campaigns)
         serving_system = ServingSystem(tracked_campaigns=campaigns)
         # replacing the function that calculates the number of auctions for each minute
         Marketplace._sample_current_num_of_auctions = lambda _: num_auctions_per_iteration

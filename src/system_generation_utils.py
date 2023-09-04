@@ -1,5 +1,6 @@
 import random
 from typing import Optional
+from scipy import stats
 
 import src.configuration as config
 import src.constants as constants
@@ -10,11 +11,21 @@ from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyTy
 
 
 def generate_campaigns(n: int):
-    return [Campaign(campaign_id=f'campaign_{i}',
-                     total_budget=random.uniform(config.campaign_min_budget, config.campaign_max_budget),
-                     run_period=random.randint(config.campaign_min_run_period, config.campaign_max_run_period),
-                     max_bid=random.uniform(config.campaign_minimal_max_bid, config.campaign_maximal_max_bid))
-            for i in range(n)]
+    campaigns = []
+    for i in range(n):
+        # Create bid distribution
+        mu = constants.distribution_of_mu_of_bids_log_distribution.rvs()
+        sigma = constants.distribution_of_sigma_of_bids_log_distribution.rvs()
+        while sigma < 0:
+            # re-sample until sigma >= 0
+            sigma = constants.distribution_of_sigma_of_bids_log_distribution.rvs()
+        bids_distribution = stats.norm(loc=mu, scale=sigma)
+        campaigns.append(Campaign(campaign_id=f'campaign_{i}',
+                                  total_budget=random.uniform(config.campaign_min_budget, config.campaign_max_budget),
+                                  run_period=random.randint(config.campaign_min_run_period,
+                                                            config.campaign_max_run_period),
+                                  bids_distribution=bids_distribution))
+        return campaigns
 
 
 def generate_pacing_system(algorithm: constants.BudgetPacingAlgorithms) -> Optional[PacingSystemInterface]:
@@ -26,4 +37,3 @@ def generate_pacing_system(algorithm: constants.BudgetPacingAlgorithms) -> Optio
         return None
     else:
         raise Exception(f'Unsupported budget pacing algorithm: {algorithm}')
-

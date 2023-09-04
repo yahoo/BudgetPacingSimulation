@@ -1,5 +1,3 @@
-import math
-
 import src.constants as constants
 
 # General
@@ -14,14 +12,12 @@ campaign_min_budget = 1000
 campaign_max_budget = 10000
 campaign_min_run_period = 1
 campaign_max_run_period = 30
-campaign_minimal_max_bid = 0.05
-campaign_maximal_max_bid = 15
-campaign_minimal_bid = 0.01
+campaign_minimal_bid = 0.00001
 num_spend_entries_per_day = 1  # Defines the granularity with which to store spend history inside Campaigns.
 num_win_entries_per_day = 24  # Defines the granularity with which to store win history inside Campaigns.
 
 # Untracked bids
-num_untracked_bids = 50
+factor_untracked_bids = 1.5
 
 # # #  Distributions  # # #
 # We calculate the mean of the distribution of the number of auctions in each minute (m) of the day as:

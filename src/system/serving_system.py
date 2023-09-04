@@ -46,9 +46,7 @@ class ServingSystem:
                 bid.amount *= pacing_signal
             if bid.amount > 0:
                 bids.append(bid)
-        if len(bids) > 0:
-            # add untracked bids
-            bids += self._generate_untracked_bids()
+        bids += self._generate_untracked_bids(num_tracked_bids=len(bids))
         return bids
 
     def update_winners(self, winners: list[AuctionWinner]):
@@ -89,14 +87,14 @@ class ServingSystem:
                 # remove campaign from the structure of active campaigns
                 self.tracked_campaigns.pop(campaign.id)
 
-    def _generate_untracked_bids(self) -> list[Bid]:
-        num_bids = self._calculate_number_of_untracked_bids()
-        sampled_bids = norm.rvs(loc=constants.UNTRACKED_BIDS_LOG_NORM_MU,
-                                scale=constants.UNTRACKED_BIDS_LOG_NORM_SIGMA,
-                                size=num_bids)
+    def _generate_untracked_bids(self, num_tracked_bids: int) -> list[Bid]:
+        num_untracked_bids = self._calculate_number_of_untracked_bids(num_tracked_bids)
+        if num_untracked_bids == 0:
+            return []
+        sampled_bids = constants.untracked_bids_log_distribution.rvs(size=num_untracked_bids)
         # Since the values were sampled from the distribution of logs, perform exp() on the sampled values
         sampled_bids = np.exp(sampled_bids)
-        return [Bid(campaign_id='untracked_campaign_' + str(i), amount=sampled_bids[i]) for i in range(num_bids)]
+        return [Bid(campaign_id='untracked_campaign_' + str(i), amount=sampled_bids[i]) for i in range(num_untracked_bids)]
 
     def get_statistics_for_all_campaigns(self) -> list[dict[str, object]]:
         campaigns_statistics_as_rows = []
@@ -116,9 +114,8 @@ class ServingSystem:
         return campaigns_statistics_as_rows
 
     @staticmethod
-    def _calculate_number_of_untracked_bids() -> int:
-        # We will later sample from distribution according to Clock.minutes()
-        return config.num_untracked_bids
+    def _calculate_number_of_untracked_bids(num_tracked_bids: int) -> int:
+        return round(config.factor_untracked_bids * num_tracked_bids)
 
     def _all_campaigns(self) -> list[Campaign]:
         return list(self.tracked_campaigns.values()) + list(self.old_campaigns.values())
