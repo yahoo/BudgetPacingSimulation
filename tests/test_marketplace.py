@@ -16,8 +16,7 @@ class TestMarketPlace(unittest.TestCase):
         config.num_win_entries_per_day = 24 * 60
         config.factor_untracked_bids = 0
         num_campaigns = 10
-        self.campaigns = [Campaign(campaign_id=f'campaign_{i}', total_budget=100000, run_period=7, max_bid=1)
-                          for i in range(num_campaigns)]
+        self.campaigns = create_campaigns(num_campaigns)
         serving_system = ServingSystem(tracked_campaigns=self.campaigns)
         self.marketplace = Marketplace(serving_system=serving_system)
 

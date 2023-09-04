@@ -107,7 +107,7 @@ class TestServingSystem(unittest.TestCase):
 
     def test_targeting_groups(self):
         config.num_untracked_bids = 0
-        campaign = Campaign(campaign_id='campaign1', total_budget=1000, run_period=7, max_bid=25, targeting_groups={})
+        campaign = create_campaigns(1)[0]
         serving_system = ServingSystem(pacing_system=None, tracked_campaigns=[campaign])
         # test without targeting groups
         bids = serving_system.get_bids(auction=AuctionFP({}))
