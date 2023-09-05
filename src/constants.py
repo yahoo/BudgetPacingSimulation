@@ -15,14 +15,15 @@ class AuctionType(Enum):
 
 
 # output metrics field names
-FIELD_CAMPAIGN_ID = 'campaign_id'
-FIELD_DAILY_BUDGET = 'daily_budget'
-FIELD_DAY_STARTED = 'day_started'
-FIELD_DAY_ENDED = 'day_ended'
-FIELD_NUM_AUCTIONS_WON_HISTORY = 'num_auctions_won_history'
-FIELD_CPM_DAILY_HISTORY = 'cpm_daily_history'
-FIELD_BUDGET_UTILIZATION_DAILY_HISTORY = 'budget_utilization_daily_history'
-FIELD_OVERSPEND_DAILY_HISTORY = 'overspend_daily_history'
-# global output metrics field names
-FIELD_NUM_OVER_BUDGET_CAMPAIGNS_DAILY_HISTORY = 'num_over_budget_campaigns_daily_history'
-FIELD_OVERALL_CPM = 'average_cpm'
+FIELD_CAMPAIGN_ID = 'Campaign'
+FIELD_DAILY_BUDGET = 'Daily Budget'
+FIELD_DAY_STARTED = 'Day Started'
+FIELD_DAY_ENDED = 'Day Ended'
+FIELD_BUDGET_UTILIZATION = 'Budget Utilization'
+FIELD_DAY_ID = 'Day'
+FIELD_CPM = 'CPM'
+FIELD_NUM_OVER_BUDGET_CAMPAIGNS = '# Over Budget Campaigns'
+FIELD_NUM_WINS = '# Impressions'
+FIELD_OVERSPEND = 'Overspend'
+FIELD_SPEND = 'Spend'
+

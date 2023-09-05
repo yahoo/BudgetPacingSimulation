@@ -25,10 +25,10 @@ ps_invalid_value = -1
 minutes_for_end_day_edge_case = 3
 
 # field names for mystique's per-campaign statistics
-FIELD_SPEND_HISTORY = 'spend_history'
-FIELD_TARGET_SPEND_HISTORY = 'target_spend_history'
-FIELD_TARGET_SLOPE_HISTORY = 'target_slope_history'
-FIELD_PACING_SIGNAL_HISTORY = 'pacing_signal_history'
+FIELD_SPEND_HISTORY = 'Spend History'
+FIELD_TARGET_SPEND_HISTORY = 'Target Spend History'
+FIELD_TARGET_SLOPE_HISTORY = 'Target Slope History'
+FIELD_PACING_SIGNAL_HISTORY = 'Pacing Signal History'
 # field names for mystique's global statistics
-FIELD_NUM_BC_CAMPAIGNS_DAILY_HISTORY = 'num_bc_campaigns_daily_history'
-FIELD_NUM_NBC_CAMPAIGNS_DAILY_HISTORY = 'num_nbc_campaigns_daily_history'
+FIELD_NUM_BC_CAMPAIGNS = 'Number of BC Campaigns'
+FIELD_NUM_NBC_CAMPAIGNS = 'Number of NBC Campaigns'

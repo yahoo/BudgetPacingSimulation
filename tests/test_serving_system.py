@@ -76,7 +76,8 @@ class TestServingSystem(unittest.TestCase):
         serving_system.update_winners([auction_winner])
         self.assertGreater(campaign.spent_today(), campaign.daily_budget)
         bids_after_depletion = serving_system.get_bids(AuctionFP({}))
-        self.assertEqual(bids_after_depletion, [], "expected list of bids to be empty after depleting campaign's budget")
+        self.assertEqual(bids_after_depletion, [],
+                         "expected list of bids to be empty after depleting campaign's budget")
 
     def test_with_mystique_budget_pacing(self):
         config.num_untracked_bids = 0
@@ -147,17 +148,36 @@ class TestServingSystem(unittest.TestCase):
             serving_system.update_winners([auction_winner])
             serving_system.end_iteration()
             Clock.advance()
-        global_statistics = serving_system.get_global_statistics()
-        self.assertIn(constants.FIELD_OVERALL_CPM, global_statistics)
-        self.assertGreater(global_statistics[constants.FIELD_OVERALL_CPM], 0)
-        daily_global_stats_fields = [
-                               constants.FIELD_NUM_OVER_BUDGET_CAMPAIGNS_DAILY_HISTORY,
-                               constants.FIELD_CPM_DAILY_HISTORY,
-                               mystique_constants.FIELD_NUM_BC_CAMPAIGNS_DAILY_HISTORY,
-                               mystique_constants.FIELD_NUM_BC_CAMPAIGNS_DAILY_HISTORY]
-        for field in daily_global_stats_fields:
-            self.assertIn(field, global_statistics)
-            self.assertEqual(len(global_statistics[field]), num_days)
+        global_statistics = serving_system.get_global_statistics_csv_rows()
+        self.assertEqual(len(global_statistics), num_days + 1, "expected number of rows to be equal to "
+                                                               "number of days + 1, which includes a final overall row")
+        daily_fields = [
+            constants.FIELD_DAY_ID,
+            constants.FIELD_CPM,
+            constants.FIELD_NUM_OVER_BUDGET_CAMPAIGNS,
+            constants.FIELD_NUM_WINS,
+            constants.FIELD_OVERSPEND,
+            constants.FIELD_SPEND,
+            mystique_constants.FIELD_NUM_BC_CAMPAIGNS,
+            mystique_constants.FIELD_NUM_BC_CAMPAIGNS
+        ]
+        for day in range(num_days):
+            for field in daily_fields:
+                self.assertIn(field, global_statistics[day])
+                self.assertTrue(isinstance(global_statistics[day][field], float) or
+                                isinstance(global_statistics[day][field], int))
+        # Check that the last row includes overall statistics
+        overall_stats_fields = [
+            constants.FIELD_CPM,
+            constants.FIELD_OVERSPEND,
+            constants.FIELD_SPEND,
+            constants.FIELD_NUM_WINS
+        ]
+        for field in overall_stats_fields:
+            self.assertIn(field, global_statistics[-1])
+            self.assertTrue(isinstance(global_statistics[-1][field], float) or
+                            isinstance(global_statistics[-1][field], int),
+                            f'expected value {global_statistics[-1][field]} to be int or float')
 
     def test_statistics_with_mystique(self):
         num_days = 2
@@ -175,18 +195,18 @@ class TestServingSystem(unittest.TestCase):
             serving_system.update_winners([auction_winner])
             Clock.advance()
             serving_system.end_iteration()
-        stats_per_campaign_list = serving_system.get_statistics_per_campaign()
+        stats_per_campaign_list = serving_system.get_statistics_per_campaign_csv_rows()
         # validate structure correctness of statistics
         self.assertEqual(len(stats_per_campaign_list), num_campaigns, "length of list of statistics should be "
                                                                       "equal to the total number of tracked campaigns.")
         campaign_stats = stats_per_campaign_list[0]
         self.assertIsNotNone(campaign_stats)
         # check that basic statistics exist
-        daily_stats_fields = [constants.FIELD_CPM_DAILY_HISTORY,
-                              constants.FIELD_BUDGET_UTILIZATION_DAILY_HISTORY, constants.FIELD_OVERSPEND_DAILY_HISTORY]
+        daily_stats_fields = [constants.FIELD_CPM,
+                              constants.FIELD_BUDGET_UTILIZATION, constants.FIELD_OVERSPEND]
         basic_stats_fields = [constants.FIELD_CAMPAIGN_ID, constants.FIELD_DAY_STARTED, constants.FIELD_DAY_ENDED,
                               constants.FIELD_DAILY_BUDGET,
-                              constants.FIELD_NUM_AUCTIONS_WON_HISTORY] + daily_stats_fields
+                              constants.FIELD_NUM_WINS] + daily_stats_fields
         # check that all basic statistics exist
         for field in basic_stats_fields:
             self.assertTrue(field in campaign_stats, f'basic statistic {field} is missing.')
@@ -199,8 +219,8 @@ class TestServingSystem(unittest.TestCase):
                     continue
                 self.assertGreaterEqual(value_in_day, 0, "expected value in a day to be >= 0")
         # check expected values for specific basic statistics
-        self.assertEqual(len(campaign_stats[constants.FIELD_NUM_AUCTIONS_WON_HISTORY]), num_days)
-        self.assertEqual(len(campaign_stats[constants.FIELD_NUM_AUCTIONS_WON_HISTORY][0]),
+        self.assertEqual(len(campaign_stats[constants.FIELD_NUM_WINS]), num_days)
+        self.assertEqual(len(campaign_stats[constants.FIELD_NUM_WINS][0]),
                          config.num_win_entries_per_day)
         self.assertEqual(campaign_stats[constants.FIELD_DAY_STARTED], 0)
         self.assertEqual(campaign_stats[constants.FIELD_DAILY_BUDGET], campaigns[0].daily_budget)

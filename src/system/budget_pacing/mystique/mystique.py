@@ -104,8 +104,8 @@ class MystiquePacingSystem(PacingSystemInterface):
                 else:
                     num_nbc_campaigns_per_day[campaign.day_started + day] += 1
         return {
-            mystique_constants.FIELD_NUM_BC_CAMPAIGNS_DAILY_HISTORY: num_bc_campaigns_per_day,
-            mystique_constants.FIELD_NUM_NBC_CAMPAIGNS_DAILY_HISTORY: num_nbc_campaigns_per_day
+            mystique_constants.FIELD_NUM_BC_CAMPAIGNS: num_bc_campaigns_per_day,
+            mystique_constants.FIELD_NUM_NBC_CAMPAIGNS: num_nbc_campaigns_per_day
         }
 
     @staticmethod

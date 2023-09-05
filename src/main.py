@@ -20,7 +20,7 @@ if __name__ == '__main__':
     for _ in range(config.num_days_to_simulate * config.num_iterations_per_day):
         marketplace.run_iteration()
     # Get output metrics as rows
-    output_statistics = serving_system.get_statistics_per_campaign()
+    output_statistics = serving_system.get_statistics_per_campaign_csv_rows()
     # Write per-campaign metrics to csv file
     with open(OUTPUT_FILE_PATH, 'w') as f:
         if not config.output_only_summarized_statistics:
@@ -29,9 +29,9 @@ if __name__ == '__main__':
             w.writeheader()
             w.writerows(output_statistics)
         # Append global statistics to csv file
-        global_statistics = serving_system.get_global_statistics()
-        w = csv.DictWriter(f, fieldnames=global_statistics.keys())
+        global_statistics = serving_system.get_global_statistics_csv_rows()
+        w = csv.DictWriter(f, fieldnames=global_statistics[0].keys())
         w.writeheader()
-        w.writerow(global_statistics)
+        w.writerows(global_statistics)
 
 

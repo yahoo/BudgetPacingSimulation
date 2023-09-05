@@ -96,7 +96,7 @@ class ServingSystem:
                     amount=random.uniform(config.campaign_minimal_bid, config.untracked_bid_max))
                 for i in range(self._calculate_number_of_untracked_bids())]
 
-    def get_statistics_per_campaign(self) -> list[dict[str, object]]:
+    def get_statistics_per_campaign_csv_rows(self) -> list[dict[str, object]]:
         campaigns_statistics_as_rows = []
         for campaign in self._all_campaigns():
             campaign_statistics = {
@@ -104,10 +104,10 @@ class ServingSystem:
                 constants.FIELD_DAY_STARTED: campaign.stats.day_started,
                 constants.FIELD_DAY_ENDED: campaign.stats.day_ended,
                 constants.FIELD_DAILY_BUDGET: campaign.daily_budget,
-                constants.FIELD_NUM_AUCTIONS_WON_HISTORY: campaign.num_auctions_won_history(),
-                constants.FIELD_CPM_DAILY_HISTORY: campaign.cpm_daily_history(),
-                constants.FIELD_BUDGET_UTILIZATION_DAILY_HISTORY: campaign.budget_utilization_daily_history(),
-                constants.FIELD_OVERSPEND_DAILY_HISTORY: campaign.overspend_value_daily_history()
+                constants.FIELD_NUM_WINS: campaign.num_auctions_won_history(),
+                constants.FIELD_CPM: campaign.cpm_daily_history(),
+                constants.FIELD_BUDGET_UTILIZATION: campaign.budget_utilization_daily_history(),
+                constants.FIELD_OVERSPEND: campaign.overspend_value_daily_history()
             }
             if self.pacing_system:
                 # merge campaign's pacing statistics the basic statistics
@@ -116,32 +116,84 @@ class ServingSystem:
             campaigns_statistics_as_rows.append(campaign_statistics)
         return campaigns_statistics_as_rows
 
-    def get_global_statistics(self) -> dict[str, object]:
-        num_over_budget_campaigns_per_day = [0] * Clock.days()
+    def get_global_statistics_csv_rows(self) -> list[dict[str, object]]:
+        cpm_per_day = self._calculate_cpm_per_day()
+        num_over_budget_campaigns_per_day = self._calculate_num_over_budget_campaigns_per_day()
+        total_wins_per_day = self._calculate_total_wins_per_day()
+        overspend_amount_per_day = self._calculate_total_overspend_per_day()
+        spend_amount_per_day = self._calculate_total_spend_per_day()
+        pacing_statistics = self.pacing_system.get_global_pacing_statistics() if self.pacing_system else None
+        day_statistics_rows = []
+        for day in range(Clock.days()):
+            # Add row for day
+            day_row = {
+                constants.FIELD_DAY_ID: day,
+                constants.FIELD_CPM: cpm_per_day[day],
+                constants.FIELD_SPEND: spend_amount_per_day[day],
+                constants.FIELD_OVERSPEND: overspend_amount_per_day[day],
+                constants.FIELD_NUM_WINS: total_wins_per_day[day],
+                constants.FIELD_NUM_OVER_BUDGET_CAMPAIGNS: num_over_budget_campaigns_per_day[day]
+            }
+            if pacing_statistics:
+                for field in pacing_statistics.keys():
+                    # If field is a list (per-day statistic), add the relevant entry to the day's row
+                    if isinstance(pacing_statistics[field], list):
+                        day_row[field] = pacing_statistics[field][day]
+            day_statistics_rows.append(day_row)
+        # Add a row with overall statistics
+        day_statistics_rows.append({
+            constants.FIELD_DAY_ID: 'Overall',
+            constants.FIELD_CPM: self._calculate_overall_cpm(),
+            constants.FIELD_SPEND: sum(spend_amount_per_day),
+            constants.FIELD_OVERSPEND: sum(overspend_amount_per_day),
+            constants.FIELD_NUM_WINS: sum(total_wins_per_day)
+        })
+        return day_statistics_rows
+
+    def _calculate_overall_cpm(self) -> float:
+        return 1000 * sum(self._calculate_total_spend_per_day()) / sum(self._calculate_total_wins_per_day())
+
+    def _calculate_cpm_per_day(self) -> list[float]:
+        spend_per_day = self._calculate_total_spend_per_day()
+        wins_per_day = self._calculate_total_wins_per_day()
+        return [1000 * spend_per_day[day] / wins_per_day[day] for day in range(len(spend_per_day))]
+
+    def _calculate_total_spend_per_day(self) -> list[float]:
         total_spend_per_day = [0] * Clock.days()
-        total_num_wins_per_day = [0] * Clock.days()
-        for campaign in self.tracked_campaigns.values():
-            campaign_overspend_history = campaign.overspend_value_daily_history()
+        for campaign in self._all_campaigns():
             campaign_spend_history = campaign.spend_history()
+            for day in range(len(campaign.overspend_value_daily_history())):
+                adjusted_day_index = campaign.stats.day_started + day
+                total_spend_per_day[adjusted_day_index] += sum(campaign_spend_history[day])
+        return total_spend_per_day
+
+    def _calculate_total_wins_per_day(self) -> list[int]:
+        total_num_wins_per_day = [0] * Clock.days()
+        for campaign in self._all_campaigns():
             campaign_num_wins_history = campaign.num_auctions_won_history()
             for day in range(len(campaign.overspend_value_daily_history())):
                 adjusted_day_index = campaign.stats.day_started + day
-                # Updating daily total spend and daily total wins, which are used to calculate daily and overall CPM
-                total_spend_per_day[adjusted_day_index] += sum(campaign_spend_history[day])
                 total_num_wins_per_day[adjusted_day_index] += sum(campaign_num_wins_history[day])
+        return total_num_wins_per_day
+
+    def _calculate_num_over_budget_campaigns_per_day(self) -> list[int]:
+        num_over_budget_campaigns_per_day = [0] * Clock.days()
+        for campaign in self._all_campaigns():
+            campaign_overspend_history = campaign.overspend_value_daily_history()
+            for day in range(len(campaign.overspend_value_daily_history())):
+                adjusted_day_index = campaign.stats.day_started + day
                 if campaign_overspend_history[day] > 0:
-                    # Updating the number of over-budget campaigns
                     num_over_budget_campaigns_per_day[adjusted_day_index] += 1
-        global_statistics = {
-            constants.FIELD_OVERALL_CPM: 1000 * sum(total_spend_per_day) / sum(total_num_wins_per_day),
-            constants.FIELD_CPM_DAILY_HISTORY: [1000*total_spend_per_day[i]/total_num_wins_per_day[i]
-                                                for i in range(len(total_spend_per_day))],
-            constants.FIELD_NUM_OVER_BUDGET_CAMPAIGNS_DAILY_HISTORY: num_over_budget_campaigns_per_day
-        }
-        # Merge global statistics from pacing system
-        if self.pacing_system:
-            global_statistics |= self.pacing_system.get_global_pacing_statistics()
-        return global_statistics
+        return num_over_budget_campaigns_per_day
+
+    def _calculate_total_overspend_per_day(self) -> list[float]:
+        total_overspend_per_day = [0] * Clock.days()
+        for campaign in self._all_campaigns():
+            campaign_overspend_history = campaign.overspend_value_daily_history()
+            for day in range(len(campaign.overspend_value_daily_history())):
+                adjusted_day_index = campaign.stats.day_started + day
+                total_overspend_per_day[adjusted_day_index] += campaign_overspend_history[day]
+        return total_overspend_per_day
 
     @staticmethod
     def _calculate_number_of_untracked_bids() -> int:
