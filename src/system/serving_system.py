@@ -142,7 +142,7 @@ class ServingSystem:
             day_statistics_rows.append(day_row)
         # Add a row with overall statistics
         day_statistics_rows.append({
-            constants.FIELD_DAY_ID: 'Overall',
+            constants.FIELD_DAY_ID: constants.OVERALL_STATISTICS_ROW_NAME,
             constants.FIELD_CPM: self._calculate_overall_cpm(),
             constants.FIELD_SPEND: sum(spend_amount_per_day),
             constants.FIELD_OVERSPEND: sum(overspend_amount_per_day),

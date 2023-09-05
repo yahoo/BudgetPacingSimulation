@@ -27,3 +27,4 @@ FIELD_NUM_WINS = '# Impressions'
 FIELD_OVERSPEND = 'Overspend'
 FIELD_SPEND = 'Spend'
 
+OVERALL_STATISTICS_ROW_NAME = 'Overall'
