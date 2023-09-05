@@ -167,6 +167,7 @@ class TestServingSystem(unittest.TestCase):
                 self.assertTrue(isinstance(global_statistics[day][field], float) or
                                 isinstance(global_statistics[day][field], int))
         # Check that the last row includes overall statistics
+        self.assertEqual(global_statistics[-1][constants.FIELD_DAY_ID], constants.OVERALL_STATISTICS_ROW_NAME)
         overall_stats_fields = [
             constants.FIELD_CPM,
             constants.FIELD_OVERSPEND,
