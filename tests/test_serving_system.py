@@ -180,6 +180,33 @@ class TestServingSystem(unittest.TestCase):
                             isinstance(global_statistics[-1][field], int),
                             f'expected value {global_statistics[-1][field]} to be int or float')
 
+    def test_statistics_with_mystique_campaign_starts_midday(self):
+        mystique = MystiquePacingSystem(TargetSpendStrategyType.NON_LINEAR)
+        serving_system = ServingSystem(pacing_system=mystique)
+        starting_minute = 200
+        # run for {starting_minute} iterations, then insert the campaign
+        for _ in range(starting_minute):
+            serving_system.end_iteration()
+            Clock.advance()
+        campaign = Campaign(campaign_id='campaign_1', total_budget=10000, run_period=7, max_bid=0.2)
+        serving_system.add_campaign(campaign)
+        # run the serving system with the campaign
+        for _ in range(num_minutes_in_day - starting_minute):
+            auction_winner = AuctionWinner(bid=Bid(campaign_id=campaign.id, amount=0.01), payment=0.005)
+            serving_system.update_winners([auction_winner])
+            serving_system.end_iteration()
+            Clock.advance()
+        # check campaign's statistics
+        daily_stats_fields = [constants.FIELD_CPM, constants.FIELD_BUDGET_UTILIZATION, constants.FIELD_OVERSPEND]
+        stats_per_campaign_list = serving_system.get_statistics_per_campaign_csv_rows()
+        # validate structure correctness of statistics
+        self.assertEqual(len(stats_per_campaign_list), 1)
+        campaign_stats = stats_per_campaign_list[0]
+        for field in daily_stats_fields:
+            self.assertEqual(len(campaign_stats[field]), 1)
+            for value_in_day in campaign_stats[field]:
+                self.assertGreaterEqual(value_in_day, 0, "expected value in a day to be >= 0")
+
     def test_statistics_with_mystique(self):
         num_days = 2
         config.num_untracked_bids = 0
