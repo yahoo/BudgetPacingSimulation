@@ -1,3 +1,4 @@
+import random
 import statistics
 
 import numpy as np
@@ -99,9 +100,11 @@ class MystiquePacingSystem(PacingSystemInterface):
         num_nbc_campaigns_per_day = [0] * Clock.days()
         for campaign in self.mystique_tracked_campaigns.values():
             for day in range(len(campaign.ps_history)):
-                if statistics.mean(campaign.ps_history[day]) < 0.95:
+                if statistics.mean(campaign.ps_history[day]) < mystique_constants.statistics_bc_threshold_avg_ps:
+                    # we assume that a campaign with an average daily ps<0.95 is budget constrained (BC)
                     num_bc_campaigns_per_day[campaign.day_started + day] += 1
                 else:
+                    # otherwise, campaign is not budget constrained (NBC)
                     num_nbc_campaigns_per_day[campaign.day_started + day] += 1
         return {
             mystique_constants.FIELD_NUM_BC_CAMPAIGNS: num_bc_campaigns_per_day,
@@ -181,3 +184,14 @@ class MystiquePacingSystem(PacingSystemInterface):
         if calculated_ps > mystique_constants.max_ps:
             return mystique_constants.max_ps
         return calculated_ps
+
+
+class MystiqueHardThrottlingPacingSystem(MystiquePacingSystem):
+    def get_pacing_signal(self, campaign_id: str):
+        random_number = random.random()
+        ps = MystiquePacingSystem.get_pacing_signal(self, campaign_id=campaign_id)
+        if ps >= 0.5:
+            return 1 if random_number < ps else 0
+        else:
+            # ps < 0.5
+            return 0 if random_number > ps else 1

@@ -23,6 +23,7 @@ ps_correction_weight_factor = 0.2
 budget_spend_threshold = 0.95
 ps_invalid_value = -1
 minutes_for_end_day_edge_case = 3
+statistics_bc_threshold_avg_ps = 0.95  # average ps value above which a campaign is defined as budget constrained (BC)
 
 # field names for mystique's per-campaign statistics
 FIELD_SPEND_HISTORY = 'Spend History'
