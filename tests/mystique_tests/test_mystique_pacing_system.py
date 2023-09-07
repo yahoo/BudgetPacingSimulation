@@ -3,7 +3,7 @@ import numpy as np
 
 from src.system.clock import Clock
 from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
-from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem
+from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem, MystiqueHardThrottlingPacingSystem
 import mystique_campaign_initialization
 import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
 
@@ -196,3 +196,26 @@ class TestMystiquePacingSystem(unittest.TestCase):
         self.assertTrue(len(mystique_tracked_campaign.spend_history) > 0, "spend history not updated when it should be")
         self.assertEqual(prev_day_avg_ps, mystique_tracked_campaign.previous_ps, "previous pacing signal on new day not correct")
         self.assertEqual(prev_day_avg_ps, mystique_tracked_campaign.last_positive_ps, "last positive pacing signal on new day not correct")
+
+
+class TestMystiqueHardThrottlingPacingSystem(unittest.TestCase):
+    @classmethod
+    def setUp(cls):
+        cls.mystique_hard_throttling = MystiqueHardThrottlingPacingSystem(TargetSpendStrategyType.LINEAR)
+        Clock.reset()
+
+    def test_pacing_signal_is_zero_or_one(self):
+        campaign_id = "0"
+        campaign = mystique_campaign_initialization.instance_for_mystique_test_init(campaign_id)
+        self.mystique_hard_throttling.add_campaign(campaign)
+        self.assertTrue(campaign_id in self.mystique_hard_throttling.mystique_tracked_campaigns.keys(),
+                        "Campaign not added to Mystique's tracked campaigns")
+        actual_spend = 0.005
+
+        # going through an hour's worth of iterations
+        for i in range(mystique_constants.num_iterations_per_hour):
+            ps = self.mystique_hard_throttling.get_pacing_signal(campaign_id=campaign_id)
+            self.assertTrue(ps in [0, 1], "Hard throttling pacing system "
+                                          "should return a value of ps that is either 0 or 1.")
+            self.mystique_hard_throttling.end_iteration(campaign_id, actual_spend)
+            Clock.advance()

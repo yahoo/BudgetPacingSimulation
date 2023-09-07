@@ -7,7 +7,7 @@ import src.configuration as config
 import src.constants as constants
 from src.system.campaign import Campaign
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
-from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem
+from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem, MystiqueHardThrottlingPacingSystem
 from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
 
 
@@ -32,6 +32,10 @@ def generate_pacing_system(algorithm: constants.BudgetPacingAlgorithms) -> Optio
         return MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
     elif algorithm == constants.BudgetPacingAlgorithms.MYSTIQUE_NON_LINEAR:
         return MystiquePacingSystem(TargetSpendStrategyType.NON_LINEAR)
+    elif algorithm == constants.BudgetPacingAlgorithms.MYSTIQUE_LINEAR_HARD_THROTTLING:
+        return MystiqueHardThrottlingPacingSystem(TargetSpendStrategyType.LINEAR)
+    elif algorithm == constants.BudgetPacingAlgorithms.MYSTIQUE_NON_LINEAR_HARD_THROTTLING:
+        return MystiqueHardThrottlingPacingSystem(TargetSpendStrategyType.NON_LINEAR)
     elif algorithm is None:
         return None
     else:

@@ -1,3 +1,4 @@
+import random
 import math
 import statistics
 
@@ -183,3 +184,13 @@ class MystiquePacingSystem(PacingSystemInterface):
         if calculated_ps > mystique_constants.max_ps:
             return mystique_constants.max_ps
         return calculated_ps
+
+
+class MystiqueHardThrottlingPacingSystem(MystiquePacingSystem):
+    def get_pacing_signal(self, campaign_id: str):
+        ps = super().get_pacing_signal(campaign_id=campaign_id)
+        # if ps is high (close to 1) we will return 1 with a high probability
+        # if ps is low (close to 0) we will return 0 with a high probability
+        random_number = random.random()
+        return 1 if random_number <= ps else 0
+
