@@ -16,11 +16,19 @@ class AuctionType(Enum):
 
 
 # output metrics field names
-FIELD_CAMPAIGN_ID = 'campaign_id'
-FIELD_DAILY_BUDGET = 'daily_budget'
-FIELD_DAY_STARTED = 'day_started'
-FIELD_DAY_ENDED = 'day_ended'
-FIELD_NUM_AUCTIONS_WON_HISTORY = 'num_auctions_won_history'
+FIELD_CAMPAIGN_ID = 'Campaign'
+FIELD_DAILY_BUDGET = 'Daily Budget'
+FIELD_DAY_STARTED = 'Day Started'
+FIELD_DAY_ENDED = 'Day Ended'
+FIELD_BUDGET_UTILIZATION = 'Budget Utilization'
+FIELD_DAY_ID = 'Day'
+FIELD_CPM = 'CPM'
+FIELD_NUM_OVER_BUDGET_CAMPAIGNS = '# Over Budget Campaigns'
+FIELD_NUM_WINS = '# Impressions'
+FIELD_OVERSPEND = 'Overspend'
+FIELD_SPEND = 'Spend'
+
+OVERALL_STATISTICS_ROW_NAME = 'Overall'
 
 # Distributions
 # # Untracked Bids
@@ -30,4 +38,3 @@ untracked_bids_log_distribution = norm(loc=-8.19, scale=2.14)
 # # # We sample MU and SIGMA for each campaign to set its bid distribution from which we sample its bids
 distribution_of_mu_of_bids_log_distribution = norm(loc=-8.32, scale=1.69)
 distribution_of_sigma_of_bids_log_distribution = norm(loc=1.34, scale=0.437)
-
