@@ -192,5 +192,5 @@ class MystiqueHardThrottlingPacingSystem(MystiquePacingSystem):
         # if ps is high (close to 1) we will return 1 with a high probability
         # if ps is low (close to 0) we will return 0 with a high probability
         random_number = random.random()
-        return 1 if random_number < ps else 0
+        return 1 if random_number <= ps else 0
 
