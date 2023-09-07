@@ -1,16 +1,16 @@
 import random
+import math
 import statistics
 
 import numpy as np
-import math
-from src.system.clock import Clock
 
+import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
+import src.system.budget_pacing.mystique.target_slope as target_slope
+from src.system.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
+from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
 from src.system.campaign import Campaign
-import src.system.budget_pacing.mystique.target_slope as target_slope
-from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
-from src.system.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
-import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
+from src.system.clock import Clock
 
 
 class MystiquePacingSystem(PacingSystemInterface):
@@ -100,9 +100,11 @@ class MystiquePacingSystem(PacingSystemInterface):
         num_nbc_campaigns_per_day = [0] * Clock.days()
         for campaign in self.mystique_tracked_campaigns.values():
             for day in range(len(campaign.ps_history)):
-                if statistics.mean(campaign.ps_history[day]) < 0.95:
+                if statistics.mean(campaign.ps_history[day]) < mystique_constants.ps_threshold_for_bc_campaigns:
+                    # we assume that a campaign with an average daily ps<0.95 is budget constrained (BC)
                     num_bc_campaigns_per_day[campaign.day_started + day] += 1
                 else:
+                    # otherwise, campaign is not budget constrained (NBC)
                     num_nbc_campaigns_per_day[campaign.day_started + day] += 1
         return {
             mystique_constants.FIELD_NUM_BC_CAMPAIGNS: num_bc_campaigns_per_day,
@@ -190,7 +192,5 @@ class MystiqueHardThrottlingPacingSystem(MystiquePacingSystem):
         # if ps is high (close to 1) we will return 1 with a high probability
         # if ps is low (close to 0) we will return 0 with a high probability
         random_number = random.random()
-        if random_number < ps:
-            return 1
-        # otherwise return 0
-        return 0
+        return 1 if random_number < ps else 0
+
