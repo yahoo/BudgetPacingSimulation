@@ -6,6 +6,7 @@ from src.system.daily_cosine import DailyCosineWave
 num_days_to_simulate = 7
 num_iterations_per_day = 1440
 auction_type = AuctionType.FP
+output_only_summarized_statistics = False
 
 # Budget Pacing System
 pacing_algorithm = constants.BudgetPacingAlgorithms.MYSTIQUE_LINEAR

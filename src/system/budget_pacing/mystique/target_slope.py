@@ -74,10 +74,12 @@ class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
     epsilon = 0.0002
 
     def update_target_slope_and_spend(self, mystique_tracked_campaign: MystiqueTrackedCampaign):
-
         avg_daily_ps = mystique_tracked_campaign.get_avg_daily_ps()
         avg_hourly_ps = mystique_tracked_campaign.get_avg_hourly_ps()
         current_target_slope = mystique_tracked_campaign.current_target_slope.copy()
+        # if the campaign was added in the middle of the current day, don't update target slope and spend
+        if len(avg_hourly_ps) < len(current_target_slope):
+            return
         for i in range(len(mystique_tracked_campaign.current_target_slope)):
             daily_to_hourly_ps_ratio = \
                 avg_daily_ps / avg_hourly_ps[i]

@@ -94,9 +94,24 @@ class Campaign:
     def num_auctions_won_today(self) -> int:
         return sum(self.stats.auctions_won_today)
 
+    def cpm_daily_history(self) -> list[float]:
+        return [1000 * sum(self.spend_history()[day]) / num_wins_in_day
+                if (num_wins_in_day := sum(self.num_auctions_won_history()[day])) > 0 else None
+                for day in range(len(self.num_auctions_won_history()))]
+
+    def budget_utilization_daily_history(self) -> list[float]:
+        return [sum(self.spend_history()[day]) / self.daily_budget
+                for day in range(len(self.num_auctions_won_history()))]
+
+    def overspend_value_daily_history(self) -> list[float]:
+        return [spent_in_day - self.daily_budget
+                if (spent_in_day := sum(self.spend_history()[day])) > self.daily_budget else 0
+                for day in range(len(self.num_auctions_won_history()))]
+
     def is_relevant_auction(self, auction: AuctionInterface) -> bool:
         user_properties = auction.user_properties()
         for (feature, desired_values) in self._targeting_groups.items():
             if user_properties.get(feature) not in desired_values:
                 return False
         return True
+

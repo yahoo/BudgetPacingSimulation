@@ -67,7 +67,7 @@ class TestServingSystem(unittest.TestCase):
         campaign_daily_budget = config.campaign_minimal_bid
         campaign_run_period = 2
         campaign = Campaign(campaign_id='campaign', total_budget=campaign_daily_budget * campaign_run_period,
-                            run_period=campaign_run_period, max_bid=campaign_daily_budget+0.1)
+                            run_period=campaign_run_period, max_bid=campaign_daily_budget + 0.1)
         serving_system = ServingSystem(tracked_campaigns=[campaign])
         bids = serving_system.get_bids(AuctionFP({}))
         self.assertEqual(len(bids), 1, "expected to get a bid from a single campaign")
@@ -76,7 +76,8 @@ class TestServingSystem(unittest.TestCase):
         serving_system.update_winners([auction_winner])
         self.assertGreater(campaign.spent_today(), campaign.daily_budget)
         bids_after_depletion = serving_system.get_bids(AuctionFP({}))
-        self.assertEqual(bids_after_depletion, [], "expected list of bids to be empty after depleting campaign's budget")
+        self.assertEqual(bids_after_depletion, [],
+                         "expected list of bids to be empty after depleting campaign's budget")
 
     def test_with_mystique_budget_pacing(self):
         config.num_untracked_bids = 0
@@ -132,38 +133,122 @@ class TestServingSystem(unittest.TestCase):
         bids = serving_system.get_bids(AuctionFP({f'{property_name}_different': 4}))
         self.assertEqual(len(bids), 0, "expected to see no bids for the auction")
 
+    def test_global_statistics_with_mystique(self):
+        num_days = 2
+        config.num_untracked_bids = 0
+        num_campaigns = 5
+        campaigns = [Campaign(campaign_id=f'campaign_{i}', total_budget=1000, run_period=7, max_bid=1)
+                     for i in range(num_campaigns)]
+        mystique = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
+        serving_system = ServingSystem(pacing_system=mystique,
+                                       tracked_campaigns=campaigns)
+        for _ in range(num_minutes_in_day * num_days):
+            auction_winner = AuctionWinner(bid=Bid(random.choice([campaign.id for campaign in campaigns]), 0.01),
+                                           payment=0.005)
+            serving_system.update_winners([auction_winner])
+            serving_system.end_iteration()
+            Clock.advance()
+        global_statistics = serving_system.get_global_statistics_csv_rows()
+        self.assertEqual(len(global_statistics), num_days + 1, "expected number of rows to be equal to "
+                                                               "number of days + 1, which includes a final overall row")
+        daily_fields = [
+            constants.FIELD_DAY_ID,
+            constants.FIELD_CPM,
+            constants.FIELD_NUM_OVER_BUDGET_CAMPAIGNS,
+            constants.FIELD_NUM_WINS,
+            constants.FIELD_OVERSPEND,
+            constants.FIELD_SPEND,
+            mystique_constants.FIELD_NUM_BC_CAMPAIGNS,
+            mystique_constants.FIELD_NUM_BC_CAMPAIGNS
+        ]
+        for day in range(num_days):
+            for field in daily_fields:
+                self.assertIn(field, global_statistics[day])
+                self.assertTrue(isinstance(global_statistics[day][field], float) or
+                                isinstance(global_statistics[day][field], int))
+        # Check that the last row includes overall statistics
+        self.assertEqual(global_statistics[-1][constants.FIELD_DAY_ID], constants.OVERALL_STATISTICS_ROW_NAME)
+        overall_stats_fields = [
+            constants.FIELD_CPM,
+            constants.FIELD_OVERSPEND,
+            constants.FIELD_SPEND,
+            constants.FIELD_NUM_WINS
+        ]
+        for field in overall_stats_fields:
+            self.assertIn(field, global_statistics[-1])
+            self.assertTrue(isinstance(global_statistics[-1][field], float) or
+                            isinstance(global_statistics[-1][field], int),
+                            f'expected value {global_statistics[-1][field]} to be int or float')
+
+    def test_statistics_with_mystique_campaign_starts_midday(self):
+        mystique = MystiquePacingSystem(TargetSpendStrategyType.NON_LINEAR)
+        serving_system = ServingSystem(pacing_system=mystique)
+        starting_minute = 200
+        # run for {starting_minute} iterations, then insert the campaign
+        for _ in range(starting_minute):
+            serving_system.end_iteration()
+            Clock.advance()
+        campaign = Campaign(campaign_id='campaign_1', total_budget=10000, run_period=7, max_bid=0.2)
+        serving_system.add_campaign(campaign)
+        # run the serving system with the campaign
+        for _ in range(num_minutes_in_day - starting_minute):
+            auction_winner = AuctionWinner(bid=Bid(campaign_id=campaign.id, amount=0.01), payment=0.005)
+            serving_system.update_winners([auction_winner])
+            serving_system.end_iteration()
+            Clock.advance()
+        # check campaign's statistics
+        daily_stats_fields = [constants.FIELD_CPM, constants.FIELD_BUDGET_UTILIZATION, constants.FIELD_OVERSPEND]
+        stats_per_campaign_list = serving_system.get_statistics_per_campaign_csv_rows()
+        # validate structure correctness of statistics
+        self.assertEqual(len(stats_per_campaign_list), 1)
+        campaign_stats = stats_per_campaign_list[0]
+        for field in daily_stats_fields:
+            self.assertEqual(len(campaign_stats[field]), 1)
+            for value_in_day in campaign_stats[field]:
+                self.assertGreaterEqual(value_in_day, 0, "expected value in a day to be >= 0")
+
     def test_statistics_with_mystique(self):
         num_days = 2
         config.num_untracked_bids = 0
         num_campaigns = 5
-        campaigns = []
-        for i in range(num_campaigns):
-            campaigns.append(
-                Campaign(campaign_id=f'campaign_{i}', total_budget=1000, run_period=7, max_bid=25)
-            )
+        campaigns = [Campaign(campaign_id=f'campaign_{i}', total_budget=1000, run_period=7, max_bid=1)
+                     for i in range(num_campaigns)]
         mystique = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
         serving_system = ServingSystem(pacing_system=mystique,
                                        tracked_campaigns=campaigns)
-        # simulate an auction
-        bids = serving_system.get_bids(AuctionFP({}))
-        self.assertEqual(len(bids), num_campaigns)
-        serving_system.update_winners([AuctionWinner(bid=bids[0], payment=bids[0].amount)])
         for _ in range(num_minutes_in_day * num_days):
+            # simulate an auction
+            auction_winner = AuctionWinner(bid=Bid(random.choice([campaign.id for campaign in campaigns]), 0.01),
+                                           payment=0.005)
+            serving_system.update_winners([auction_winner])
             Clock.advance()
             serving_system.end_iteration()
-        stats_per_campaign_list = serving_system.get_statistics_for_all_campaigns()
+        stats_per_campaign_list = serving_system.get_statistics_per_campaign_csv_rows()
         # validate structure correctness of statistics
         self.assertEqual(len(stats_per_campaign_list), num_campaigns, "length of list of statistics should be "
                                                                       "equal to the total number of tracked campaigns.")
         campaign_stats = stats_per_campaign_list[0]
         self.assertIsNotNone(campaign_stats)
         # check that basic statistics exist
+        daily_stats_fields = [constants.FIELD_CPM,
+                              constants.FIELD_BUDGET_UTILIZATION, constants.FIELD_OVERSPEND]
         basic_stats_fields = [constants.FIELD_CAMPAIGN_ID, constants.FIELD_DAY_STARTED, constants.FIELD_DAY_ENDED,
-                              constants.FIELD_DAILY_BUDGET, constants.FIELD_NUM_AUCTIONS_WON_HISTORY]
+                              constants.FIELD_DAILY_BUDGET,
+                              constants.FIELD_NUM_WINS] + daily_stats_fields
+        # check that all basic statistics exist
         for field in basic_stats_fields:
             self.assertTrue(field in campaign_stats, f'basic statistic {field} is missing.')
-        self.assertEqual(len(campaign_stats[constants.FIELD_NUM_AUCTIONS_WON_HISTORY]), num_days)
-        self.assertEqual(len(campaign_stats[constants.FIELD_NUM_AUCTIONS_WON_HISTORY][0]),
+        # check that statistics which have a single entry per day are indeed num_days long
+        for field in daily_stats_fields:
+            self.assertEqual(len(campaign_stats[field]), num_days)
+            for value_in_day in campaign_stats[field]:
+                if value_in_day is None:
+                    # CPM can be None
+                    continue
+                self.assertGreaterEqual(value_in_day, 0, "expected value in a day to be >= 0")
+        # check expected values for specific basic statistics
+        self.assertEqual(len(campaign_stats[constants.FIELD_NUM_WINS]), num_days)
+        self.assertEqual(len(campaign_stats[constants.FIELD_NUM_WINS][0]),
                          config.num_win_entries_per_day)
         self.assertEqual(campaign_stats[constants.FIELD_DAY_STARTED], 0)
         self.assertEqual(campaign_stats[constants.FIELD_DAILY_BUDGET], campaigns[0].daily_budget)
@@ -192,6 +277,9 @@ class MockPacingSystem(PacingSystemInterface):
         return self.pacing_signal
 
     def get_pacing_statistics(self, campaign_id: str) -> dict[str, object]:
+        pass
+
+    def get_global_pacing_statistics(self) -> dict[str, object]:
         pass
 
 

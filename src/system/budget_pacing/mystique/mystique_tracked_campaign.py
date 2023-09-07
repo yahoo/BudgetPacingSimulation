@@ -1,5 +1,6 @@
 import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
 import src.system.budget_pacing.mystique.mystique_utils as utils
+from src.system.clock import Clock
 
 
 class MystiqueTrackedCampaign:
@@ -18,6 +19,7 @@ class MystiqueTrackedCampaign:
         self.target_spend_history = []
         self.sum_ps_below_threshold = 0
         self.count_ps_below_threshold = 0
+        self.day_started = Clock.days()
         self.new_day_init(is_new_campaign=True)
 
     def new_day_init(self, is_new_campaign=False):
