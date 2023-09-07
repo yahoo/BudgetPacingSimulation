@@ -40,9 +40,6 @@ class MystiqueTrackedCampaign:
         if len(self.today_ps) > 0:
             self.ps_history.append(self.today_ps)
         self.today_ps = []
-        if is_new_campaign and Clock.minute_in_day() > 0:
-            # if the campaign was added in the middle of the day, initialise today's ps history
-            self.today_ps += [self.ps] * Clock.minute_in_day()
 
         # updating the spend history arr and initializing today's spend arr
         if len(self.today_spend) > 0:
