@@ -1,16 +1,15 @@
-import random
+import math
 import statistics
 
 import numpy as np
-import math
-from src.system.clock import Clock
 
+import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
+import src.system.budget_pacing.mystique.target_slope as target_slope
+from src.system.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
+from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
 from src.system.campaign import Campaign
-import src.system.budget_pacing.mystique.target_slope as target_slope
-from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
-from src.system.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
-import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
+from src.system.clock import Clock
 
 
 class MystiquePacingSystem(PacingSystemInterface):
@@ -100,7 +99,7 @@ class MystiquePacingSystem(PacingSystemInterface):
         num_nbc_campaigns_per_day = [0] * Clock.days()
         for campaign in self.mystique_tracked_campaigns.values():
             for day in range(len(campaign.ps_history)):
-                if statistics.mean(campaign.ps_history[day]) < mystique_constants.statistics_bc_threshold_avg_ps:
+                if statistics.mean(campaign.ps_history[day]) < mystique_constants.ps_threshold_for_bc_campaigns:
                     # we assume that a campaign with an average daily ps<0.95 is budget constrained (BC)
                     num_bc_campaigns_per_day[campaign.day_started + day] += 1
                 else:
@@ -184,14 +183,3 @@ class MystiquePacingSystem(PacingSystemInterface):
         if calculated_ps > mystique_constants.max_ps:
             return mystique_constants.max_ps
         return calculated_ps
-
-
-class MystiqueHardThrottlingPacingSystem(MystiquePacingSystem):
-    def get_pacing_signal(self, campaign_id: str):
-        random_number = random.random()
-        ps = MystiquePacingSystem.get_pacing_signal(self, campaign_id=campaign_id)
-        if ps >= 0.5:
-            return 1 if random_number < ps else 0
-        else:
-            # ps < 0.5
-            return 0 if random_number > ps else 1
