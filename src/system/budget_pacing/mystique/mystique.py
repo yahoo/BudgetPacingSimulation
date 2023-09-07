@@ -188,7 +188,7 @@ class MystiquePacingSystem(PacingSystemInterface):
 
 class MystiqueHardThrottlingPacingSystem(MystiquePacingSystem):
     def get_pacing_signal(self, campaign_id: str):
-        ps = MystiquePacingSystem.get_pacing_signal(self, campaign_id=campaign_id)
+        ps = super().get_pacing_signal(campaign_id=campaign_id)
         # if ps is high (close to 1) we will return 1 with a high probability
         # if ps is low (close to 0) we will return 0 with a high probability
         random_number = random.random()
