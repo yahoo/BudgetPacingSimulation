@@ -5,7 +5,6 @@ from scipy import stats
 
 import src.configuration as config
 from src.system.auction import AuctionInterface
-from src import constants
 from src.system.bid import Bid
 from src.system.clock import Clock
 
@@ -59,18 +58,17 @@ class CampaignStatistics:
 
 class Campaign:
     def __init__(self, campaign_id: str, total_budget: float, run_period: int,
-                 targeting_groups: dict[str, set[int]] = None, bids_distribution: stats.rv_continuous = None):
+                 targeting_groups: dict[str, set[int]] = None, bids_distribution: stats.rv_continuous = None,
+                 max_bid: float = None):
         self.id = campaign_id
-        self.bids_distribution = bids_distribution
-        if self.bids_distribution is None:
-            mu = constants.distribution_of_mu_of_bids_log_distribution.rvs()
-            sigma = constants.distribution_of_sigma_of_bids_log_distribution.rvs()
-            while sigma < 0:
-                # re-sample until sigma >= 0
-                sigma = constants.distribution_of_sigma_of_bids_log_distribution.rvs()
-            self.bids_distribution = stats.norm(loc=mu, scale=sigma)
+        if max_bid and max_bid < config.campaign_minimal_bid:
+            raise Exception('Invalid max_bid parameter.')
+        self.max_bid = max_bid
         self.total_budget = total_budget
         self.daily_budget = total_budget / run_period
+        self.bids_distribution = bids_distribution
+        if self.bids_distribution is None:
+            self.bids_distribution = config.generate_bid_log_distribution_for_budget(self.daily_budget)
         assert self.daily_budget >= config.campaign_minimal_bid
         if targeting_groups is None:
             targeting_groups = {}
@@ -79,6 +77,8 @@ class Campaign:
 
     def bid(self) -> Optional[Bid]:
         bid_amount = math.exp(self.bids_distribution.rvs())
+        if self.max_bid and bid_amount > self.max_bid:
+            bid_amount = self.max_bid
         if bid_amount < config.campaign_minimal_bid:
             return None
         return Bid(campaign_id=self.id, amount=bid_amount)

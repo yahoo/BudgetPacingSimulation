@@ -1,5 +1,7 @@
+import random
 import unittest
 
+import src.constants as constants
 from src.constants import num_minutes_in_day
 from src.system.auction import *
 from src.system.budget_pacing.mystique import mystique_constants

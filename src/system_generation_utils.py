@@ -1,11 +1,12 @@
+import math
 import random
 from typing import Optional
-from scipy import stats
 
 import numpy as np
 
 import src.configuration as config
 import src.constants as constants
+from src.configuration import generate_bid_log_distribution_for_budget
 from src.system.campaign import Campaign
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
 from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem
@@ -15,17 +16,14 @@ from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyTy
 def generate_campaigns(n: int):
     campaigns = []
     for i in range(n):
-        # Create bid distribution
-        mu = constants.distribution_of_mu_of_bids_log_distribution.rvs()
-        sigma = constants.distribution_of_sigma_of_bids_log_distribution.rvs()
-        while sigma < 0:
-            # re-sample until sigma >= 0
-            sigma = constants.distribution_of_sigma_of_bids_log_distribution.rvs()
-        bids_distribution = stats.norm(loc=mu, scale=sigma)
+        run_period = random.randint(config.campaign_min_run_period, config.num_days_to_simulate)
+        # Sample daily budget for campaign
+        daily_budget = math.exp(constants.daily_budgets_log_distribution.rvs())
+        # Generate bid distribution according to the sampled budget
+        bids_distribution = generate_bid_log_distribution_for_budget(daily_budget)
         campaigns.append(Campaign(campaign_id=f'campaign_{i}',
-                                  total_budget=random.uniform(config.campaign_min_budget, config.campaign_max_budget),
-                                  run_period=random.randint(config.campaign_min_run_period,
-                                                            config.campaign_max_run_period),
+                                  run_period=run_period,
+                                  total_budget=daily_budget * run_period,
                                   targeting_groups={
                                       feature: set(
                                           np.random.choice(list(config.user_properties[feature].keys()),

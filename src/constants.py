@@ -1,5 +1,5 @@
 from enum import Enum
-from scipy.stats import norm
+from scipy.stats import norm, gamma
 
 num_minutes_in_hour = 60
 num_minutes_in_day = 24 * num_minutes_in_hour
@@ -31,10 +31,11 @@ FIELD_SPEND = 'Spend'
 OVERALL_STATISTICS_ROW_NAME = 'Overall'
 
 # Distributions
+
 # # Untracked Bids
 # # # The distribution of the log() of the bids is approximated as a normal distribution
 untracked_bids_log_distribution = norm(loc=-8.19, scale=2.14)
-# # Distribution of MU and SIGMA of bid distributions of campaigns
-# # # We sample MU and SIGMA for each campaign to set its bid distribution from which we sample its bids
-distribution_of_mu_of_bids_log_distribution = norm(loc=-8.32, scale=1.69)
-distribution_of_sigma_of_bids_log_distribution = norm(loc=1.34, scale=0.437)
+
+# # Distribution of Daily Budgets
+# # # The distribution of the log() of the daily budgets is approximated as a gamma distribution
+daily_budgets_log_distribution = gamma(a=3.77, loc=0.0, scale=1.0)  # can also use norm(loc=3.788, scale=2.188)

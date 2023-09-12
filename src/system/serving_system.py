@@ -1,6 +1,4 @@
 import numpy as np
-import random
-import statistics
 
 import src.constants as constants
 from src.system.auction import *
@@ -92,8 +90,6 @@ class ServingSystem:
 
     def _generate_untracked_bids(self, num_tracked_bids: int) -> list[Bid]:
         num_untracked_bids = self._calculate_number_of_untracked_bids(num_tracked_bids)
-        if num_untracked_bids == 0:
-            return []
         sampled_bids = constants.untracked_bids_log_distribution.rvs(size=num_untracked_bids)
         # Since the values were sampled from the distribution of logs, perform exp() on the sampled values
         sampled_bids = np.exp(sampled_bids)

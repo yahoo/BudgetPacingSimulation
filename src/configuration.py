@@ -1,3 +1,5 @@
+from scipy import stats
+
 import src.constants as constants
 from src.constants import AuctionType
 from src.system.daily_cosine import DailyCosineWave
@@ -16,8 +18,7 @@ num_campaigns = 1000
 campaign_min_budget = 1000
 campaign_max_budget = 10000
 campaign_min_run_period = 1
-campaign_max_run_period = 30
-campaign_minimal_bid = 0.00001
+campaign_minimal_bid = 0.001
 num_spend_entries_per_day = 1  # Defines the granularity with which to store spend history inside Campaigns.
 num_win_entries_per_day = 24  # Defines the granularity with which to store win history inside Campaigns.
 
@@ -48,3 +49,15 @@ user_properties = {
 # We use that value to define the mean of a Poisson distribution, from which we will sample the number of auctions
 traffic_mean_cos_wave = DailyCosineWave(dc=1500, amplitude=0.75, phase=0.2)
 
+
+def generate_bid_log_distribution_for_budget(daily_budget: float) -> stats.rv_continuous:
+    # The following buckets have been defined according to approximated distributions of real data.
+    if daily_budget < 25:
+        # Low budgets bid distribution
+        return stats.norm(loc=-9.48, scale=3.48)
+    elif 25 <= daily_budget < 100:
+        # Medium budgets bid distribution
+        return stats.norm(loc=-8.85, scale=2.58)
+    else:
+        # High budgets bid distribution
+        return stats.norm(loc=-7.82, scale=2.05)
