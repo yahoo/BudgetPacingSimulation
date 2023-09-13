@@ -155,7 +155,8 @@ class ServingSystem:
     def _calculate_cpm_per_day(self) -> list[float]:
         spend_per_day = self._calculate_total_spend_per_day()
         wins_per_day = self._calculate_total_wins_per_day()
-        return [1000 * spend_per_day[day] / wins_per_day[day] for day in range(len(spend_per_day))]
+        return [1000 * spend_per_day[day] / wins_per_day[day] if wins_per_day[day] > 0 else None
+                for day in range(len(spend_per_day))]
 
     def _calculate_total_spend_per_day(self) -> list[float]:
         total_spend_per_day = [0] * Clock.days()
