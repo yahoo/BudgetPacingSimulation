@@ -34,7 +34,7 @@ def generate_campaigns(n: int):
                                           config.user_properties[feature].keys()))) > 0
                                   },
                                   bids_distribution=bids_distribution))
-        return campaigns
+    return campaigns
 
 
 def generate_pacing_system(algorithm: constants.BudgetPacingAlgorithms) -> Optional[PacingSystemInterface]:
