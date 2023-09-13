@@ -15,8 +15,8 @@ pacing_algorithm = constants.BudgetPacingAlgorithms.MYSTIQUE_LINEAR
 
 # Campaigns
 num_campaigns = 1000
-campaign_min_budget = 1000
-campaign_max_budget = 10000
+campaign_min_budget = 5
+campaign_max_budget = 1500
 campaign_min_run_period = 1
 campaign_minimal_bid = 0.001
 num_spend_entries_per_day = 1  # Defines the granularity with which to store spend history inside Campaigns.
