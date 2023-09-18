@@ -23,7 +23,7 @@ campaign_min_run_period = 1
 campaign_minimal_bid = 0
 num_spend_entries_per_day = 1  # Defines the granularity with which to store spend history inside Campaigns.
 num_win_entries_per_day = 24  # Defines the granularity with which to store win history inside Campaigns.
-max_bid_as_factor_of_bids_mean = 10  # Defines the maximal bid for campaigns as a factor of the distribution's mean
+max_bid_factor_of_bids_mean = 10  # Defines the maximal bid for campaigns as a factor of the distribution's mean
 
 # Untracked bids
 factor_untracked_bids = 2
