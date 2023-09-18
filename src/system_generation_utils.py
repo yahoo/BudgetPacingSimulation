@@ -26,7 +26,7 @@ def generate_campaigns(n: int):
                                   run_period=run_period,
                                   total_budget=daily_budget * run_period,
                                   bids_distribution=bids_distribution,
-                                  max_bid=bids_distribution.mean() * config.max_bid_as_factor_of_bids_mean,
+                                  max_bid=bids_distribution.mean() * config.max_bid_factor_of_bids_mean,
                                   targeting_groups={
                                       feature: set(
                                           np.random.choice(list(config.user_properties[feature].keys()),
