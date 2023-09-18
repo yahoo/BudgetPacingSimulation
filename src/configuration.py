@@ -16,7 +16,7 @@ num_campaigns = 100
 campaign_min_budget = 5
 campaign_max_budget = 1500
 campaign_min_run_period = 1
-campaign_minimal_bid = 0.001
+campaign_minimal_bid = 0
 num_spend_entries_per_day = 1  # Defines the granularity with which to store spend history inside Campaigns.
 num_win_entries_per_day = 24  # Defines the granularity with which to store win history inside Campaigns.
 
