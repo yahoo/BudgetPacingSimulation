@@ -57,11 +57,12 @@ class TestServingSystem(unittest.TestCase):
         # Creating a single campaign, depleting its budget,
         # and checking that the serving system no longer gets bids from it.
         config.factor_untracked_bids = 0
-        campaign_daily_budget = config.campaign_minimal_bid + 0.001
+        campaign_daily_budget = 1  # Set a daily budget
         campaign_run_period = 2
         campaign = Campaign(campaign_id='campaign', total_budget=campaign_daily_budget * campaign_run_period,
                             run_period=campaign_run_period,
-                            bids_distribution=stats.uniform(loc=campaign_daily_budget, scale=0.05))
+                            # The following bid distribution generates a bid that depletes campaign's budget
+                            bids_distribution=stats.uniform(loc=campaign_daily_budget, scale=0.5))
         serving_system = ServingSystem(tracked_campaigns=[campaign])
         bids = serving_system.get_bids(AuctionFP({}))
         self.assertEqual(len(bids), 1, "expected to get a bid from a single campaign")
