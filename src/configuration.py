@@ -61,6 +61,9 @@ untracked_bids_distribution = stats.lognorm(s=2.14, scale=math.exp(-8.19))
 # from scipy.stats.lognorm docs: "Suppose a normally distributed random variable X has mean mu and
 # standard deviation sigma. Then Y = exp(X) is lognormally distributed with s = sigma and scale = exp(mu)."
 # We define low budget as <100$ daily budget, medium is between 100$ and 200$, and high is >200$
+medium_budget_range_min_value = 100
+high_budget_range_min_value = 200
+
 bids_distribution_low_budget = stats.lognorm(s=3.0, scale=math.exp(-9.06))
 bids_distribution_medium_budget = stats.lognorm(s=2.47, scale=math.exp(-8.08))
 bids_distribution_high_budget = stats.lognorm(s=1.95, scale=math.exp(-7.76))

@@ -90,7 +90,7 @@ class ServingSystem:
 
     def _generate_untracked_bids(self, num_tracked_bids: int) -> list[Bid]:
         num_untracked_bids = self._calculate_number_of_untracked_bids(num_tracked_bids)
-        sampled_bids = constants.untracked_bids_distribution.rvs(size=num_untracked_bids)
+        sampled_bids = config.untracked_bids_distribution.rvs(size=num_untracked_bids)
         return [Bid(campaign_id='untracked_campaign_' + str(i), amount=sampled_bids[i]) for i in range(num_untracked_bids)]
 
     def get_statistics_per_campaign_csv_rows(self) -> list[dict[str, object]]:

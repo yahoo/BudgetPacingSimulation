@@ -57,7 +57,7 @@ class TestServingSystem(unittest.TestCase):
         # Creating a single campaign, depleting its budget,
         # and checking that the serving system no longer gets bids from it.
         config.factor_untracked_bids = 0
-        campaign_daily_budget = config.campaign_minimal_bid + 2e-10
+        campaign_daily_budget = config.campaign_minimal_bid + 0.001
         campaign_run_period = 2
         campaign = Campaign(campaign_id='campaign', total_budget=campaign_daily_budget * campaign_run_period,
                             run_period=campaign_run_period,

@@ -55,10 +55,10 @@ def generate_pacing_system(algorithm: constants.BudgetPacingAlgorithms) -> Optio
 
 def generate_bid_distribution_for_budget(daily_budget: float) -> stats.rv_continuous:
     # The following buckets have been defined according to approximated distributions of real data.
-    if daily_budget < 100:
+    if daily_budget < config.medium_budget_range_min_value:
         # Low budgets bid distribution
         return config.bids_distribution_low_budget
-    elif 100 <= daily_budget < 200:
+    elif config.medium_budget_range_min_value <= daily_budget < config.high_budget_range_min_value:
         # Medium budgets bid distribution
         return config.bids_distribution_medium_budget
     else:

@@ -68,7 +68,7 @@ class Campaign:
         self.daily_budget = total_budget / run_period
         self.bids_distribution = bids_distribution
         if self.bids_distribution is None:
-            self.bids_distribution = constants.bids_distribution_medium_budget
+            self.bids_distribution = config.bids_distribution_medium_budget
         assert self.daily_budget >= config.campaign_minimal_bid
         if targeting_groups is None:
             targeting_groups = {}
@@ -77,8 +77,8 @@ class Campaign:
 
     def bid(self) -> Optional[Bid]:
         bid_amount = self.bids_distribution.rvs()
-        if self.max_bid and bid_amount > self.max_bid:
-            bid_amount = self.max_bid
+        if self.max_bid:
+            bid_amount = min(bid_amount, self.max_bid)
         if bid_amount < config.campaign_minimal_bid:
             return None
         return Bid(campaign_id=self.id, amount=bid_amount)
