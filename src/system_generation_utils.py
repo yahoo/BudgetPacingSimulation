@@ -6,7 +6,7 @@ import numpy as np
 
 import src.configuration as config
 import src.constants as constants
-from src.configuration import generate_bid_log_distribution_for_budget
+from src.configuration import generate_bid_distribution_for_budget
 from src.system.campaign import Campaign
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
 from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem, MystiqueHardThrottlingPacingSystem
@@ -16,11 +16,12 @@ from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyTy
 def generate_campaigns(n: int):
     campaigns = []
     for i in range(n):
-        run_period = random.randint(config.campaign_min_run_period, config.num_days_to_simulate)
+        # run_period = random.randint(config.campaign_min_run_period, config.num_days_to_simulate)
+        run_period = config.num_days_to_simulate
         # Sample daily budget for campaign
         daily_budget = math.exp(constants.daily_budgets_log_distribution.rvs())
         # Generate bid distribution according to the sampled budget
-        bids_distribution = generate_bid_log_distribution_for_budget(daily_budget)
+        bids_distribution = generate_bid_distribution_for_budget(daily_budget)
         campaigns.append(Campaign(campaign_id=f'campaign_{i}',
                                   run_period=run_period,
                                   total_budget=daily_budget * run_period,

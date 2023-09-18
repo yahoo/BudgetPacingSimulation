@@ -1,5 +1,7 @@
+import math
 from enum import Enum
-from scipy.stats import norm, gamma
+
+from scipy.stats import lognorm, gamma
 
 num_minutes_in_hour = 60
 num_minutes_in_day = 24 * num_minutes_in_hour
@@ -36,7 +38,8 @@ OVERALL_STATISTICS_ROW_NAME = 'Overall'
 
 # # Untracked Bids
 # # # The distribution of the log() of the bids is approximated as a normal distribution
-untracked_bids_log_distribution = norm(loc=-8.19, scale=2.14)
+# untracked_bids_log_distribution = norm(loc=-8.19, scale=2.14)
+untracked_bids_distribution = lognorm(s=2.14, scale=math.exp(-8.19))
 
 # # Distribution of Daily Budgets
 # # # The distribution of the log() of the daily budgets is approximated as a gamma distribution

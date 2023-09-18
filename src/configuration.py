@@ -1,3 +1,5 @@
+import math
+
 from scipy import stats
 
 import src.constants as constants
@@ -50,14 +52,16 @@ user_properties = {
 traffic_mean_cos_wave = DailyCosineWave(dc=1500, amplitude=0.75, phase=0.2)
 
 
-def generate_bid_log_distribution_for_budget(daily_budget: float) -> stats.rv_continuous:
+def generate_bid_distribution_for_budget(daily_budget: float) -> stats.rv_continuous:
     # The following buckets have been defined according to approximated distributions of real data.
-    if daily_budget < 25:
+    if daily_budget < 100:
         # Low budgets bid distribution
-        return stats.norm(loc=-9.48, scale=3.48)
+        # from scipy.stats.lognorm docs: "Suppose a normally distributed random variable X has mean mu and
+        # standard deviation sigma. Then Y = exp(X) is lognormally distributed with s = sigma and scale = exp(mu)."
+        return stats.lognorm(s=3.0, scale=math.exp(-9.06))
     elif 25 <= daily_budget < 100:
         # Medium budgets bid distribution
-        return stats.norm(loc=-8.85, scale=2.58)
+        return stats.lognorm(s=2.47, scale=math.exp(-8.08))
     else:
         # High budgets bid distribution
-        return stats.norm(loc=-7.82, scale=2.05)
+        return stats.lognorm(s=1.95, scale=math.exp(-7.76))

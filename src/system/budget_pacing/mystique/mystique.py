@@ -24,12 +24,12 @@ class MystiquePacingSystem(PacingSystemInterface):
     def add_campaign(self, campaign: Campaign):
         campaign_id = campaign.id
         daily_budget = campaign.daily_budget
-        if campaign_id not in self.mystique_tracked_campaigns.keys():
+        if campaign_id not in self.mystique_tracked_campaigns:
             self.mystique_tracked_campaigns[campaign_id] = MystiqueTrackedCampaign(daily_budget)
             self.target_spend_slope_calculator.initialize_slope(self.mystique_tracked_campaigns[campaign_id])
 
     def end_iteration(self, campaign_id: str, spend_since_last_iteration: float):
-        if campaign_id in self.mystique_tracked_campaigns.keys():
+        if campaign_id in self.mystique_tracked_campaigns:
             mystique_tracked_campaign = self.mystique_tracked_campaigns[campaign_id]
             mystique_tracked_campaign.update_spend(spend_since_last_iteration)
             self.update_pacing_signal(mystique_tracked_campaign)
@@ -42,7 +42,7 @@ class MystiquePacingSystem(PacingSystemInterface):
 
     def get_pacing_signal(self, campaign_id: str):
         ps = mystique_constants.default_ps_value
-        if campaign_id in self.mystique_tracked_campaigns.keys():
+        if campaign_id in self.mystique_tracked_campaigns:
             ps = self.mystique_tracked_campaigns[campaign_id].ps
         assert mystique_constants.min_ps <= ps <= mystique_constants.max_ps
         return ps

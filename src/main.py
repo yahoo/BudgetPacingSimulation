@@ -1,15 +1,20 @@
 import csv
+import random
 
 import src.configuration as config
-from src import system_generation_utils
+from src import system_generation_utils, constants
 from src.system.marketplace import Marketplace
 from src.system.serving_system import ServingSystem
 
 OUTPUT_FOLDER_PATH = '../output'
-OUTPUT_FILE_PATH = f'{OUTPUT_FOLDER_PATH}/simulation_statistics.csv'
+OUTPUT_FILE_PATH = f'{OUTPUT_FOLDER_PATH}/simulation_statistics_{config.pacing_algorithm}.csv'
 
 
 if __name__ == '__main__':
+    # Set the following seeds to generate consistent campaigns across simulations
+    random.seed(42)
+    constants.daily_budgets_log_distribution.random_state = 42
+    # Build the system
     campaigns = system_generation_utils.generate_campaigns(config.num_campaigns)
     pacing_system = system_generation_utils.generate_pacing_system(config.pacing_algorithm)
     serving_system = ServingSystem(pacing_system=pacing_system, tracked_campaigns=campaigns)
