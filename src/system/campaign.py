@@ -1,9 +1,9 @@
-import math
 from typing import Optional
 
 from scipy import stats
 
 import src.configuration as config
+from src import constants
 from src.system.auction import AuctionInterface
 from src.system.bid import Bid
 from src.system.clock import Clock
@@ -68,7 +68,7 @@ class Campaign:
         self.daily_budget = total_budget / run_period
         self.bids_distribution = bids_distribution
         if self.bids_distribution is None:
-            self.bids_distribution = config.generate_bid_distribution_for_budget(self.daily_budget)
+            self.bids_distribution = constants.bids_distribution_medium_budget
         assert self.daily_budget >= config.campaign_minimal_bid
         if targeting_groups is None:
             targeting_groups = {}

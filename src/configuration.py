@@ -1,7 +1,3 @@
-import math
-
-from scipy import stats
-
 import src.constants as constants
 from src.constants import AuctionType
 from src.system.daily_cosine import DailyCosineWave
@@ -16,7 +12,7 @@ output_only_summarized_statistics = False
 pacing_algorithm = constants.BudgetPacingAlgorithms.MYSTIQUE_LINEAR
 
 # Campaigns
-num_campaigns = 1000
+num_campaigns = 100
 campaign_min_budget = 5
 campaign_max_budget = 1500
 campaign_min_run_period = 1
@@ -25,7 +21,7 @@ num_spend_entries_per_day = 1  # Defines the granularity with which to store spe
 num_win_entries_per_day = 24  # Defines the granularity with which to store win history inside Campaigns.
 
 # Untracked bids
-factor_untracked_bids = 1.5
+factor_untracked_bids = 2
 
 # Auctions
 # # Targeting Groups
@@ -50,18 +46,3 @@ user_properties = {
 # dc * (1 + amplitude * math.cos((2*math.pi)*(m/num_iterations_per_day + phase))),
 # We use that value to define the mean of a Poisson distribution, from which we will sample the number of auctions
 traffic_mean_cos_wave = DailyCosineWave(dc=1500, amplitude=0.75, phase=0.2)
-
-
-def generate_bid_distribution_for_budget(daily_budget: float) -> stats.rv_continuous:
-    # The following buckets have been defined according to approximated distributions of real data.
-    if daily_budget < 100:
-        # Low budgets bid distribution
-        # from scipy.stats.lognorm docs: "Suppose a normally distributed random variable X has mean mu and
-        # standard deviation sigma. Then Y = exp(X) is lognormally distributed with s = sigma and scale = exp(mu)."
-        return stats.lognorm(s=3.0, scale=math.exp(-9.06))
-    elif 25 <= daily_budget < 100:
-        # Medium budgets bid distribution
-        return stats.lognorm(s=2.47, scale=math.exp(-8.08))
-    else:
-        # High budgets bid distribution
-        return stats.lognorm(s=1.95, scale=math.exp(-7.76))

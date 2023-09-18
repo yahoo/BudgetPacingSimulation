@@ -3,10 +3,10 @@ import random
 from typing import Optional
 
 import numpy as np
+from scipy import stats
 
 import src.configuration as config
-import src.constants as constants
-from src.configuration import generate_bid_distribution_for_budget
+from src import constants as constants
 from src.system.campaign import Campaign
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
 from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem, MystiqueHardThrottlingPacingSystem
@@ -51,3 +51,16 @@ def generate_pacing_system(algorithm: constants.BudgetPacingAlgorithms) -> Optio
         return None
     else:
         raise Exception(f'Unsupported budget pacing algorithm: {algorithm}')
+
+
+def generate_bid_distribution_for_budget(daily_budget: float) -> stats.rv_continuous:
+    # The following buckets have been defined according to approximated distributions of real data.
+    if daily_budget < 100:
+        # Low budgets bid distribution
+        return constants.bids_distribution_low_budget
+    elif 100 <= daily_budget < 200:
+        # Medium budgets bid distribution
+        return constants.bids_distribution_medium_budget
+    else:
+        # High budgets bid distribution
+        return constants.bids_distribution_high_budget
