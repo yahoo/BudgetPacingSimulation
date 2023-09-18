@@ -19,7 +19,7 @@ def generate_campaigns(n: int):
         # run_period = random.randint(config.campaign_min_run_period, config.num_days_to_simulate)
         run_period = config.num_days_to_simulate
         # Sample daily budget for campaign
-        daily_budget = math.exp(constants.daily_budgets_log_distribution.rvs())
+        daily_budget = math.exp(config.daily_budgets_log_distribution.rvs())
         # Generate bid distribution according to the sampled budget
         bids_distribution = generate_bid_distribution_for_budget(daily_budget)
         campaigns.append(Campaign(campaign_id=f'campaign_{i}',
@@ -57,10 +57,10 @@ def generate_bid_distribution_for_budget(daily_budget: float) -> stats.rv_contin
     # The following buckets have been defined according to approximated distributions of real data.
     if daily_budget < 100:
         # Low budgets bid distribution
-        return constants.bids_distribution_low_budget
+        return config.bids_distribution_low_budget
     elif 100 <= daily_budget < 200:
         # Medium budgets bid distribution
-        return constants.bids_distribution_medium_budget
+        return config.bids_distribution_medium_budget
     else:
         # High budgets bid distribution
-        return constants.bids_distribution_high_budget
+        return config.bids_distribution_high_budget
