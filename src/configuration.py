@@ -75,4 +75,4 @@ daily_budgets_log_distribution = stats.gamma(a=3.77, loc=0.0, scale=1.0)
 
 # Set the following seeds to generate consistent campaigns across simulations
 daily_budgets_log_distribution.random_state = 42
-random.seed(42)
+random.seed(daily_budgets_log_distribution.random_state)
