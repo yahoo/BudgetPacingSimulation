@@ -4,6 +4,7 @@ from typing import Optional
 
 import numpy as np
 from scipy import stats
+from dataclasses import dataclass
 
 import src.configuration as config
 from src import constants as constants
@@ -13,29 +14,46 @@ from src.system.budget_pacing.mystique.mystique import MystiquePacingSystem, Mys
 from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyType
 
 
+@dataclass
+class CampaignConfiguration:
+    run_period: int
+    total_budget: float
+    bids_distribution: stats.rv_continuous
+    max_bid: float
+    targeting_groups: dict
+
+
+def generate_campaign_configuration() -> CampaignConfiguration:
+    run_period = config.num_days_to_simulate
+    # Sample daily budget for campaign
+    daily_budget = math.exp(config.daily_budgets_log_distribution.rvs())
+    # Generate bid distribution according to the sampled budget
+    bids_distribution = generate_bid_distribution_for_budget(daily_budget)
+    return CampaignConfiguration(run_period=run_period,
+                                 total_budget=daily_budget * run_period,
+                                 bids_distribution=bids_distribution,
+                                 max_bid=bids_distribution.mean() * config.max_bid_factor_of_bids_mean,
+                                 targeting_groups={
+                                     feature: set(
+                                         np.random.choice(list(config.user_properties[feature].keys()),
+                                                          size=num_target_values,
+                                                          replace=False))
+                                     for feature in config.user_properties
+                                     if (num_target_values := random.randint(0, len(
+                                         config.user_properties[feature].keys()))) > 0
+                                 })
+
+
 def generate_campaigns(n: int):
     campaigns = []
     for i in range(n):
-        # run_period = random.randint(config.campaign_min_run_period, config.num_days_to_simulate)
-        run_period = config.num_days_to_simulate
-        # Sample daily budget for campaign
-        daily_budget = math.exp(config.daily_budgets_log_distribution.rvs())
-        # Generate bid distribution according to the sampled budget
-        bids_distribution = generate_bid_distribution_for_budget(daily_budget)
+        campaign_config = generate_campaign_configuration()
         campaigns.append(Campaign(campaign_id=f'campaign_{i}',
-                                  run_period=run_period,
-                                  total_budget=daily_budget * run_period,
-                                  bids_distribution=bids_distribution,
-                                  max_bid=bids_distribution.mean() * config.max_bid_factor_of_bids_mean,
-                                  targeting_groups={
-                                      feature: set(
-                                          np.random.choice(list(config.user_properties[feature].keys()),
-                                                           size=num_target_values,
-                                                           replace=False))
-                                      for feature in config.user_properties
-                                      if (num_target_values := random.randint(0, len(
-                                          config.user_properties[feature].keys()))) > 0
-                                  }))
+                                  run_period=campaign_config.run_period,
+                                  total_budget=campaign_config.total_budget,
+                                  bids_distribution=campaign_config.bids_distribution,
+                                  max_bid=campaign_config.max_bid,
+                                  targeting_groups=campaign_config.targeting_groups))
     return campaigns
 
 
