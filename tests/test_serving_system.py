@@ -1,6 +1,7 @@
+import random
 import unittest
 
-from src import constants
+import src.constants as constants
 from src.constants import num_minutes_in_day
 from src.system.auction import *
 from src.system.budget_pacing.mystique import mystique_constants
@@ -9,6 +10,7 @@ from src.system.budget_pacing.mystique.target_slope import TargetSpendStrategyTy
 from src.system.budget_pacing.pacing_system_interface import PacingSystemInterface
 from src.system.campaign import *
 from src.system.serving_system import ServingSystem
+from tests.tests_utils import create_campaigns
 
 
 class TestServingSystem(unittest.TestCase):
@@ -17,7 +19,7 @@ class TestServingSystem(unittest.TestCase):
 
     def test_add_campaign(self):
         serving_system = ServingSystem(tracked_campaigns=[])
-        campaign = Campaign(campaign_id=f'campaign', total_budget=1000, run_period=7, max_bid=25)
+        campaign = Campaign(campaign_id=f'campaign', total_budget=1000, run_period=7)
         serving_system.add_campaign(campaign)
         self.assertTrue(campaign in serving_system.tracked_campaigns.values(),
                         "expected added campaign to be inside tracked campaigns")
@@ -26,15 +28,10 @@ class TestServingSystem(unittest.TestCase):
 
     def test_simple_auction(self):
         num_campaigns = 5
-        campaigns = []
-        initial_budget = 1000
-        for i in range(num_campaigns):
-            campaigns.append(
-                Campaign(campaign_id=f'campaign_{i}', total_budget=initial_budget, run_period=7, max_bid=25)
-            )
+        campaigns = create_campaigns(num_campaigns)
         serving_system = ServingSystem(tracked_campaigns=campaigns)
         bids = serving_system.get_bids(AuctionFP({}))
-        self.assertEqual(len(bids), num_campaigns + config.num_untracked_bids, "wrong number of generated bids")
+        self.assertEqual(len(bids), num_campaigns + config.factor_untracked_bids*num_campaigns, "wrong number of generated bids")
         for c in campaigns:
             # assert that each campaign has a bid in the list of bids
             self.assertTrue(c.id in [bid.campaign_id for bid in bids], "no bid exists for campaign")
@@ -48,13 +45,9 @@ class TestServingSystem(unittest.TestCase):
                          "the number of auctions won today by the campaign should reflect the auction won")
 
     def test_with_mock_budget_pacing_always_zero_ps(self):
-        config.num_untracked_bids = 0
+        config.factor_untracked_bids = 0
         num_campaigns = 5
-        campaigns = []
-        for i in range(num_campaigns):
-            campaigns.append(
-                Campaign(campaign_id=f'campaign_{i}', total_budget=1000, run_period=7, max_bid=25)
-            )
+        campaigns = create_campaigns(num_campaigns)
         serving_system = ServingSystem(pacing_system=MockPacingSystem(pacing_signal=0),
                                        tracked_campaigns=campaigns)
         bids = serving_system.get_bids(AuctionFP({}))
@@ -63,25 +56,29 @@ class TestServingSystem(unittest.TestCase):
     def test_campaign_budget_depletion(self):
         # Creating a single campaign, depleting its budget,
         # and checking that the serving system no longer gets bids from it.
-        config.num_untracked_bids = 0
-        campaign_daily_budget = config.campaign_minimal_bid
+        config.factor_untracked_bids = 0
+        campaign_daily_budget = 1  # Set a daily budget
         campaign_run_period = 2
         campaign = Campaign(campaign_id='campaign', total_budget=campaign_daily_budget * campaign_run_period,
-                            run_period=campaign_run_period, max_bid=campaign_daily_budget + 0.1)
+                            run_period=campaign_run_period,
+                            # The following bid distribution generates a bid that depletes campaign's budget
+                            bids_distribution=stats.uniform(loc=campaign_daily_budget, scale=0.5))
         serving_system = ServingSystem(tracked_campaigns=[campaign])
         bids = serving_system.get_bids(AuctionFP({}))
         self.assertEqual(len(bids), 1, "expected to get a bid from a single campaign")
         # simulating a win for the campaign which depletes its budget
-        auction_winner = AuctionWinner(bid=Bid(campaign.id, campaign.max_bid), payment=campaign.max_bid)
+        auction_winner = AuctionWinner(bid=Bid(campaign.id, bids[0].amount),
+                                       payment=bids[0].amount)
         serving_system.update_winners([auction_winner])
+        self.assertGreaterEqual(campaign.spent_today(), campaign.daily_budget)
         self.assertGreater(campaign.spent_today(), campaign.daily_budget)
         bids_after_depletion = serving_system.get_bids(AuctionFP({}))
         self.assertEqual(bids_after_depletion, [],
                          "expected list of bids to be empty after depleting campaign's budget")
 
     def test_with_mystique_budget_pacing(self):
-        config.num_untracked_bids = 0
-        campaign = Campaign(campaign_id='campaign1', total_budget=1000, run_period=7, max_bid=25)
+        config.factor_untracked_bids = 0
+        campaign = create_campaigns(1)[0]
         mystique = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
         serving_system = ServingSystem(pacing_system=mystique,
                                        tracked_campaigns=[campaign])
@@ -114,7 +111,7 @@ class TestServingSystem(unittest.TestCase):
 
     def test_targeting_groups(self):
         config.num_untracked_bids = 0
-        campaign = Campaign(campaign_id='campaign1', total_budget=1000, run_period=7, max_bid=25, targeting_groups={})
+        campaign = create_campaigns(1)[0]
         serving_system = ServingSystem(pacing_system=None, tracked_campaigns=[campaign])
         # test without targeting groups
         bids = serving_system.get_bids(auction=AuctionFP({}))
@@ -209,10 +206,9 @@ class TestServingSystem(unittest.TestCase):
 
     def test_statistics_with_mystique(self):
         num_days = 2
-        config.num_untracked_bids = 0
+        config.factor_untracked_bids = 0
         num_campaigns = 5
-        campaigns = [Campaign(campaign_id=f'campaign_{i}', total_budget=1000, run_period=7, max_bid=1)
-                     for i in range(num_campaigns)]
+        campaigns = create_campaigns(num_campaigns)
         mystique = MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
         serving_system = ServingSystem(pacing_system=mystique,
                                        tracked_campaigns=campaigns)

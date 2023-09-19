@@ -1,6 +1,7 @@
 import unittest
 
 from src.system.campaign import *
+from scipy import stats
 
 
 class TestCampaigns(unittest.TestCase):
@@ -11,7 +12,8 @@ class TestCampaigns(unittest.TestCase):
         config.num_win_entries_per_day = config.num_iterations_per_day
 
     def test_simple_auction(self):
-        campaign = Campaign(campaign_id='campaign_test', total_budget=1000, run_period=7, max_bid=25)
+        campaign = Campaign(campaign_id='campaign_test', total_budget=1000, run_period=7,
+                            bids_distribution=stats.uniform(loc=0.01, scale=0.05))
         # simulating a simple "auction"
         bid = campaign.bid()
         self.assertIsNotNone(bid)
@@ -26,7 +28,8 @@ class TestCampaigns(unittest.TestCase):
 
     def test_campaign_stats_during_day(self):
         payment = 1
-        campaign = Campaign(campaign_id='campaign_test', total_budget=1000, run_period=7, max_bid=25)
+        campaign = Campaign(campaign_id='campaign_test', total_budget=1000, run_period=7,
+                            bids_distribution=stats.uniform(loc=0.01, scale=0.05))
         CampaignStatistics.num_iterations_per_spend_entry = config.num_iterations_per_day // config.num_spend_entries_per_day
         CampaignStatistics.num_iterations_per_win_entry = config.num_iterations_per_day // config.num_win_entries_per_day
         # simulate an auction in each clock iteration
@@ -47,7 +50,7 @@ class TestCampaigns(unittest.TestCase):
         Clock.reset()
         num_auctions_won = 10
         payment = 5
-        campaign = Campaign(campaign_id='campaign_test', total_budget=1000, run_period=7, max_bid=25)
+        campaign = Campaign(campaign_id='campaign_test', total_budget=1000, run_period=7)
         self.assertEqual(len(campaign.stats.spend_history), 0)
         self.assertEqual(len(campaign.stats.auctions_won_history), 0)
         for _ in range(num_auctions_won):

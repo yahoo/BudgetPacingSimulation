@@ -4,6 +4,7 @@ from unittest import mock
 from src.system.campaign import *
 from src.system.marketplace import Marketplace
 from src.system.serving_system import ServingSystem
+from tests.tests_utils import create_campaigns
 
 _mock_num_auctions_per_iteration = 10
 
@@ -13,10 +14,9 @@ class TestMarketPlace(unittest.TestCase):
         Clock.reset()
         config.num_spend_entries_per_day = 24
         config.num_win_entries_per_day = 24 * 60
-        config.num_untracked_bids = 0
+        config.factor_untracked_bids = 0
         num_campaigns = 10
-        self.campaigns = [Campaign(campaign_id=f'campaign_{i}', total_budget=100000, run_period=7, max_bid=1)
-                          for i in range(num_campaigns)]
+        self.campaigns = create_campaigns(num_campaigns)
         serving_system = ServingSystem(tracked_campaigns=self.campaigns)
         self.marketplace = Marketplace(serving_system=serving_system)
 
@@ -24,6 +24,13 @@ class TestMarketPlace(unittest.TestCase):
                 lambda _: _mock_num_auctions_per_iteration)
     def test_marketplace(self):
         num_days = 3
+        num_campaigns = 10
+        num_auctions_per_iteration = 10
+        campaigns = create_campaigns(num_campaigns)
+        serving_system = ServingSystem(tracked_campaigns=campaigns)
+        # replacing the function that calculates the number of auctions for each minute
+        Marketplace._sample_current_num_of_auctions = lambda _: num_auctions_per_iteration
+        marketplace = Marketplace(serving_system=serving_system)
         for day in range(num_days):
             for i in range(config.num_iterations_per_day):
                 self.marketplace.run_iteration()

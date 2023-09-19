@@ -30,3 +30,4 @@ FIELD_OVERSPEND = 'Overspend'
 FIELD_SPEND = 'Spend'
 
 OVERALL_STATISTICS_ROW_NAME = 'Overall'
+

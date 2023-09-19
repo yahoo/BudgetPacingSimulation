@@ -1,7 +1,9 @@
-import random
 from typing import Optional
 
+from scipy import stats
+
 import src.configuration as config
+from src import constants
 from src.system.auction import AuctionInterface
 from src.system.bid import Bid
 from src.system.clock import Clock
@@ -14,6 +16,7 @@ class CampaignStatistics:
     def __init__(self, run_period: int):
         self.spend_history = []
         self.today_spend = []
+        self.total_spent_today = 0
         self.auctions_won_history = []
         self.auctions_won_today = []
         self.days_left_to_run = run_period
@@ -36,11 +39,13 @@ class CampaignStatistics:
 
     def update(self, payment: float):
         self.today_spend[self._calculate_spend_index_in_day()] += payment
+        self.total_spent_today += payment
         self.auctions_won_today[self._calculate_win_index_in_day()] += 1
 
     def _reset_today_stats(self):
         self.today_spend = [0] * config.num_spend_entries_per_day
         self.auctions_won_today = [0] * config.num_win_entries_per_day
+        self.total_spent_today = 0
 
     @staticmethod
     def _calculate_spend_index_in_day():
@@ -52,14 +57,18 @@ class CampaignStatistics:
 
 
 class Campaign:
-    def __init__(self, campaign_id: str, total_budget: float, run_period: int, max_bid: float,
-                 targeting_groups: dict[str, set[int]] = None):
+    def __init__(self, campaign_id: str, total_budget: float, run_period: int,
+                 targeting_groups: dict[str, set[int]] = None, bids_distribution: stats.rv_continuous = None,
+                 max_bid: float = None):
         self.id = campaign_id
-        if max_bid <= config.campaign_minimal_bid:
+        if max_bid and max_bid < config.campaign_minimal_bid:
             raise Exception('Invalid max_bid parameter.')
         self.max_bid = max_bid
         self.total_budget = total_budget
         self.daily_budget = total_budget / run_period
+        self.bids_distribution = bids_distribution
+        if self.bids_distribution is None:
+            self.bids_distribution = config.bids_distribution_medium_budget
         assert self.daily_budget >= config.campaign_minimal_bid
         if targeting_groups is None:
             targeting_groups = {}
@@ -67,10 +76,11 @@ class Campaign:
         self.stats = CampaignStatistics(run_period=run_period)
 
     def bid(self) -> Optional[Bid]:
-        bid_amount = random.uniform(config.campaign_minimal_bid, self.max_bid)
-        # Only in Step 4 we start tracking the campaigns' budgets
-        # if bid_amount > self.daily_budget:
-        #     bid_amount = self.daily_budget
+        bid_amount = self.bids_distribution.rvs()
+        if self.max_bid:
+            bid_amount = min(bid_amount, self.max_bid)
+        if bid_amount < config.campaign_minimal_bid:
+            return None
         return Bid(campaign_id=self.id, amount=bid_amount)
 
     def pay(self, amount: float):
@@ -86,7 +96,7 @@ class Campaign:
         return self.stats.spend_history
 
     def spent_today(self) -> float:
-        return sum(self.stats.today_spend)
+        return self.stats.total_spent_today
 
     def num_auctions_won_history(self) -> list[list[int]]:
         return self.stats.auctions_won_history

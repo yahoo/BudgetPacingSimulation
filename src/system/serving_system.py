@@ -1,5 +1,4 @@
-import random
-import statistics
+import numpy as np
 
 import src.constants as constants
 from src.system.auction import *
@@ -49,9 +48,7 @@ class ServingSystem:
                 bid.amount *= pacing_signal
             if bid.amount > 0:
                 bids.append(bid)
-        if bids:
-            # add untracked bids
-            bids += self._generate_untracked_bids()
+        bids += self._generate_untracked_bids(num_tracked_bids=len(bids))
         return bids
 
     def update_winners(self, winners: list[AuctionWinner]):
@@ -91,10 +88,10 @@ class ServingSystem:
                 # remove campaign from the structure of active campaigns
                 self.tracked_campaigns.pop(campaign.id)
 
-    def _generate_untracked_bids(self) -> list[Bid]:
-        return [Bid(campaign_id='untracked_campaign_' + str(i),
-                    amount=random.uniform(config.campaign_minimal_bid, config.untracked_bid_max))
-                for i in range(self._calculate_number_of_untracked_bids())]
+    def _generate_untracked_bids(self, num_tracked_bids: int) -> list[Bid]:
+        num_untracked_bids = self._calculate_number_of_untracked_bids(num_tracked_bids)
+        sampled_bids = config.untracked_bids_distribution.rvs(size=num_untracked_bids)
+        return [Bid(campaign_id='untracked_campaign_' + str(i), amount=sampled_bids[i]) for i in range(num_untracked_bids)]
 
     def get_statistics_per_campaign_csv_rows(self) -> list[dict[str, object]]:
         campaigns_statistics_as_rows = []
@@ -135,7 +132,7 @@ class ServingSystem:
                 constants.FIELD_NUM_OVER_BUDGET_CAMPAIGNS: num_over_budget_campaigns_per_day[day]
             }
             if pacing_statistics:
-                for field in pacing_statistics.keys():
+                for field in pacing_statistics:
                     # If field is a list (per-day statistic), add the relevant entry to the day's row
                     if isinstance(pacing_statistics[field], list):
                         day_row[field] = pacing_statistics[field][day]
@@ -156,7 +153,8 @@ class ServingSystem:
     def _calculate_cpm_per_day(self) -> list[float]:
         spend_per_day = self._calculate_total_spend_per_day()
         wins_per_day = self._calculate_total_wins_per_day()
-        return [1000 * spend_per_day[day] / wins_per_day[day] for day in range(len(spend_per_day))]
+        return [1000 * spend_per_day[day] / wins_per_day[day] if wins_per_day[day] > 0 else None
+                for day in range(len(spend_per_day))]
 
     def _calculate_total_spend_per_day(self) -> list[float]:
         total_spend_per_day = [0] * Clock.days()
@@ -196,9 +194,8 @@ class ServingSystem:
         return total_overspend_per_day
 
     @staticmethod
-    def _calculate_number_of_untracked_bids() -> int:
-        # We will later sample from distribution according to Clock.minutes()
-        return config.num_untracked_bids
+    def _calculate_number_of_untracked_bids(num_tracked_bids: int) -> int:
+        return round(config.factor_untracked_bids * num_tracked_bids)
 
     def _all_campaigns(self) -> list[Campaign]:
         return list(self.tracked_campaigns.values()) + list(self.old_campaigns.values())

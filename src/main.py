@@ -6,10 +6,11 @@ from src.system.marketplace import Marketplace
 from src.system.serving_system import ServingSystem
 
 OUTPUT_FOLDER_PATH = '../output'
-OUTPUT_FILE_PATH = f'{OUTPUT_FOLDER_PATH}/simulation_statistics.csv'
+OUTPUT_FILE_PATH = f'{OUTPUT_FOLDER_PATH}/simulation_statistics_{config.pacing_algorithm}.csv'
 
 
 if __name__ == '__main__':
+    # Build the system
     campaigns = system_generation_utils.generate_campaigns(config.num_campaigns)
     pacing_system = system_generation_utils.generate_pacing_system(config.pacing_algorithm)
     serving_system = ServingSystem(pacing_system=pacing_system, tracked_campaigns=campaigns)
