@@ -14,7 +14,6 @@ min_ps = 0
 error_corresponding_to_max_correction = 0.25
 max_ps_correction = 0.025
 gradient_error_corresponding_to_max_correction = 1.5
-max_ps_correction = 0.025
 minimal_non_zero_ps_correction = 0.01
 min_daily_budget_for_high_initialization = 10000
 max_interval = num_iterations_per_day + 1.0
