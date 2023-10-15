@@ -2,7 +2,6 @@ import math
 import random
 from typing import Optional
 
-import numpy as np
 from scipy import stats
 from dataclasses import dataclass
 
@@ -35,9 +34,8 @@ def generate_campaign_configuration() -> CampaignConfiguration:
                                  max_bid=bids_distribution.mean() * config.max_bid_factor_of_bids_mean,
                                  targeting_groups={
                                      feature: set(
-                                         np.random.choice(list(config.user_properties[feature].keys()),
-                                                          size=num_target_values,
-                                                          replace=False))
+                                         random.sample(list(config.user_properties[feature].keys()),
+                                                       k=num_target_values))
                                      for feature in config.user_properties
                                      if (num_target_values := random.randint(0, len(
                                          config.user_properties[feature].keys()))) > 0
@@ -45,6 +43,9 @@ def generate_campaign_configuration() -> CampaignConfiguration:
 
 
 def generate_campaigns(n: int):
+    # set random seed to get consistent campaigns across experiments
+    config.daily_budgets_log_distribution.random_state = config.campaign_generation_seed_value
+    random.seed(config.campaign_generation_seed_value)
     campaigns = []
     for i in range(n):
         campaign_config = generate_campaign_configuration()

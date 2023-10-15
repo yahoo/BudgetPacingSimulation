@@ -1,9 +1,9 @@
 from typing import Optional
 
+import numpy as np
 from scipy import stats
 
 import src.configuration as config
-from src import constants
 from src.system.auction import AuctionInterface
 from src.system.bid import Bid
 from src.system.clock import Clock
@@ -74,9 +74,12 @@ class Campaign:
             targeting_groups = {}
         self._targeting_groups = targeting_groups
         self.stats = CampaignStatistics(run_period=run_period)
+        self.bids_cache = np.array([])
 
     def bid(self) -> Optional[Bid]:
-        bid_amount = self.bids_distribution.rvs()
+        if not self.bids_cache.size:
+            self.bids_cache = self.bids_distribution.rvs(size=config.bid_sampling_batch_size)
+        bid_amount, self.bids_cache = self.bids_cache[-1], self.bids_cache[:-1]
         if self.max_bid:
             bid_amount = min(bid_amount, self.max_bid)
         if bid_amount < config.campaign_minimal_bid:

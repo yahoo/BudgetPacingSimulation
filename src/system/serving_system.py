@@ -20,6 +20,7 @@ class ServingSystem:
         self.pending_pacing_spend_updates = {}
         for campaign in tracked_campaigns:
             self.add_campaign(campaign)
+        self.untracked_bids_cache = np.array([])
 
     def add_campaign(self, campaign: Campaign):
         if campaign is None:
@@ -31,14 +32,16 @@ class ServingSystem:
             self.pacing_system.add_campaign(campaign)
 
     def get_bids(self, auction: AuctionInterface) -> list[Bid]:
+        num_relevant_campaigns = 0
         bids = []
         # get "real" bids
         for campaign in self.tracked_campaigns.values():
-            # make sure the campaign hasn't reached its daily budget
-            if campaign.spent_today() >= campaign.daily_budget:
-                continue
             # check if the auction is relevant (matches campaign's target group) to the campaign
             if not campaign.is_relevant_auction(auction):
+                continue
+            num_relevant_campaigns += 1  # counting the number of campaigns for which the auction is relevant
+            # make sure the campaign hasn't reached its daily budget
+            if campaign.spent_today() >= campaign.daily_budget:
                 continue
             bid = campaign.bid()
             if bid is None:
@@ -48,7 +51,7 @@ class ServingSystem:
                 bid.amount *= pacing_signal
             if bid.amount > 0:
                 bids.append(bid)
-        bids += self._generate_untracked_bids(num_tracked_bids=len(bids))
+        bids += self._generate_untracked_bids(num_relevant_campaigns=num_relevant_campaigns)
         return bids
 
     def update_winners(self, winners: list[AuctionWinner]):
@@ -88,10 +91,13 @@ class ServingSystem:
                 # remove campaign from the structure of active campaigns
                 self.tracked_campaigns.pop(campaign.id)
 
-    def _generate_untracked_bids(self, num_tracked_bids: int) -> list[Bid]:
-        num_untracked_bids = self._calculate_number_of_untracked_bids(num_tracked_bids)
-        sampled_bids = config.untracked_bids_distribution.rvs(size=num_untracked_bids)
-        return [Bid(campaign_id='untracked_campaign_' + str(i), amount=sampled_bids[i]) for i in range(num_untracked_bids)]
+    def _generate_untracked_bids(self, num_relevant_campaigns: int) -> list[Bid]:
+        num_untracked_bids = self._calculate_number_of_untracked_bids(num_relevant_campaigns)
+        if self.untracked_bids_cache.size < num_untracked_bids:
+            sampled_batch_size = max(num_untracked_bids, config.bid_sampling_batch_size)
+            self.untracked_bids_cache = config.untracked_bids_distribution.rvs(size=sampled_batch_size)
+        sampled_bids, self.untracked_bids_cache = self.untracked_bids_cache[-num_untracked_bids:], self.untracked_bids_cache[:-num_untracked_bids]
+        return [Bid(campaign_id='untracked_campaign_' + str(i), amount=sampled_bids[i]) for i in range(sampled_bids.size)]
 
     def get_statistics_per_campaign_csv_rows(self) -> list[dict[str, object]]:
         campaigns_statistics_as_rows = []
@@ -194,8 +200,8 @@ class ServingSystem:
         return total_overspend_per_day
 
     @staticmethod
-    def _calculate_number_of_untracked_bids(num_tracked_bids: int) -> int:
-        return round(config.factor_untracked_bids * num_tracked_bids)
+    def _calculate_number_of_untracked_bids(num_relevant_campaigns: int) -> int:
+        return round(config.factor_untracked_bids * num_relevant_campaigns)
 
     def _all_campaigns(self) -> list[Campaign]:
         return list(self.tracked_campaigns.values()) + list(self.old_campaigns.values())
