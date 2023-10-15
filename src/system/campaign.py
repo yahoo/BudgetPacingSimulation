@@ -4,7 +4,6 @@ import numpy as np
 from scipy import stats
 
 import src.configuration as config
-from src import constants
 from src.system.auction import AuctionInterface
 from src.system.bid import Bid
 from src.system.clock import Clock
@@ -79,7 +78,7 @@ class Campaign:
 
     def bid(self) -> Optional[Bid]:
         if not self.bids_cache.size:
-            self.bids_cache = self.bids_distribution.rvs(size=constants.bid_sampling_batch_size)
+            self.bids_cache = self.bids_distribution.rvs(size=config.bid_sampling_batch_size)
         bid_amount, self.bids_cache = self.bids_cache[-1], self.bids_cache[:-1]
         if self.max_bid:
             bid_amount = min(bid_amount, self.max_bid)

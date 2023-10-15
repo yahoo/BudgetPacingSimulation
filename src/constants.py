@@ -3,8 +3,6 @@ from enum import Enum
 num_minutes_in_hour = 60
 num_minutes_in_day = 24 * num_minutes_in_hour
 
-bid_sampling_batch_size = 100000
-
 
 class BudgetPacingAlgorithms(Enum):
     MYSTIQUE_LINEAR = 1

@@ -72,3 +72,5 @@ daily_budgets_log_distribution = stats.gamma(a=3.77, loc=0.0, scale=1.0)
 
 # Set the following seed value to generate consistent campaigns across simulations
 campaign_generation_seed_value = 123
+
+bid_sampling_batch_size = 100000

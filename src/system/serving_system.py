@@ -20,6 +20,7 @@ class ServingSystem:
         self.pending_pacing_spend_updates = {}
         for campaign in tracked_campaigns:
             self.add_campaign(campaign)
+        self.untracked_bids_cache = np.array([])
 
     def add_campaign(self, campaign: Campaign):
         if campaign is None:
@@ -92,8 +93,11 @@ class ServingSystem:
 
     def _generate_untracked_bids(self, num_relevant_campaigns: int) -> list[Bid]:
         num_untracked_bids = self._calculate_number_of_untracked_bids(num_relevant_campaigns)
-        sampled_bids = config.untracked_bids_distribution.rvs(size=num_untracked_bids)
-        return [Bid(campaign_id='untracked_campaign_' + str(i), amount=sampled_bids[i]) for i in range(num_untracked_bids)]
+        if self.untracked_bids_cache.size < num_untracked_bids:
+            sampled_batch_size = max(num_untracked_bids, config.bid_sampling_batch_size)
+            self.untracked_bids_cache = config.untracked_bids_distribution.rvs(size=sampled_batch_size)
+        sampled_bids, self.untracked_bids_cache = self.untracked_bids_cache[-num_untracked_bids:], self.untracked_bids_cache[:-num_untracked_bids]
+        return [Bid(campaign_id='untracked_campaign_' + str(i), amount=sampled_bids[i]) for i in range(sampled_bids.size)]
 
     def get_statistics_per_campaign_csv_rows(self) -> list[dict[str, object]]:
         campaigns_statistics_as_rows = []
