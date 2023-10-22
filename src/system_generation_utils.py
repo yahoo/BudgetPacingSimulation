@@ -60,14 +60,19 @@ def generate_campaigns(n: int):
 
 def generate_pacing_system(algorithm: constants.BudgetPacingAlgorithms) -> Optional[PacingSystemInterface]:
     if algorithm == constants.BudgetPacingAlgorithms.MYSTIQUE_LINEAR:
+        print('Running Mystique Linear')
         return MystiquePacingSystem(TargetSpendStrategyType.LINEAR)
     elif algorithm == constants.BudgetPacingAlgorithms.MYSTIQUE_NON_LINEAR:
+        print('Running Mystique Non-Linear')
         return MystiquePacingSystem(TargetSpendStrategyType.NON_LINEAR)
     elif algorithm == constants.BudgetPacingAlgorithms.MYSTIQUE_LINEAR_HARD_THROTTLING:
+        print('Running Mystique Linear Hard Throttling')
         return MystiqueHardThrottlingPacingSystem(TargetSpendStrategyType.LINEAR)
     elif algorithm == constants.BudgetPacingAlgorithms.MYSTIQUE_NON_LINEAR_HARD_THROTTLING:
+        print('Running Mystique Non-Linear Hard Throttling')
         return MystiqueHardThrottlingPacingSystem(TargetSpendStrategyType.NON_LINEAR)
     elif algorithm is None:
+        print('Running without budget pacing')
         return None
     else:
         raise Exception(f'Unsupported budget pacing algorithm: {algorithm}')

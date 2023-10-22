@@ -1,5 +1,5 @@
 import math
-import random
+import os
 
 import src.constants as constants
 from src.constants import AuctionType
@@ -13,7 +13,7 @@ auction_type = AuctionType.FP
 output_only_summarized_statistics = False
 
 # Budget Pacing System
-pacing_algorithm = constants.BudgetPacingAlgorithms.MYSTIQUE_LINEAR
+pacing_algorithm = os.environ.get('PACING_SYSTEM')
 
 # Campaigns
 num_campaigns = 100
