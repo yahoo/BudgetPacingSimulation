@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Linear Hard" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="Linear-Soft" type="PythonConfigurationType" factoryName="Python">
     <module name="BudgetPacingSimulation" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
+      <env name="PACING_SYSTEM" value="linear-soft" />
       <env name="PYTHONUNBUFFERED" value="1" />
-      <env name="PACING_SYSTEM" value="linear-hard" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />

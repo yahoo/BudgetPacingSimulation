@@ -1,10 +1,10 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="No Pacing" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="Non-Linear-Hard" type="PythonConfigurationType" factoryName="Python">
     <module name="BudgetPacingSimulation" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
-      <env name="PACING_SYSTEM" value="none" />
+      <env name="PACING_SYSTEM" value="non-linear-hard" />
       <env name="PYTHONUNBUFFERED" value="1" />
     </envs>
     <option name="SDK_HOME" value="" />
