@@ -17,6 +17,8 @@ class CampaignStatistics:
         self.spend_history = []
         self.today_spend = []
         self.total_spent_today = 0
+        self.minutes_alive_today = 1  # starts from 1 to count the first minute of the day, when all campaigns are alive
+        self.minutes_alive_history = []
         self.auctions_won_history = []
         self.auctions_won_today = []
         self.days_left_to_run = run_period
@@ -35,6 +37,7 @@ class CampaignStatistics:
         # update history
         self.spend_history.append(self.today_spend)
         self.auctions_won_history.append(self.auctions_won_today)
+        self.minutes_alive_history.append(self.minutes_alive_today)
         self._reset_today_stats()
 
     def update(self, payment: float):
@@ -46,6 +49,7 @@ class CampaignStatistics:
         self.today_spend = [0] * config.num_spend_entries_per_day
         self.auctions_won_today = [0] * config.num_win_entries_per_day
         self.total_spent_today = 0
+        self.minutes_alive_today = 1
 
     @staticmethod
     def _calculate_spend_index_in_day():
@@ -103,6 +107,9 @@ class Campaign:
 
     def num_auctions_won_history(self) -> list[list[int]]:
         return self.stats.auctions_won_history
+
+    def minutes_alive_history(self) -> list[int]:
+        return self.stats.minutes_alive_history
 
     def num_auctions_won_today(self) -> int:
         return sum(self.stats.auctions_won_today)

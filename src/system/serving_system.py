@@ -66,6 +66,7 @@ class ServingSystem:
                         winner.bid.campaign_id, 0) + winner.payment
 
     def end_iteration(self):
+        self._end_of_minute_campaign_updates()  # updates campaigns' lifetime statistic
         # Budget Pacing periodic (every minute) spend updates
         self._update_pacing_system()
         # Check if this is the last iteration of the day
@@ -80,6 +81,16 @@ class ServingSystem:
             # get the spend amount of each campaign during the last minute, and send it to the budget pacing system
             spend = self.pending_pacing_spend_updates.pop(campaign.id, 0)
             self.pacing_system.end_iteration(campaign_id=campaign.id, spend_since_last_iteration=spend)
+
+    def _end_of_minute_campaign_updates(self):
+        # update the number of minutes alive statistic for each campaign
+        for campaign in self.tracked_campaigns.values():
+            if campaign.spent_today() < campaign.daily_budget \
+                    and Clock.minute_in_day() < constants.num_minutes_in_day - 1:
+                # we increment campaigns' minutes_alive counter at the end of each minute of the day
+                # - except the last minute of the day, since a campaign that hasn't depleted its budget by the end of
+                # the current minute will be participating in auctions in the following minute of the same day.
+                campaign.stats.minutes_alive_today += 1
 
     def _end_of_day_campaign_updates(self):
         for campaign in list(self.tracked_campaigns.values()):
@@ -110,7 +121,8 @@ class ServingSystem:
                 constants.FIELD_NUM_WINS: campaign.num_auctions_won_history(),
                 constants.FIELD_CPM: campaign.cpm_daily_history(),
                 constants.FIELD_BUDGET_UTILIZATION: campaign.budget_utilization_daily_history(),
-                constants.FIELD_OVERSPEND: campaign.overspend_value_daily_history()
+                constants.FIELD_OVERSPEND: campaign.overspend_value_daily_history(),
+                constants.FIELD_MINUTES_ALIVE: campaign.minutes_alive_history()
             }
             if self.pacing_system:
                 # merge campaign's pacing statistics the basic statistics
@@ -125,6 +137,7 @@ class ServingSystem:
         total_wins_per_day = self._calculate_total_wins_per_day()
         overspend_amount_per_day = self._calculate_total_overspend_per_day()
         spend_amount_per_day = self._calculate_total_spend_per_day()
+        total_minutes_alive_per_day = self._calculate_total_minutes_alive_per_day()
         pacing_statistics = self.pacing_system.get_global_pacing_statistics() if self.pacing_system else None
         day_statistics_rows = []
         for day in range(Clock.days()):
@@ -135,7 +148,8 @@ class ServingSystem:
                 constants.FIELD_SPEND: spend_amount_per_day[day],
                 constants.FIELD_OVERSPEND: overspend_amount_per_day[day],
                 constants.FIELD_NUM_WINS: total_wins_per_day[day],
-                constants.FIELD_NUM_OVER_BUDGET_CAMPAIGNS: num_over_budget_campaigns_per_day[day]
+                constants.FIELD_NUM_OVER_BUDGET_CAMPAIGNS: num_over_budget_campaigns_per_day[day],
+                constants.FIELD_MINUTES_ALIVE: total_minutes_alive_per_day[day]
             }
             if pacing_statistics:
                 for field in pacing_statistics:
@@ -149,12 +163,22 @@ class ServingSystem:
             constants.FIELD_CPM: self._calculate_overall_cpm(),
             constants.FIELD_SPEND: sum(spend_amount_per_day),
             constants.FIELD_OVERSPEND: sum(overspend_amount_per_day),
-            constants.FIELD_NUM_WINS: sum(total_wins_per_day)
+            constants.FIELD_NUM_WINS: sum(total_wins_per_day),
+            constants.FIELD_MINUTES_ALIVE: sum(total_minutes_alive_per_day)
         })
         return day_statistics_rows
 
     def _calculate_overall_cpm(self) -> float:
         return 1000 * sum(self._calculate_total_spend_per_day()) / sum(self._calculate_total_wins_per_day())
+
+    def _calculate_total_minutes_alive_per_day(self) -> list[int]:
+        total_minutes_alive_per_day = [0] * Clock.days()
+        for campaign in self._all_campaigns():
+            campaign_minutes_alive_history = campaign.minutes_alive_history()
+            for day in range(len(campaign_minutes_alive_history)):
+                adjusted_day_index = campaign.stats.day_started + day
+                total_minutes_alive_per_day[adjusted_day_index] += campaign_minutes_alive_history[day]
+        return total_minutes_alive_per_day
 
     def _calculate_cpm_per_day(self) -> list[float]:
         spend_per_day = self._calculate_total_spend_per_day()

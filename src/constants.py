@@ -28,6 +28,7 @@ FIELD_NUM_OVER_BUDGET_CAMPAIGNS = '# Over Budget Campaigns'
 FIELD_NUM_WINS = '# Impressions'
 FIELD_OVERSPEND = 'Overspend'
 FIELD_SPEND = 'Spend'
+FIELD_MINUTES_ALIVE = '# Minutes Alive'
 
 OVERALL_STATISTICS_ROW_NAME = 'Overall'
 
