@@ -4,11 +4,12 @@
 ### Running a single simulation
 1. Set up the desired configuration in `src/configuration.py`.
    1. Choose the desired pacing algorithm by defining the `pacing_algorithm` variable, e.g.: `pacing_algorithm = constants.BudgetPacingAlgorithms.MYSTIQUE_NON_LINEAR`.
-   2. Run `src/main.py`.
+2. Run `src/main.py`.
 
 ### Running multiple simulations simultaneously
 If you're running the simulations through PyCharm, you can use the run configurations defined in the `runConfigurations` directory.
-The `runConfigurations/All-Pacing-Systems.run.xml` compound configuration will run the simulation with each of the following pacing systems:
+First, set up the desired configuration in `src/configuration.py`, without changing the value of the `pacing_algorithm` variable.
+Then run the `runConfigurations/All-Pacing-Systems.run.xml` compound configuration, which will run the simulation with each of the following pacing systems:
 1. Mystique Linear
 2. Mystique Non-Linear
 3. Mystique Linear Hard Throttling
