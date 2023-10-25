@@ -1,10 +1,10 @@
 import math
 import os
 
-import src.constants as constants
+from scipy import stats
+
 from src.constants import AuctionType
 from src.system.daily_cosine import DailyCosineWave
-from scipy import stats
 
 # General
 num_days_to_simulate = 7
