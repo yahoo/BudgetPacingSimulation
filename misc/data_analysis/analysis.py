@@ -1,3 +1,4 @@
+# Scripts for the data science work of approximating distributions of bids / budgets.
 import csv
 import sys
 import math
