@@ -1,3 +1,5 @@
+# Copyright Yahoo, Licensed under the terms of the Apache license . See LICENSE file in project root for terms.
+
 import unittest
 
 from src.system.budget_pacing.mystique.target_slope import LinearTargetSpendStrategy

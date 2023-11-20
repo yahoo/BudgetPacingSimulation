@@ -1,3 +1,5 @@
+# Copyright Yahoo, Licensed under the terms of the Apache license . See LICENSE file in project root for terms.
+
 # Scripts for the data science work of approximating distributions of bids / budgets.
 import csv
 import sys

@@ -1,3 +1,5 @@
+# Copyright Yahoo, Licensed under the terms of the Apache license . See LICENSE file in project root for terms.
+
 # This script creates a summary of a simulation's result by combining the Overall values of the different pacing systems
 # The script reads the values defined in the configuration.py file generates a summary for that configuration's results
 import csv

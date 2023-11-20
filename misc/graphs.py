@@ -1,3 +1,5 @@
+# Copyright Yahoo, Licensed under the terms of the Apache license . See LICENSE file in project root for terms.
+
 # This script generates graphs with campaigns' target/actual spend, together with the value of the pacing signal
 import csv
 import datetime
