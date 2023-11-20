@@ -1,3 +1,5 @@
+<!-- Copyright Yahoo, Licensed under the terms of the Apache license . See LICENSE file in project root for terms.-->
+
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Linear-Hard" type="PythonConfigurationType" factoryName="Python">
     <module name="BudgetPacingSimulation" />

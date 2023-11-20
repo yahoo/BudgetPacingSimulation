@@ -1,3 +1,5 @@
+# Copyright Yahoo, Licensed under the terms of the Apache license . See LICENSE file in project root for terms.
+
 import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
 import src.system.budget_pacing.mystique.mystique_utils as utils
 from src.system.clock import Clock

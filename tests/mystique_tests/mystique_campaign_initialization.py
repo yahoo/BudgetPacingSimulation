@@ -1,3 +1,5 @@
+# Copyright Yahoo, Licensed under the terms of the Apache license . See LICENSE file in project root for terms.
+
 from src.system.budget_pacing.mystique.mystique_tracked_campaign import MystiqueTrackedCampaign
 from src.system.campaign import Campaign
 import src.system.budget_pacing.mystique.mystique_constants as mystique_constants
