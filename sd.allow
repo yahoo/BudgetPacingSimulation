@@ -1,0 +1,7 @@
+version: 1
+push:
+  - screwdriver:1065052
+  - screwdriver:1065052pr
+pull:
+  - screwdriver:1065052
+  - screwdriver:1065052pr
