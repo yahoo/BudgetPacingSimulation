@@ -68,9 +68,6 @@ class LinearTargetSpendStrategy(TargetSpendStrategyInterface):
         return target_spend_array
 
 
-    # test comment
-
-
 class NonLinearTargetSpendStrategy(LinearTargetSpendStrategy):
     min_slope = 0.1
     max_slope = 12
