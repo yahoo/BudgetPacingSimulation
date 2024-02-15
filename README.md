@@ -22,7 +22,7 @@ The predefined run configurations set the `PACING_SYSTEM` environment variable w
 The simulation outputs the statistics into a directory, that is dedicated to the current configuration, which will be created inside the `output` folder.
 
 ## Reference
-If you use Optuna in one of your research projects, please cite our WWW paper "Mystique: A Budget Pacing System for Performance Optimization in Online Advertising":
+If you use this simulation in one of your research projects, please cite our WWW paper "Mystique: A Budget Pacing System for Performance Optimization in Online Advertising":
 
 ```
 @inproceedings{stram2024Mystique,
