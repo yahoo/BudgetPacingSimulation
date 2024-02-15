@@ -1,9 +1,0 @@
-version: 4
-
-jobs:
-  main:
-    template: ProdSec/validate_semgrep@2023.3.127
-    image: alma8
-    environment:
-      YAHOO_SEMGREP_ENFORCING: False #(If you choose to fail builds for validation failures in Semgrep, then you should set this value to True)
-      YAHOO_SEMGREP_ONLINE: True

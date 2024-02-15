@@ -20,3 +20,14 @@ The predefined run configurations set the `PACING_SYSTEM` environment variable w
 
 ### Output
 The simulation outputs the statistics into a directory, that is dedicated to the current configuration, which will be created inside the `output` folder.
+
+## Reference
+If you use this simulation in one of your research projects, please cite our WWW paper "Mystique: A Budget Pacing System for Performance Optimization in Online Advertising":
+
+```
+@inproceedings{stram2024Mystique,
+  title={Mystique: A Budget Pacing System for Performance Optimization in Online Advertising},
+  author={Stram, Rotem and Abboud, Rani and Shtoff, Alex and Somekh, Oren and Raviv, Ariel and Koren, Yair},
+  booktitle={Proceedings of the ACM Web Conference 2024},
+  year={2024}
+}
