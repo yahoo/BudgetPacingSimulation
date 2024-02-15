@@ -33,4 +33,3 @@ FIELD_SPEND = 'Spend'
 FIELD_MINUTES_ALIVE = '# Minutes Alive'
 
 OVERALL_STATISTICS_ROW_NAME = 'Overall'
-
